@@ -1,53 +1,128 @@
-import { useEffect } from "react";
-import "@/App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import axios from "axios";
+import React from "react";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Toaster } from "sonner";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import Layout from "./components/Layout";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+import DonorManagement from "./pages/DonorManagement";
+import DonorRegistration from "./pages/DonorRegistration";
+import DonorDetails from "./pages/DonorDetails";
+import Screening from "./pages/Screening";
+import Collection from "./pages/Collection";
+import Traceability from "./pages/Traceability";
+import Laboratory from "./pages/Laboratory";
+import Processing from "./pages/Processing";
+import QCValidation from "./pages/QCValidation";
+import Inventory from "./pages/Inventory";
+import Requests from "./pages/Requests";
+import Distribution from "./pages/Distribution";
+import Returns from "./pages/Returns";
+import Discards from "./pages/Discards";
+import Reports from "./pages/Reports";
+import UserManagement from "./pages/UserManagement";
+import "./App.css";
 
-const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
-const API = `${BACKEND_URL}/api`;
-
-const Home = () => {
-  const helloWorldApi = async () => {
-    try {
-      const response = await axios.get(`${API}/`);
-      console.log(response.data.message);
-    } catch (e) {
-      console.error(e, `errored out requesting / api`);
-    }
-  };
-
-  useEffect(() => {
-    helloWorldApi();
-  }, []);
-
-  return (
-    <div>
-      <header className="App-header">
-        <a
-          className="App-link"
-          href="https://emergent.sh"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img src="https://avatars.githubusercontent.com/in/1201222?s=120&u=2686cf91179bbafbc7a71bfbc43004cf9ae1acea&v=4" />
-        </a>
-        <p className="mt-5">Building something incredible ~!</p>
-      </header>
-    </div>
-  );
+const ProtectedRoute = ({ children, allowedRoles }) => {
+  const { user, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+      </div>
+    );
+  }
+  
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/dashboard" replace />;
+  }
+  
+  return children;
 };
+
+function AppRoutes() {
+  const { user } = useAuth();
+  
+  return (
+    <Routes>
+      <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+      
+      <Route path="/" element={
+        <ProtectedRoute>
+          <Layout />
+        </ProtectedRoute>
+      }>
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="dashboard" element={<Dashboard />} />
+        
+        {/* Donor Management */}
+        <Route path="donors" element={<DonorManagement />} />
+        <Route path="donors/register" element={<DonorRegistration />} />
+        <Route path="donors/:id" element={<DonorDetails />} />
+        
+        {/* Screening & Collection */}
+        <Route path="screening" element={<Screening />} />
+        <Route path="collection" element={<Collection />} />
+        
+        {/* Traceability */}
+        <Route path="traceability" element={<Traceability />} />
+        
+        {/* Laboratory */}
+        <Route path="laboratory" element={<Laboratory />} />
+        
+        {/* Processing */}
+        <Route path="processing" element={<Processing />} />
+        
+        {/* QC */}
+        <Route path="qc-validation" element={<QCValidation />} />
+        
+        {/* Inventory */}
+        <Route path="inventory" element={<Inventory />} />
+        
+        {/* Distribution */}
+        <Route path="requests" element={<Requests />} />
+        <Route path="distribution" element={<Distribution />} />
+        
+        {/* Returns & Discards */}
+        <Route path="returns" element={<Returns />} />
+        <Route path="discards" element={<Discards />} />
+        
+        {/* Reports */}
+        <Route path="reports" element={<Reports />} />
+        
+        {/* Admin */}
+        <Route path="users" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <UserManagement />
+          </ProtectedRoute>
+        } />
+      </Route>
+      
+      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+    </Routes>
+  );
+}
 
 function App() {
   return (
-    <div className="App">
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Home />}>
-            <Route index element={<Home />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </div>
+    <BrowserRouter>
+      <AuthProvider>
+        <AppRoutes />
+        <Toaster 
+          position="top-right" 
+          richColors 
+          closeButton
+          toastOptions={{
+            duration: 4000,
+          }}
+        />
+      </AuthProvider>
+    </BrowserRouter>
   );
 }
 
