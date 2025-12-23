@@ -19,6 +19,8 @@ class BloodBankAPITester:
         self.unit_id = None
         self.component_id = None
         self.request_id = None
+        self.admin_email = f"admin_{int(time.time())}@bloodbank.com"
+        self.admin_password = "AdminPass123!"
 
     def run_test(self, name, method, endpoint, expected_status, data=None, params=None):
         """Run a single API test"""
