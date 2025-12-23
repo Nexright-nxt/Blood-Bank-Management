@@ -70,8 +70,8 @@ class BloodBankAPITester:
             "auth/register",
             200,
             data={
-                "email": f"admin_{int(time.time())}@bloodbank.com",
-                "password": "AdminPass123!",
+                "email": self.admin_email,
+                "password": self.admin_password,
                 "full_name": "Test Admin User",
                 "role": "admin"
             }
