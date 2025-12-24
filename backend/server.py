@@ -577,6 +577,17 @@ async def generate_donor_id() -> str:
     count = await db.donors.count_documents({})
     return f"D-{year}-{str(count + 1).zfill(4)}"
 
+async def generate_donor_request_id() -> str:
+    """Generate unique donor request ID like REG-2024-0001"""
+    year = datetime.now().year
+    count = await db.donor_requests.count_documents({})
+    return f"REG-{year}-{str(count + 1).zfill(5)}"
+
+def generate_otp() -> str:
+    """Generate 6-digit OTP"""
+    import random
+    return str(random.randint(100000, 999999))
+
 async def generate_donation_id() -> str:
     """Generate unique donation ID"""
     year = datetime.now().year
