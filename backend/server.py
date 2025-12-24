@@ -686,6 +686,380 @@ async def get_me(current_user: dict = Depends(get_current_user)):
         is_active=current_user.get("is_active", True)
     )
 
+# ==================== PUBLIC DONOR REGISTRATION ROUTES ====================
+@api_router.post("/public/donor-register")
+async def public_donor_register(data: DonorRequestCreate):
+    """Public endpoint for donor self-registration (no auth required)"""
+    
+    # Check for consent
+    if not data.consent_given:
+        raise HTTPException(status_code=400, detail="Consent is required for registration")
+    
+    # Check for duplicate pending request
+    existing_request = await db.donor_requests.find_one({
+        "identity_type": data.identity_type,
+        "identity_number": data.identity_number,
+        "status": "pending"
+    })
+    if existing_request:
+        raise HTTPException(status_code=400, detail="A registration request with this ID is already pending")
+    
+    # Check if already an approved donor
+    existing_donor = await db.donors.find_one({
+        "identity_type": data.identity_type,
+        "identity_number": data.identity_number
+    })
+    if existing_donor:
+        raise HTTPException(status_code=400, detail="Donor with this identity already exists. Please use donor login.")
+    
+    # Create donor request (goes to airlock table, NOT donors table)
+    request = DonorRequest(
+        identity_type=data.identity_type,
+        identity_number=data.identity_number,
+        full_name=data.full_name,
+        date_of_birth=data.date_of_birth,
+        gender=data.gender,
+        weight=data.weight,
+        phone=data.phone,
+        email=data.email,
+        address=data.address,
+        id_proof_image=data.id_proof_image,
+        consent_given=data.consent_given,
+        request_type=DonorRequestType.NEW_REGISTRATION,
+        status=DonorRequestStatus.PENDING
+    )
+    request.request_id = await generate_donor_request_id()
+    
+    doc = request.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    if doc.get('reviewed_at'):
+        doc['reviewed_at'] = doc['reviewed_at'].isoformat()
+    
+    await db.donor_requests.insert_one(doc)
+    
+    return {
+        "status": "success",
+        "message": "Registration request submitted successfully. Please wait for staff approval.",
+        "request_id": request.request_id,
+        "id": request.id
+    }
+
+@api_router.get("/public/donor-status/{identity_type}/{identity_number}")
+async def check_donor_status(identity_type: str, identity_number: str):
+    """Public endpoint to check registration status (no auth required)"""
+    
+    # First check if already an approved donor
+    donor = await db.donors.find_one({
+        "identity_type": identity_type,
+        "identity_number": identity_number
+    }, {"_id": 0, "qr_code": 0})
+    
+    if donor:
+        return {
+            "status": "approved",
+            "is_donor": True,
+            "donor_id": donor.get("donor_id"),
+            "full_name": donor.get("full_name"),
+            "message": "You are a registered donor. Please login to access your profile."
+        }
+    
+    # Check for pending/rejected request
+    request = await db.donor_requests.find_one({
+        "identity_type": identity_type,
+        "identity_number": identity_number
+    }, {"_id": 0, "id_proof_image": 0})
+    
+    if request:
+        return {
+            "status": request.get("status"),
+            "is_donor": False,
+            "request_id": request.get("request_id"),
+            "full_name": request.get("full_name"),
+            "rejection_reason": request.get("rejection_reason") if request.get("status") == "rejected" else None,
+            "message": "Pending Approval" if request.get("status") == "pending" else "Registration rejected"
+        }
+    
+    return {
+        "status": "not_found",
+        "is_donor": False,
+        "message": "No registration found. Please register first."
+    }
+
+@api_router.post("/public/donor-login/request-otp")
+async def request_donor_otp(donor_id: Optional[str] = None, identity_type: Optional[str] = None, identity_number: Optional[str] = None, date_of_birth: Optional[str] = None):
+    """Request OTP for donor login (no auth required)"""
+    
+    donor = None
+    
+    # Find donor by donor_id or by identity + DOB
+    if donor_id:
+        donor = await db.donors.find_one({"donor_id": donor_id}, {"_id": 0})
+    elif identity_type and identity_number and date_of_birth:
+        donor = await db.donors.find_one({
+            "identity_type": identity_type,
+            "identity_number": identity_number,
+            "date_of_birth": date_of_birth
+        }, {"_id": 0})
+    
+    if not donor:
+        raise HTTPException(status_code=404, detail="Donor not found. Please check your details or register first.")
+    
+    # Generate OTP
+    otp = generate_otp()
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)
+    
+    # Store OTP
+    otp_record = DonorOTP(
+        donor_id=donor["id"],
+        otp=otp,
+        expires_at=expires_at
+    )
+    
+    doc = otp_record.model_dump()
+    doc['expires_at'] = doc['expires_at'].isoformat()
+    doc['created_at'] = doc['created_at'].isoformat()
+    
+    await db.donor_otps.insert_one(doc)
+    
+    # In production, send OTP via SMS/Email
+    # For now, we'll return it in response (for demo purposes)
+    return {
+        "status": "success",
+        "message": f"OTP sent to registered phone number ending in ***{donor.get('phone', '')[-4:]}",
+        "otp_for_demo": otp,  # Remove in production
+        "donor_id": donor["donor_id"],
+        "expires_in_minutes": 10
+    }
+
+@api_router.post("/public/donor-login/verify-otp")
+async def verify_donor_otp(donor_id: str, otp: str):
+    """Verify OTP and return donor token (no auth required)"""
+    
+    donor = await db.donors.find_one({"donor_id": donor_id}, {"_id": 0})
+    if not donor:
+        raise HTTPException(status_code=404, detail="Donor not found")
+    
+    # Find valid OTP
+    otp_record = await db.donor_otps.find_one({
+        "donor_id": donor["id"],
+        "otp": otp,
+        "used": False
+    }, {"_id": 0})
+    
+    if not otp_record:
+        raise HTTPException(status_code=401, detail="Invalid OTP")
+    
+    # Check expiry
+    expires_at = datetime.fromisoformat(otp_record["expires_at"].replace('Z', '+00:00')) if isinstance(otp_record["expires_at"], str) else otp_record["expires_at"]
+    if expires_at < datetime.now(timezone.utc):
+        raise HTTPException(status_code=401, detail="OTP has expired")
+    
+    # Mark OTP as used
+    await db.donor_otps.update_one(
+        {"id": otp_record["id"]},
+        {"$set": {"used": True}}
+    )
+    
+    # Create donor token
+    token = create_token(donor["id"], "donor")
+    
+    return {
+        "status": "success",
+        "token": token,
+        "donor": {
+            "id": donor["id"],
+            "donor_id": donor["donor_id"],
+            "full_name": donor["full_name"],
+            "blood_group": donor.get("blood_group"),
+            "total_donations": donor.get("total_donations", 0),
+            "status": donor.get("status")
+        }
+    }
+
+@api_router.get("/public/donor-profile")
+async def get_donor_profile(credentials: HTTPAuthorizationCredentials = Depends(security)):
+    """Get donor profile (requires donor token)"""
+    payload = decode_token(credentials.credentials)
+    
+    if payload.get("role") != "donor":
+        raise HTTPException(status_code=403, detail="Donor access required")
+    
+    donor = await db.donors.find_one({"id": payload["user_id"]}, {"_id": 0})
+    if not donor:
+        raise HTTPException(status_code=404, detail="Donor not found")
+    
+    # Get donation history
+    donations = await db.donations.find({"donor_id": donor["id"]}, {"_id": 0}).to_list(100)
+    
+    return {
+        "donor": donor,
+        "donations": donations
+    }
+
+# ==================== STAFF DONOR REQUESTS ROUTES ====================
+@api_router.get("/donor-requests")
+async def get_donor_requests(
+    status: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get donor registration requests (Registration Staff only)"""
+    if current_user["role"] not in ["admin", "registration"]:
+        raise HTTPException(status_code=403, detail="Registration staff access required")
+    
+    query = {}
+    if status:
+        query["status"] = status
+    
+    requests = await db.donor_requests.find(query, {"_id": 0, "id_proof_image": 0}).to_list(1000)
+    return requests
+
+@api_router.get("/donor-requests/{request_id}")
+async def get_donor_request(request_id: str, current_user: dict = Depends(get_current_user)):
+    """Get specific donor request details (Registration Staff only)"""
+    if current_user["role"] not in ["admin", "registration"]:
+        raise HTTPException(status_code=403, detail="Registration staff access required")
+    
+    request = await db.donor_requests.find_one(
+        {"$or": [{"id": request_id}, {"request_id": request_id}]},
+        {"_id": 0}
+    )
+    if not request:
+        raise HTTPException(status_code=404, detail="Request not found")
+    return request
+
+@api_router.post("/donor-requests/{request_id}/check-duplicate")
+async def check_duplicate_donor(request_id: str, current_user: dict = Depends(get_current_user)):
+    """Check if donor already exists (Registration Staff only)"""
+    if current_user["role"] not in ["admin", "registration"]:
+        raise HTTPException(status_code=403, detail="Registration staff access required")
+    
+    request = await db.donor_requests.find_one(
+        {"$or": [{"id": request_id}, {"request_id": request_id}]},
+        {"_id": 0}
+    )
+    if not request:
+        raise HTTPException(status_code=404, detail="Request not found")
+    
+    # Check for existing donor with same identity
+    existing = await db.donors.find_one({
+        "identity_type": request["identity_type"],
+        "identity_number": request["identity_number"]
+    }, {"_id": 0})
+    
+    return {
+        "is_duplicate": existing is not None,
+        "existing_donor": {
+            "donor_id": existing.get("donor_id"),
+            "full_name": existing.get("full_name"),
+            "status": existing.get("status")
+        } if existing else None
+    }
+
+@api_router.post("/donor-requests/{request_id}/approve")
+async def approve_donor_request(request_id: str, current_user: dict = Depends(get_current_user)):
+    """Approve donor registration request (Registration Staff only)"""
+    if current_user["role"] not in ["admin", "registration"]:
+        raise HTTPException(status_code=403, detail="Registration staff access required")
+    
+    request = await db.donor_requests.find_one(
+        {"$or": [{"id": request_id}, {"request_id": request_id}]},
+        {"_id": 0}
+    )
+    if not request:
+        raise HTTPException(status_code=404, detail="Request not found")
+    
+    if request["status"] != "pending":
+        raise HTTPException(status_code=400, detail="Request is not pending")
+    
+    # Check for duplicate
+    existing = await db.donors.find_one({
+        "identity_type": request["identity_type"],
+        "identity_number": request["identity_number"]
+    })
+    if existing:
+        raise HTTPException(status_code=400, detail="Donor with this identity already exists")
+    
+    # Create donor record
+    donor = Donor(
+        full_name=request["full_name"],
+        date_of_birth=request["date_of_birth"],
+        gender=request["gender"],
+        phone=request["phone"],
+        email=request.get("email"),
+        address=request["address"],
+        identity_type=request["identity_type"],
+        identity_number=request["identity_number"],
+        consent_given=request["consent_given"],
+        registration_channel="online",
+        status=DonorStatus.ACTIVE
+    )
+    donor.donor_id = await generate_donor_id()
+    donor.qr_code = generate_qr_base64(donor.donor_id)
+    donor.created_by = current_user["id"]
+    
+    doc = donor.model_dump()
+    doc['created_at'] = doc['created_at'].isoformat()
+    doc['updated_at'] = doc['updated_at'].isoformat()
+    
+    await db.donors.insert_one(doc)
+    
+    # Update request
+    await db.donor_requests.update_one(
+        {"$or": [{"id": request_id}, {"request_id": request_id}]},
+        {"$set": {
+            "status": "approved",
+            "donor_id": donor.donor_id,
+            "reviewed_by": current_user["id"],
+            "reviewed_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {
+        "status": "success",
+        "message": "Donor registration approved",
+        "donor_id": donor.donor_id,
+        "id": donor.id
+    }
+
+@api_router.post("/donor-requests/{request_id}/reject")
+async def reject_donor_request(
+    request_id: str,
+    rejection_reason: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Reject donor registration request (Registration Staff only)"""
+    if current_user["role"] not in ["admin", "registration"]:
+        raise HTTPException(status_code=403, detail="Registration staff access required")
+    
+    if not rejection_reason or not rejection_reason.strip():
+        raise HTTPException(status_code=400, detail="Rejection reason is required")
+    
+    request = await db.donor_requests.find_one(
+        {"$or": [{"id": request_id}, {"request_id": request_id}]},
+        {"_id": 0}
+    )
+    if not request:
+        raise HTTPException(status_code=404, detail="Request not found")
+    
+    if request["status"] != "pending":
+        raise HTTPException(status_code=400, detail="Request is not pending")
+    
+    # Update request
+    await db.donor_requests.update_one(
+        {"$or": [{"id": request_id}, {"request_id": request_id}]},
+        {"$set": {
+            "status": "rejected",
+            "rejection_reason": rejection_reason,
+            "reviewed_by": current_user["id"],
+            "reviewed_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {
+        "status": "success",
+        "message": "Donor registration rejected"
+    }
+
 # ==================== USER MANAGEMENT ROUTES ====================
 @api_router.get("/users", response_model=List[UserResponse])
 async def get_users(current_user: dict = Depends(get_current_user)):
