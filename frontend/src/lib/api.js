@@ -185,6 +185,14 @@ export const dashboardAPI = {
   getStats: () => api.get('/dashboard/stats'),
 };
 
+// Alerts APIs
+export const alertsAPI = {
+  getSummary: () => api.get('/alerts/summary'),
+  getExpiringItems: (params) => api.get('/alerts/expiring-items', { params }),
+  getLowStock: (params) => api.get('/alerts/low-stock', { params }),
+  getUrgentRequests: () => api.get('/alerts/urgent-requests'),
+};
+
 // Utility APIs
 export const utilityAPI = {
   getBarcode: (data) => api.get(`/barcode/${data}`),
