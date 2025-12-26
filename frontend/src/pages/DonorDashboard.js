@@ -31,8 +31,12 @@ export default function DonorDashboard() {
       setProfile(response.data.donor);
       setDonations(response.data.donations || []);
     } catch (error) {
-      toast.error('Failed to load profile');
-      handleLogout();
+      console.error('Profile load error:', error);
+      // Clear invalid token and redirect
+      localStorage.removeItem('donor_token');
+      localStorage.removeItem('donor_info');
+      toast.error('Session expired. Please login again.');
+      navigate('/donor');
     } finally {
       setLoading(false);
     }
