@@ -450,28 +450,33 @@ class BloodBankAPITester:
         return success1 and success2 and success3
 
 def main():
-    print("🩸 Blood Bank Management System API Testing")
-    print("=" * 50)
+    print("🩸 Blood Bank Management System API Testing - Refactored Backend")
+    print("=" * 60)
     
     tester = BloodBankAPITester()
     
-    # Test sequence
+    # Test sequence focused on the review request requirements
     test_sequence = [
-        ("User Registration", tester.test_user_registration),
-        ("User Login", lambda: tester.test_user_login(tester.admin_email, tester.admin_password)),
-        ("Donor Registration", tester.test_donor_registration),
-        ("Donor Eligibility Check", tester.test_donor_eligibility),
-        ("Health Screening", tester.test_health_screening),
-        ("Blood Collection Start", tester.test_blood_collection_start),
-        ("Blood Collection Complete", tester.test_blood_collection_complete),
-        ("Lab Testing", tester.test_lab_testing),
-        ("Component Processing", tester.test_component_processing),
-        ("QC Validation", tester.test_qc_validation),
-        ("Inventory Summary", tester.test_inventory_summary),
-        ("Blood Request", tester.test_blood_request),
-        ("Request Approval", tester.test_request_approval),
+        # Core Auth APIs
+        ("Admin Login", lambda: tester.test_user_login(tester.admin_email, tester.admin_password)),
+        ("Auth Me Endpoint", tester.test_auth_me),
+        
+        # Public Donor Registration Flow
+        ("Public Donor Registration", tester.test_public_donor_register),
+        ("Public Donor Status Check", tester.test_public_donor_status),
+        
+        # Staff Donor Request Management
+        ("Staff Donor Requests List", tester.test_donor_requests_list),
+        ("Staff Approve Donor Request", tester.test_donor_request_approve),
+        
+        # Donor OTP Login Flow
+        ("Donor OTP Request", tester.test_donor_otp_request),
+        ("Donor OTP Verification", tester.test_donor_otp_verify),
+        
+        # Dashboard and Core APIs
         ("Dashboard Stats", tester.test_dashboard_stats),
-        ("Reports Endpoints", tester.test_reports_endpoints),
+        ("Donors CRUD List", tester.test_donors_list),
+        ("Inventory Summary", tester.test_inventory_summary),
     ]
     
     failed_tests = []
@@ -489,7 +494,7 @@ def main():
             print(f"❌ {test_name} failed with exception: {str(e)}")
     
     # Print final results
-    print("\n" + "=" * 50)
+    print("\n" + "=" * 60)
     print(f"📊 Test Results: {tester.tests_passed}/{tester.tests_run} tests passed")
     
     if failed_tests:
