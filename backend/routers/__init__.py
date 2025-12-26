@@ -13,3 +13,4 @@ from .requests import router as requests_router, issuance_router
 from .disposition import return_router, discard_router
 from .reports import router as reports_router
 from .dashboard import router as dashboard_router
+from .alerts import router as alerts_router
