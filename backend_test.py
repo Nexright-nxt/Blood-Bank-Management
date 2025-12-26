@@ -611,6 +611,18 @@ def main():
         ("Dashboard Stats", tester.test_dashboard_stats),
         ("Donors CRUD List", tester.test_donors_list),
         ("Inventory Summary", tester.test_inventory_summary),
+        
+        # Phase 3 Features - Alerts System
+        ("Alerts System APIs", tester.test_alerts_endpoints),
+        
+        # Phase 3 Features - Enhanced Reports
+        ("Enhanced Reports APIs", tester.test_reports_endpoints),
+        
+        # Phase 3 Features - Returns Management
+        ("Returns Management APIs", tester.test_returns_endpoints),
+        
+        # Phase 3 Features - Discards Management
+        ("Discards Management APIs", tester.test_discards_endpoints),
     ]
     
     failed_tests = []
