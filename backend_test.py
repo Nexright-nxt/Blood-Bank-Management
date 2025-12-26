@@ -584,7 +584,7 @@ class BloodBankAPITester:
         return success1 and success2
 
 def main():
-    print("🩸 Blood Bank Management System API Testing - Refactored Backend")
+    print("🩸 Blood Bank Management System API Testing - Phase 3 Features")
     print("=" * 60)
     
     tester = BloodBankAPITester()
