@@ -12,7 +12,18 @@ from services import hash_password, verify_password, create_token, get_current_u
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 @router.post("/register", response_model=UserResponse)
-async def register(user_data: UserCreate):
+async def register(user_data: UserCreate, current_user: dict = Depends(get_current_user)):
+    """
+    Register a new staff user. ADMIN ONLY.
+    Staff accounts can only be created by administrators.
+    """
+    # Only admins can create new users
+    if current_user["role"] != "admin":
+        raise HTTPException(
+            status_code=403, 
+            detail="Only administrators can create staff accounts"
+        )
+    
     existing = await db.users.find_one({"email": user_data.email})
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
