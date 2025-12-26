@@ -255,7 +255,7 @@ export default function Dashboard() {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-8 gap-4">
             {Object.keys(BLOOD_GROUP_COLORS).map((group) => {
-              const data = inventory?.whole_blood?.find(i => i._id === group);
+              const data = inventory?.[group];
               return (
                 <div 
                   key={group}
@@ -267,7 +267,7 @@ export default function Dashboard() {
                   >
                     {group}
                   </span>
-                  <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{data?.count || 0}</p>
+                  <p className="mt-2 text-2xl font-bold text-slate-900 dark:text-white">{data?.whole_blood_units || 0}</p>
                   <p className="text-xs text-slate-500">units</p>
                 </div>
               );
