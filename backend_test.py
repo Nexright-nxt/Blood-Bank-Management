@@ -141,10 +141,13 @@ class BloodBankAPITester:
             f"donor-requests/{self.donor_request_id}/approve",
             200
         )
-        if success and 'donor_id' in response:
-            self.approved_donor_id = response['donor_id']  # Store the public donor ID
-            self.donor_id = response['donor_internal_id']  # Use internal ID for further tests
-            return True
+        if success:
+            print(f"   Approval response: {response}")
+            if 'donor_id' in response:
+                self.approved_donor_id = response['donor_id']  # Store the public donor ID
+                self.donor_id = response['donor_internal_id']  # Use internal ID for further tests
+                print(f"   Approved donor ID: {self.approved_donor_id}")
+                return True
         return False
 
     def test_donor_otp_request(self):
