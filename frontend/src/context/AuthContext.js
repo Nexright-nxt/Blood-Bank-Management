@@ -44,6 +44,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const register = async (userData) => {
+    // This requires admin authentication - token must be set
     const response = await axios.post(`${API_URL}/auth/register`, userData);
     return response.data;
   };
