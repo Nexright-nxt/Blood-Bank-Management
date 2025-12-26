@@ -2489,6 +2489,24 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.on_event("startup")
+async def create_default_admin():
+    """Create default admin user if none exists"""
+    admin_exists = await db.users.find_one({"email": "admin@bloodbank.com"})
+    if not admin_exists:
+        admin_user = {
+            "id": str(uuid.uuid4()),
+            "email": "admin@bloodbank.com",
+            "password_hash": hash_password("adminpassword"),
+            "full_name": "Admin User",
+            "role": "admin",
+            "is_active": True,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.users.insert_one(admin_user)
+        logger.info("Default admin user created: admin@bloodbank.com")
+
 @app.on_event("shutdown")
 async def shutdown_db_client():
     client.close()
