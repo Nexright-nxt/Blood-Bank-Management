@@ -1,113 +1,38 @@
 ---
 
 backend:
-  - task: "Enhanced Inventory - Dashboard Views"
+  - task: "Component-Unit Relationship API"
     implemented: true
-    working: true
-    file: "/app/backend/routers/inventory_enhanced.py"
+    working: "needs_testing"
+    file: "/app/backend/routers/relationships.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "✅ All 5 dashboard views working correctly: (1) By Storage - shows 1 storage location with occupancy stats, (2) By Blood Group - displays all 8 blood groups with item counts (71 total items), (3) By Component Type - shows 6 component types including whole blood, (4) By Expiry - FEFO sorting with 5 categories (27 expired, 2 critical, 1 warning), (5) By Status - shows items grouped by status (60 ready, 11 reserved, 11 quarantine). All required fields present in responses."
-
-  - task: "Enhanced Inventory - Move/Transfer API"
-    implemented: true
-    working: true
-    file: "/app/backend/routers/inventory_enhanced.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "✅ Move/Transfer API endpoints working correctly: (1) POST /move - validates temperature compatibility and capacity, (2) GET /move/validate - properly validates storage existence and capacity constraints, (3) Temperature compatibility checks implemented for all component types, (4) Chain of custody logging functional. Endpoints correctly handle validation errors with appropriate error messages."
-
-  - task: "Enhanced Inventory - Reserve System API"
-    implemented: true
-    working: true
-    file: "/app/backend/routers/inventory_enhanced.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "✅ Reserve System API fully functional: (1) POST /reserve - successfully reserves items with validation, (2) GET /reserved - shows 11 currently reserved items, (3) POST /reserve/{id}/release - releases reservations correctly, (4) POST /reserve/auto-release - auto-releases expired reservations (0 expired found), (5) Proper validation of item existence and status, (6) Chain of custody logging for all reservation activities."
-
-  - task: "Enhanced Inventory - Reports API"
-    implemented: true
-    working: true
-    file: "/app/backend/routers/inventory_enhanced.py"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "✅ All 4 Reports API endpoints working perfectly: (1) Stock Report - shows 71 total items (27 units, 44 components) with breakdown by blood group, component type, and storage, (2) Expiry Analysis - identifies 27 expired items, 3 expiring in 3 days with proper categorization, (3) Storage Utilization - shows 0% overall utilization with capacity alerts, (4) Movement Report - tracks chain of custody movements. All reports have proper structure and required fields."
+    needs_retesting: true
 
 frontend:
-  - task: "Enhanced Inventory Page - Multi-View Dashboard"
+  - task: "Component Relationship View Component"
     implemented: true
-    working: true
-    file: "/app/frontend/src/pages/InventoryEnhanced.js"
+    working: "needs_testing"
+    file: "/app/frontend/src/components/ComponentRelationshipView.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "✅ Multi-View Dashboard working correctly: (1) Default 'By Storage' view shows storage cards with occupancy bars and quick stats (Test Freezer Unit with 0/100 occupancy), (2) View dropdown functional with all 5 view modes available (By Storage, By Blood Group, By Component Type, By Expiry FEFO, By Status), (3) Storage card displays proper occupancy percentage, units/components counts, and expiring items count, (4) Grid/List view toggle buttons present and functional."
+    needs_retesting: true
 
-  - task: "Enhanced Inventory Page - Search & Locate"
+  - task: "Barcode Scanner Component"
     implemented: true
-    working: true
-    file: "/app/frontend/src/pages/InventoryEnhanced.js"
+    working: "needs_testing"
+    file: "/app/frontend/src/components/BarcodeScanner.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "✅ Search & Locate functionality working: (1) Search input field present with placeholder 'Search by Unit ID, Barcode, Donor ID...', (2) Quick search executes successfully when entering 'BU-2025' and pressing Enter, (3) Search input accepts text input and responds to Enter key, (4) Advanced search button available for more complex searches."
+    needs_retesting: true
 
-  - task: "Enhanced Inventory Page - Reports Dialog"
+  - task: "Drag-Drop Storage Transfer"
     implemented: true
-    working: true
-  - task: "Enhanced Inventory Page - Reserved Items Dialog"
-    implemented: true
-    working: true
+    working: "needs_testing"
     file: "/app/frontend/src/pages/InventoryEnhanced.js"
     stuck_count: 0
     priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "✅ Reserved Items Dialog working perfectly: (1) Reserved button opens 'Reserved Items' dialog successfully, (2) Table displays all required columns (ID, Type, Blood Group, Reserved For, Time Remaining, Actions), (3) Shows 7 reserved items with proper data (COMP-2025-000001 Prc O+, COMP-2025-000003 Plasma O+, etc.), (4) Time remaining shows 'h' format, (5) Release buttons available for each item, (6) Dialog closes properly with Escape key."
-
-  - task: "Enhanced Inventory Page - Bulk Selection"
-    implemented: true
-    working: "partial"
-    file: "/app/frontend/src/pages/InventoryEnhanced.js"
-    stuck_count: 0
-    priority: "medium"
-    needs_retesting: false
-    status_history:
-      - working: "partial"
-        agent: "testing"
-        comment: "Minor: Bulk selection checkboxes not visible in current Storage view. This is expected behavior as Storage view shows storage cards rather than item tables. Bulk selection would be available in other views like Expiry (FEFO) view where individual items are displayed in table format. Core functionality is implemented but not testable in current view mode."
-    file: "/app/frontend/src/pages/InventoryEnhanced.js"
-    stuck_count: 0
-    priority: "high"
-    needs_retesting: false
-    status_history:
-      - working: true
-        agent: "testing"
-        comment: "✅ Reports Dialog fully functional: (1) Reports button opens 'Inventory Reports' dialog successfully, (2) Current Stock tab shows summary cards (27 Blood Units, 44 Components, 71 Total Items), (3) Blood group breakdown displayed correctly (O-: 4 units, A+: 1 unit, AB-: 5 units, O+: 6 units, B-: 6 units, AB+: 5 units), (4) Multiple tabs available (Current Stock, Movement, Expiry Analysis, Utilization), (5) Dialog closes properly with Escape key, (6) Export Report button available."
+    needs_retesting: true
 
 metadata:
   created_by: "main_agent"
@@ -117,24 +42,16 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Enhanced Inventory Dashboard Views"
-    - "Move/Transfer functionality"
-    - "Reserve System"
-    - "Reports"
-    - "Search and Locate"
+    - "Component-Unit Relationship View"
+    - "Barcode Scanner"
+    - "Drag-Drop functionality"
   stuck_tasks: []
   test_all: true
   test_priority: "high_first"
 
 agent_communication:
   - agent: "main"
-    message: "Enhanced Inventory Management System has been implemented with: (1) 5 view modes (By Storage, By Blood Group, By Component Type, By Expiry/FEFO, By Status), (2) Storage cards with occupancy bars and quick stats, (3) Move/Transfer dialogs with temperature compatibility validation, (4) Reserve system with auto-release, (5) 4 comprehensive reports (Stock, Movement, Expiry Analysis, Utilization), (6) Quick search and locate with highlighted results, (7) Bulk actions (move, reserve, print labels), (8) Audit trail per item."
-  
-  - agent: "testing"
-    message: "✅ BACKEND TESTING COMPLETE: All Enhanced Inventory Management System APIs are working perfectly. Tested 17 endpoints across 4 main categories: (1) Dashboard Views - all 5 views functional with real data (71 items total), (2) Search & Locate - finding items correctly, (3) Reports - all 4 reports generating proper data, (4) Reserve System - full reservation lifecycle working. All endpoints return proper response structures and handle validation correctly. Ready for frontend testing."
-
-  - agent: "testing"
-    message: "✅ FRONTEND TESTING COMPLETE: Enhanced Inventory Management UI is working excellently. Successfully tested: (1) Multi-View Dashboard - all view modes functional with proper data display, (2) Search & Locate - quick search working with BU-2025 test, (3) Reports Dialog - all tabs working with real data (27 blood units, 44 components, 71 total items), (4) Reserved Items Dialog - showing 7 reserved items with proper table structure, (5) View switching between Storage/Blood Group/Expiry/Status modes. Only minor issue: bulk selection not visible in Storage view (expected behavior). All core functionality working as designed."
+    message: "Implemented Component-Unit Relationship View showing visual tree of parent blood unit and derived components. Added Barcode Scanner with html5-qrcode library supporting single and bulk scan modes. Added drag-drop functionality using @dnd-kit library for moving items between storage locations. The Relationship View is accessible from search results and storage contents table via a GitBranch icon button."
 
 test_credentials:
   admin:
