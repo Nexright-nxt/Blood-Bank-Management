@@ -11,16 +11,49 @@ from services import get_current_user, generate_request_id, generate_issue_id
 
 router = APIRouter(prefix="/requests", tags=["Blood Requests"])
 
+def calculate_priority_score(urgency: str, required_by_date: str = None, required_by_time: str = None) -> int:
+    """Calculate priority score based on urgency and timing"""
+    base_scores = {"emergency": 100, "urgent": 70, "normal": 30}
+    score = base_scores.get(urgency, 30)
+    
+    if required_by_date:
+        try:
+            required = datetime.strptime(required_by_date, "%Y-%m-%d")
+            now = datetime.now()
+            days_until = (required - now).days
+            
+            if days_until <= 0:
+                score += 50  # Overdue or same day
+            elif days_until == 1:
+                score += 30  # Tomorrow
+            elif days_until <= 3:
+                score += 15  # Within 3 days
+        except:
+            pass
+    
+    return min(score, 150)  # Cap at 150
+
 @router.post("")
 async def create_blood_request(request_data: BloodRequestCreate, current_user: dict = Depends(get_current_user)):
-    request = BloodRequest(**request_data.model_dump())
+    request = BloodRequest(**request_data.model_dump(exclude={'additional_items'}))
     request.request_id = await generate_request_id()
+    
+    # Calculate priority score
+    request.priority_score = calculate_priority_score(
+        request_data.urgency,
+        request_data.required_by_date,
+        request_data.required_by_time
+    )
     
     doc = request.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
     
+    # Handle additional items for multi-component requests
+    if request_data.additional_items:
+        doc['additional_items'] = [item.model_dump() for item in request_data.additional_items]
+    
     await db.blood_requests.insert_one(doc)
-    return {"status": "success", "request_id": request.request_id, "id": request.id}
+    return {"status": "success", "request_id": request.request_id, "id": request.id, "priority_score": request.priority_score}
 
 @router.get("")
 async def get_blood_requests(
