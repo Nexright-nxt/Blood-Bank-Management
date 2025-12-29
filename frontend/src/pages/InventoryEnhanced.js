@@ -1321,6 +1321,275 @@ export default function InventoryEnhanced() {
         </DialogContent>
       </Dialog>
 
+      {/* Advanced Search Dialog */}
+      <Dialog open={showSearchDialog} onOpenChange={setShowSearchDialog}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Filter className="w-5 h-5 text-teal-600" />
+              Advanced Search & Filters
+            </DialogTitle>
+            <DialogDescription>
+              Filter inventory by blood group, component type, status, and expiry date
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-6">
+            {/* Blood Group Filter */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Blood Group</Label>
+              <div className="flex flex-wrap gap-2">
+                {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => (
+                  <Button
+                    key={bg}
+                    variant={advancedFilters.blood_groups.includes(bg) ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => toggleFilterSelection('blood_groups', bg)}
+                    className={advancedFilters.blood_groups.includes(bg) ? 'bg-red-600 hover:bg-red-700' : ''}
+                  >
+                    {bg}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Component Type Filter */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Component Type</Label>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { id: 'whole_blood', label: 'Whole Blood' },
+                  { id: 'prc', label: 'PRC' },
+                  { id: 'plasma', label: 'Plasma' },
+                  { id: 'ffp', label: 'FFP' },
+                  { id: 'platelets', label: 'Platelets' },
+                  { id: 'cryoprecipitate', label: 'Cryoprecipitate' },
+                ].map(ct => (
+                  <Button
+                    key={ct.id}
+                    variant={advancedFilters.component_types.includes(ct.id) ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => toggleFilterSelection('component_types', ct.id)}
+                    className={advancedFilters.component_types.includes(ct.id) ? 'bg-teal-600 hover:bg-teal-700' : ''}
+                  >
+                    {ct.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Status Filter */}
+            <div className="space-y-2">
+              <Label className="text-sm font-medium">Status</Label>
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { id: 'ready_to_use', label: 'Ready to Use', color: 'emerald' },
+                  { id: 'reserved', label: 'Reserved', color: 'cyan' },
+                  { id: 'quarantine', label: 'Quarantine', color: 'red' },
+                  { id: 'processing', label: 'Processing', color: 'amber' },
+                ].map(st => (
+                  <Button
+                    key={st.id}
+                    variant={advancedFilters.statuses.includes(st.id) ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => toggleFilterSelection('statuses', st.id)}
+                    className={advancedFilters.statuses.includes(st.id) ? `bg-${st.color}-600 hover:bg-${st.color}-700` : ''}
+                  >
+                    {st.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+
+            {/* Expiry Date Range */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Expiry From</Label>
+                <Input
+                  type="date"
+                  value={advancedFilters.expiry_from}
+                  onChange={(e) => setAdvancedFilters(f => ({ ...f, expiry_from: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Expiry To</Label>
+                <Input
+                  type="date"
+                  value={advancedFilters.expiry_to}
+                  onChange={(e) => setAdvancedFilters(f => ({ ...f, expiry_to: e.target.value }))}
+                />
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex gap-2 pt-4 border-t">
+              <Button variant="outline" onClick={handleClearFilters}>
+                Clear All
+              </Button>
+              <Button onClick={handleAdvancedSearch} disabled={advancedSearchLoading} className="bg-teal-600 hover:bg-teal-700">
+                {advancedSearchLoading && <RefreshCw className="w-4 h-4 mr-2 animate-spin" />}
+                <Search className="w-4 h-4 mr-2" />
+                Search
+              </Button>
+            </div>
+
+            {/* Search Results */}
+            {searchResults && (
+              <div className="space-y-4 pt-4 border-t">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-medium">Results: {searchResults.total} items found</h3>
+                </div>
+                
+                <ScrollArea className="h-[300px]">
+                  <Table className="table-dense">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Blood Group</TableHead>
+                        <TableHead>Volume</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Location</TableHead>
+                        <TableHead>Expiry</TableHead>
+                        <TableHead className="text-right">Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {searchResults.items?.map((item) => (
+                        <TableRow 
+                          key={item.item_id} 
+                          className="cursor-pointer hover:bg-slate-50"
+                          onClick={() => handleViewItemDetail(item)}
+                        >
+                          <TableCell className="font-mono text-xs">{item.item_id}</TableCell>
+                          <TableCell className="capitalize">{item.component_type?.replace('_', ' ')}</TableCell>
+                          <TableCell>
+                            <span className="blood-group-badge">{item.blood_group || '-'}</span>
+                          </TableCell>
+                          <TableCell>{item.volume} mL</TableCell>
+                          <TableCell>
+                            <Badge className={STATUS_COLORS[item.status] || 'bg-slate-100'}>
+                              {item.status?.replace('_', ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-xs">{item.storage_location || '-'}</TableCell>
+                          <TableCell>
+                            <span className={`px-2 py-0.5 rounded text-xs ${getExpiryColor(item.days_remaining)}`}>
+                              {item.days_remaining !== null ? `${item.days_remaining}d` : '-'}
+                            </span>
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); handleViewItemDetail(item); }}>
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Item Detail Dialog */}
+      <Dialog open={showItemDetailDialog} onOpenChange={setShowItemDetailDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Package className="w-5 h-5 text-teal-600" />
+              Item Details
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedItem && (
+            <div className="space-y-4">
+              {/* Item Info Card */}
+              <Card>
+                <CardContent className="pt-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-lg font-bold">{selectedItem.item_id || selectedItem.unit_id || selectedItem.component_id}</span>
+                    <Badge className={STATUS_COLORS[selectedItem.status] || 'bg-slate-100'}>
+                      {selectedItem.status?.replace('_', ' ')}
+                    </Badge>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="text-slate-500">Type:</span>
+                      <p className="font-medium capitalize">{selectedItem.component_type?.replace('_', ' ')}</p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">Blood Group:</span>
+                      <p><span className="blood-group-badge">{selectedItem.blood_group || selectedItem.confirmed_blood_group || '-'}</span></p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">Volume:</span>
+                      <p className="font-medium">{selectedItem.volume} mL</p>
+                    </div>
+                    <div>
+                      <span className="text-slate-500">Expiry:</span>
+                      <p className={`font-medium ${getExpiryColor(selectedItem.days_remaining)}`}>
+                        {selectedItem.expiry_date} ({selectedItem.days_remaining}d)
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {/* Storage Location */}
+                  <div className="pt-3 border-t">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-slate-500 text-sm">Storage Location:</span>
+                        <p className="font-medium flex items-center gap-2">
+                          <MapPin className="w-4 h-4 text-teal-600" />
+                          {selectedItem.storage_location || 'Not assigned'}
+                        </p>
+                      </div>
+                      {(selectedItem.storage_location_id || selectedItem.storage_location) && (
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleNavigateToStorage(selectedItem.storage_location_id || selectedItem.storage_location)}
+                        >
+                          <ChevronRight className="w-4 h-4 mr-1" />
+                          Go to Storage
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              
+              {/* Action Buttons */}
+              <div className="flex flex-wrap gap-2">
+                <Button variant="outline" size="sm" onClick={() => { setSelectedItems([selectedItem]); openMoveDialog(); setShowItemDetailDialog(false); }}>
+                  <ArrowRightLeft className="w-4 h-4 mr-1" />
+                  Move
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => { setSelectedItems([selectedItem]); openReserveDialog(); setShowItemDetailDialog(false); }} disabled={selectedItem.status !== 'ready_to_use'}>
+                  <BookmarkPlus className="w-4 h-4 mr-1" />
+                  Reserve
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handlePrintLabel(selectedItem)}>
+                  <Printer className="w-4 h-4 mr-1" />
+                  Print Label
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleViewRelationship(selectedItem)}>
+                  <GitBranch className="w-4 h-4 mr-1" />
+                  Relationships
+                </Button>
+                <Button variant="outline" size="sm" onClick={() => handleViewAudit(selectedItem.id || selectedItem.unit_id || selectedItem.component_id)}>
+                  <History className="w-4 h-4 mr-1" />
+                  Audit Trail
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
       {/* Label Print Dialog */}
       <LabelPrintDialog 
         open={showLabelDialog}
