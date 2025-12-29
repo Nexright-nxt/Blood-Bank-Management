@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { inventoryEnhancedAPI, labelAPI, requestAPI } from '../lib/api';
+import { inventoryEnhancedAPI, labelAPI, requestAPI, relationshipAPI } from '../lib/api';
 import { toast } from 'sonner';
 import { 
   Package, Thermometer, Clock, AlertTriangle, Printer, RefreshCw, 
   Search, Grid3X3, List, MapPin, Droplet, Layers, Activity, 
   ArrowRightLeft, BookmarkPlus, FileText, History, ScanLine,
-  ChevronRight, X, Check, Filter, Download, Eye
+  ChevronRight, X, Check, Filter, Download, Eye, GitBranch, GripVertical
 } from 'lucide-react';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragOverlay } from '@dnd-kit/core';
+import { useDraggable, useDroppable } from '@dnd-kit/core';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -22,6 +24,8 @@ import { Progress } from '../components/ui/progress';
 import { ScrollArea } from '../components/ui/scroll-area';
 import LabelPrintDialog from '../components/LabelPrintDialog';
 import BulkLabelPrintDialog from '../components/BulkLabelPrintDialog';
+import BarcodeScanner from '../components/BarcodeScanner';
+import ComponentRelationshipView from '../components/ComponentRelationshipView';
 
 // View mode constants
 const VIEW_MODES = {
