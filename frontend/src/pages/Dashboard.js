@@ -211,32 +211,46 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Alert Cards */}
+      {/* Alert Cards - Clickable */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card className="border-l-4 border-l-amber-500" data-testid="alert-expiring">
+        <Card 
+          className="border-l-4 border-l-amber-500 cursor-pointer hover:shadow-lg transition-shadow" 
+          data-testid="alert-expiring"
+          onClick={() => navigate('/inventory')}
+        >
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
                 <Clock className="w-5 h-5 text-amber-600" />
               </div>
-              <div>
+              <div className="flex-1">
                 <p className="font-semibold text-slate-900 dark:text-white">Expiring Soon</p>
                 <p className="text-sm text-slate-500">{stats?.expiring_soon || 0} units expiring within 7 days</p>
               </div>
+              {stats?.expiring_soon > 0 && (
+                <Badge className="bg-amber-100 text-amber-700">Action Required</Badge>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-l-4 border-l-red-500" data-testid="alert-quarantine">
+        <Card 
+          className="border-l-4 border-l-red-500 cursor-pointer hover:shadow-lg transition-shadow" 
+          data-testid="alert-quarantine"
+          onClick={() => navigate('/inventory')}
+        >
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5 text-red-600" />
               </div>
-              <div>
+              <div className="flex-1">
                 <p className="font-semibold text-slate-900 dark:text-white">In Quarantine</p>
                 <p className="text-sm text-slate-500">{stats?.quarantine_count || 0} units currently quarantined</p>
               </div>
+              {stats?.quarantine_count > 0 && (
+                <Badge className="bg-red-100 text-red-700">Review Needed</Badge>
+              )}
             </div>
           </CardContent>
         </Card>
