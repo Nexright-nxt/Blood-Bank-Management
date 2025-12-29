@@ -3,11 +3,15 @@
 backend:
   - task: "Component-Unit Relationship API"
     implemented: true
-    working: "needs_testing"
+    working: true
     file: "/app/backend/routers/relationships.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "All relationship APIs tested successfully. GET /api/relationships/unit/{unit_id} returns proper parent_unit object, components array, and summary with total_components, volumes, and status counts. GET /api/relationships/component/{component_id} returns full parent-component relationship tree with current_component_id highlighted. GET /api/relationships/tree/{item_id} auto-detects item type correctly and returns appropriate relationship tree. All endpoints handle non-existent IDs properly with 404 responses. Tested with real data including BU-2025-000001 unit. Response structures match API specifications exactly."
 
 frontend:
   - task: "Component Relationship View Component"
