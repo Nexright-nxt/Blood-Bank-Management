@@ -84,6 +84,8 @@ export const screeningAPI = {
   create: (data) => api.post('/screenings', data),
   getAll: (params) => api.get('/screenings', { params }),
   getById: (id) => api.get(`/screenings/${id}`),
+  getPendingDonors: () => api.get('/screenings/pending/donors'),
+  getTodaySummary: () => api.get('/screenings/today/summary'),
 };
 
 // Donation APIs
