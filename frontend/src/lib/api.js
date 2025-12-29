@@ -193,6 +193,12 @@ export const reportAPI = {
   expiryAnalysis: () => api.get('/reports/expiry-analysis'),
   discardAnalysis: (params) => api.get('/reports/discard-analysis', { params }),
   testingOutcomes: (params) => api.get('/reports/testing-outcomes', { params }),
+  // Export endpoints
+  exportDonors: (params) => api.get('/reports/export/donors', { params, responseType: 'blob' }),
+  exportInventory: (params) => api.get('/reports/export/inventory', { params, responseType: 'blob' }),
+  exportDonations: (params) => api.get('/reports/export/donations', { params, responseType: 'blob' }),
+  exportDiscards: (params) => api.get('/reports/export/discards', { params, responseType: 'blob' }),
+  exportRequests: (params) => api.get('/reports/export/requests', { params, responseType: 'blob' }),
 };
 
 // Dashboard APIs
