@@ -676,31 +676,45 @@ export default function InventoryEnhanced() {
 
         {/* Quick Search Result */}
         {quickSearchResult && quickSearchResult.found && (
-          <div className="mt-4 p-4 bg-teal-50 border border-teal-200 rounded-lg flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <MapPin className="w-6 h-6 text-teal-600" />
-              <div>
-                <p className="font-medium text-teal-800">{quickSearchResult.location?.display}</p>
-                <p className="text-sm text-teal-600">
-                  {quickSearchResult.item_type === 'unit' ? 'Blood Unit' : 'Component'}: {quickSearchResult.item?.unit_id || quickSearchResult.item?.component_id}
-                </p>
+          <div className="mt-4 p-4 bg-teal-50 border border-teal-200 rounded-lg">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <MapPin className="w-6 h-6 text-teal-600" />
+                <div>
+                  <p className="font-medium text-teal-800">{quickSearchResult.location?.display}</p>
+                  <p className="text-sm text-teal-600">
+                    {quickSearchResult.item_type === 'unit' ? 'Blood Unit' : 'Component'}: {quickSearchResult.item?.unit_id || quickSearchResult.item?.component_id}
+                  </p>
+                </div>
               </div>
+              <Button size="sm" variant="ghost" onClick={() => setQuickSearchResult(null)}>
+                <X className="w-4 h-4" />
+              </Button>
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 mt-3 pt-3 border-t border-teal-200">
+              <Button 
+                size="sm" 
+                className="bg-teal-600 hover:bg-teal-700"
+                onClick={() => handleViewItemDetail(quickSearchResult.item)}
+              >
+                <Eye className="w-4 h-4 mr-1" />
+                View Details
+              </Button>
+              <Button 
+                size="sm" 
+                variant="outline" 
+                onClick={() => handleNavigateToStorage(quickSearchResult.location?.storage_id || quickSearchResult.item?.storage_location_id)}
+              >
+                <ChevronRight className="w-4 h-4 mr-1" />
+                Go to Storage
+              </Button>
               <Button size="sm" variant="outline" onClick={() => handleViewRelationship(quickSearchResult.item)}>
                 <GitBranch className="w-4 h-4 mr-1" />
                 Relationships
               </Button>
-              <Button size="sm" variant="outline" onClick={() => handleViewAudit(quickSearchResult.item?.id)}>
-                <History className="w-4 h-4 mr-1" />
-                Audit Trail
-              </Button>
               <Button size="sm" variant="outline" onClick={() => handlePrintLabel(quickSearchResult.item)}>
                 <Printer className="w-4 h-4 mr-1" />
                 Print Label
-              </Button>
-              <Button size="sm" variant="ghost" onClick={() => setQuickSearchResult(null)}>
-                <X className="w-4 h-4" />
               </Button>
             </div>
           </div>
