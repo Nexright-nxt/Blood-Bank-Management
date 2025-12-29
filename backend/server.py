@@ -18,7 +18,8 @@ from routers import (
     components_router, quarantine_router, qc_validation_router, inventory_router,
     requests_router, issuance_router, return_router, discard_router,
     reports_router, dashboard_router, alerts_router,
-    storage_router, pre_lab_qc_router, notifications_router
+    storage_router, pre_lab_qc_router, notifications_router,
+    logistics_router
 )
 
 # Configure logging
