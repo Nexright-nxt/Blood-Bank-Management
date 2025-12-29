@@ -1168,25 +1168,28 @@ class BloodBankAPITester:
         return success1 and success2 and success3 and success4
 
 def main():
-    print("🩸 Blood Bank Management System API Testing - Phase 1 Features")
+    print("🩸 Blood Bank Management System API Testing - Phase 2 Features")
     print("=" * 60)
     
     tester = BloodBankAPITester()
     
-    # Test sequence focused on Phase 1 features from the review request
+    # Test sequence focused on Phase 2 features from the review request
     test_sequence = [
         # Core Auth APIs
         ("Admin Login", lambda: tester.test_user_login(tester.admin_email, tester.admin_password)),
         ("Auth Me Endpoint", tester.test_auth_me),
         
-        # Phase 1 Features - Storage Management APIs
-        ("Storage Management APIs", tester.test_storage_management_apis),
+        # Phase 2 Features - Logistics APIs
+        ("Logistics APIs", tester.test_logistics_apis),
         
-        # Phase 1 Features - Pre-Lab QC APIs
-        ("Pre-Lab QC APIs", tester.test_pre_lab_qc_apis),
+        # Phase 2 Features - Enhanced Returns APIs
+        ("Enhanced Returns APIs", tester.test_enhanced_returns_apis),
         
-        # Phase 1 Features - Notifications APIs
-        ("Notifications APIs", tester.test_notifications_apis),
+        # Phase 2 Features - Enhanced Discards APIs
+        ("Enhanced Discards APIs", tester.test_enhanced_discards_apis),
+        
+        # Phase 2 Features - Enhanced Requests APIs
+        ("Enhanced Requests APIs", tester.test_enhanced_requests_apis),
         
         # Additional Core APIs for context
         ("Dashboard Stats", tester.test_dashboard_stats),
