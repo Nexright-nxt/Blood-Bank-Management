@@ -57,6 +57,8 @@ async def create_screening(screening_data: ScreeningCreate, current_user: dict =
 async def get_screenings(
     donor_id: Optional[str] = None,
     date: Optional[str] = None,
+    status: Optional[str] = None,
+    limit: int = 100,
     current_user: dict = Depends(get_current_user)
 ):
     query = {}
@@ -64,9 +66,81 @@ async def get_screenings(
         query["donor_id"] = donor_id
     if date:
         query["screening_date"] = date
+    if status:
+        query["eligibility_status"] = status
     
-    screenings = await db.screenings.find(query, {"_id": 0}).to_list(1000)
+    screenings = await db.screenings.find(query, {"_id": 0}).sort("created_at", -1).to_list(limit)
+    
+    # Enrich with donor info
+    for screening in screenings:
+        donor = await db.donors.find_one({"id": screening.get("donor_id")}, {"_id": 0, "full_name": 1, "donor_id": 1, "blood_group": 1})
+        if donor:
+            screening["donor_name"] = donor.get("full_name")
+            screening["donor_code"] = donor.get("donor_id")
+            screening["blood_group"] = donor.get("blood_group")
+    
     return screenings
+
+
+@router.get("/pending/donors")
+async def get_pending_screening_donors(
+    current_user: dict = Depends(get_current_user)
+):
+    """Get donors who need screening (registered but not screened today, or eligible to donate again)"""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    # Get all active donors
+    donors = await db.donors.find(
+        {"status": "active"},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    pending_donors = []
+    for donor in donors:
+        # Check if already screened today
+        today_screening = await db.screenings.find_one({
+            "donor_id": donor["id"],
+            "screening_date": today
+        })
+        
+        if not today_screening:
+            # Check last screening status
+            last_screening = await db.screenings.find_one(
+                {"donor_id": donor["id"]},
+                {"_id": 0},
+                sort=[("created_at", -1)]
+            )
+            
+            pending_donors.append({
+                "id": donor["id"],
+                "donor_id": donor.get("donor_id"),
+                "full_name": donor.get("full_name"),
+                "blood_group": donor.get("blood_group"),
+                "phone": donor.get("phone"),
+                "last_screening_date": last_screening.get("screening_date") if last_screening else None,
+                "last_screening_status": last_screening.get("eligibility_status") if last_screening else None,
+            })
+    
+    return pending_donors
+
+
+@router.get("/today/summary")
+async def get_today_screening_summary(
+    current_user: dict = Depends(get_current_user)
+):
+    """Get summary of today's screenings"""
+    today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    
+    total = await db.screenings.count_documents({"screening_date": today})
+    eligible = await db.screenings.count_documents({"screening_date": today, "eligibility_status": "eligible"})
+    ineligible = await db.screenings.count_documents({"screening_date": today, "eligibility_status": "ineligible"})
+    
+    return {
+        "date": today,
+        "total": total,
+        "eligible": eligible,
+        "ineligible": ineligible,
+    }
 
 @router.get("/{screening_id}")
 async def get_screening(screening_id: str, current_user: dict = Depends(get_current_user)):
