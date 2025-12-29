@@ -123,12 +123,14 @@ metadata:
   run_ui: true
 
 test_plan:
-  current_focus: ["Enhanced Screening Page - Frontend"]
+  current_focus: ["Enhanced Collection Page - Backend APIs", "Enhanced Collection Page - Frontend", "Inventory Advanced Search & Navigation"]
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
 
 agent_communication:
+  - agent: "main"
+    message: "Implemented 3 major features: 1) Enhanced Collection Page with list of eligible donors, summary cards, tabbed interface (Eligible/Today). 2) Fixed Inventory Advanced Search with working filters for blood group, component type, status, expiry dates. 3) Added Inventory Interactivity with Item Detail Dialog, 'Go to Storage' navigation, Move/Reserve/Print actions. Please test all features."
   - agent: "main"
     message: "Enhanced Screening Page implemented with: 1) New backend APIs (/api/screenings/pending/donors, /api/screenings/today/summary), 2) Complete frontend rewrite with tabbed Pending/Completed views, summary cards, search functionality, and screening form dialog. Please test the complete screening workflow including viewing pending donors, starting a screening, and viewing completed screenings."
   - agent: "main"
