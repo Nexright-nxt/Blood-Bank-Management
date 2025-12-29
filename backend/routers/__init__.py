@@ -14,3 +14,6 @@ from .disposition import return_router, discard_router
 from .reports import router as reports_router
 from .dashboard import router as dashboard_router
 from .alerts import router as alerts_router
+from .storage import router as storage_router
+from .pre_lab_qc import router as pre_lab_qc_router
+from .notifications import router as notifications_router
