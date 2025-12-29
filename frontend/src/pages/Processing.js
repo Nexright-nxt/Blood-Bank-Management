@@ -464,6 +464,118 @@ export default function Processing() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Batch Process Dialog */}
+      <Dialog open={showBatchDialog} onOpenChange={(open) => { setShowBatchDialog(open); if (!open) resetForm(); }}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Layers className="w-5 h-5 text-teal-600" />
+              Batch Component Processing
+            </DialogTitle>
+            <DialogDescription>
+              Create the same component type for {selectedUnits.length} selected units
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-2 px-3 bg-slate-50 rounded-lg mb-4 max-h-32 overflow-y-auto">
+            <p className="text-sm text-slate-500 mb-2">Selected Units ({selectedUnits.length})</p>
+            <div className="flex flex-wrap gap-2">
+              {selectedUnits.map(unit => (
+                <Badge key={unit.id} variant="outline" className="font-mono">
+                  {unit.unit_id}
+                  <span className="ml-1 text-xs text-teal-600">{unit.confirmed_blood_group || unit.blood_group}</span>
+                </Badge>
+              ))}
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Component Type *</Label>
+              <Select 
+                value={processForm.component_type}
+                onValueChange={(v) => setProcessForm({ ...processForm, component_type: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select component type for all" />
+                </SelectTrigger>
+                <SelectContent>
+                  {componentTypes.map(c => (
+                    <SelectItem key={c.value} value={c.value}>
+                      <div>
+                        <p>{c.label}</p>
+                        <p className="text-xs text-slate-500">{c.temp} | {c.expiry} days shelf life</p>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="batch-volume">Volume (mL) per component *</Label>
+              <Input
+                id="batch-volume"
+                type="number"
+                value={processForm.volume}
+                onChange={(e) => setProcessForm({ ...processForm, volume: e.target.value })}
+                placeholder="e.g., 250"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Storage Location</Label>
+              <Select 
+                value={processForm.storage_location}
+                onValueChange={(v) => setProcessForm({ ...processForm, storage_location: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select storage location" />
+                </SelectTrigger>
+                <SelectContent>
+                  {storageLocations.map(loc => (
+                    <SelectItem key={loc} value={loc}>{loc}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="batch-id">Batch ID (Optional)</Label>
+              <Input
+                id="batch-id"
+                value={processForm.batch_id}
+                onChange={(e) => setProcessForm({ ...processForm, batch_id: e.target.value })}
+                placeholder="Enter batch ID"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="mt-6">
+            <Button variant="outline" onClick={() => { setShowBatchDialog(false); resetForm(); }}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleBatchProcess}
+              className="bg-teal-600 hover:bg-teal-700"
+              disabled={!processForm.component_type || !processForm.volume || batchProcessing}
+            >
+              {batchProcessing ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <Layers className="w-4 h-4 mr-1" />
+                  Create {selectedUnits.length} Components
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
