@@ -113,6 +113,7 @@ export const labTestAPI = {
 // Component APIs
 export const componentAPI = {
   create: (data) => api.post('/components', data),
+  createMultiple: (data) => api.post('/components/multi', data),
   getAll: (params) => api.get('/components', { params }),
   getById: (id) => api.get(`/components/${id}`),
   update: (id, data) => api.put(`/components/${id}`, data),
