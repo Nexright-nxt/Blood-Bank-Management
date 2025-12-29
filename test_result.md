@@ -133,10 +133,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "Storage Management APIs"
-    - "Pre-Lab QC APIs"
-    - "Notifications APIs"
-  stuck_tasks: []
+    - "Processing Multi-Component Feature"
+  stuck_tasks:
+    - "Processing Multi-Component Feature"
   test_all: false
   test_priority: "high_first"
 
