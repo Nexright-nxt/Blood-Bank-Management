@@ -110,6 +110,28 @@ export default function InventoryEnhanced() {
   const [showLabelDialog, setShowLabelDialog] = useState(false);
   const [showBulkLabelDialog, setShowBulkLabelDialog] = useState(false);
   const [labelData, setLabelData] = useState(null);
+  
+  // Barcode Scanner
+  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
+  const [bulkScanMode, setBulkScanMode] = useState(false);
+  
+  // Component Relationship View
+  const [showRelationshipDialog, setShowRelationshipDialog] = useState(false);
+  const [relationshipItemId, setRelationshipItemId] = useState(null);
+  
+  // Drag and Drop
+  const [activeId, setActiveId] = useState(null);
+  const [draggedItem, setDraggedItem] = useState(null);
+  
+  // DnD Sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor)
+  );
 
   // Fetch data based on view mode
   const fetchData = useCallback(async () => {
