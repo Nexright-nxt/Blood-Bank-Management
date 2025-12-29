@@ -409,9 +409,17 @@ export default function Collection() {
               )}
             </div>
           </div>
-          <DialogFooter className="flex gap-2">
+          <DialogFooter className="flex gap-2 sm:gap-2">
             <Button variant="outline" onClick={() => navigate('/traceability')}>
               View Traceability
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={handlePrintLabel}
+              className="border-teal-600 text-teal-600 hover:bg-teal-50"
+            >
+              <Printer className="w-4 h-4 mr-1" />
+              Print Label
             </Button>
             <Button 
               onClick={() => {
@@ -427,6 +435,14 @@ export default function Collection() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Label Print Dialog */}
+      <LabelPrintDialog 
+        open={showLabelDialog}
+        onOpenChange={setShowLabelDialog}
+        labelData={labelData}
+        title="Print Blood Pack Label"
+      />
     </div>
   );
 }
