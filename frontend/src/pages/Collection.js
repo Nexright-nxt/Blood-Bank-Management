@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { donorAPI, screeningAPI, donationAPI } from '../lib/api';
+import { donorAPI, screeningAPI, donationAPI, labelAPI } from '../lib/api';
 import { toast } from 'sonner';
-import { Search, Droplet, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Search, Droplet, Clock, CheckCircle, AlertTriangle, Printer } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Checkbox } from '../components/ui/checkbox';
 import { Textarea } from '../components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
+import LabelPrintDialog from '../components/LabelPrintDialog';
 
 export default function Collection() {
   const navigate = useNavigate();
