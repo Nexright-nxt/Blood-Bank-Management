@@ -56,6 +56,8 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Implemented Component-Unit Relationship View showing visual tree of parent blood unit and derived components. Added Barcode Scanner with html5-qrcode library supporting single and bulk scan modes. Added drag-drop functionality using @dnd-kit library for moving items between storage locations. The Relationship View is accessible from search results and storage contents table via a GitBranch icon button."
+  - agent: "testing"
+    message: "✅ BACKEND TESTING COMPLETE: All Component-Unit Relationship APIs are working perfectly. Tested all 3 endpoints: GET /api/relationships/unit/{unit_id}, GET /api/relationships/component/{component_id}, and GET /api/relationships/tree/{item_id}. All return proper response structures with parent_unit objects, components arrays, summaries with volumes and status counts. Auto-detection works correctly. Error handling for non-existent IDs returns proper 404 responses. Tested with real data including BU-2025-000001. Backend APIs are ready for frontend integration."
 
 test_credentials:
   admin:
