@@ -619,11 +619,7 @@ class BloodBankAPITester:
             "storage_type": "freezer",
             "facility": "Main Lab",
             "capacity": 100,
-            "current_occupancy": 0,
-            "temperature_min": -30.0,
-            "temperature_max": -18.0,
-            "is_active": True,
-            "notes": "Test storage location for API testing"
+            "temperature_range": "-30°C to -18°C"
         }
         
         success3, response3 = self.run_test(
