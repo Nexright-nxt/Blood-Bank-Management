@@ -23,6 +23,8 @@ export default function Collection() {
   const [activeDonation, setActiveDonation] = useState(null);
   const [showCompleteDialog, setShowCompleteDialog] = useState(false);
   const [completionResult, setCompletionResult] = useState(null);
+  const [showLabelDialog, setShowLabelDialog] = useState(false);
+  const [labelData, setLabelData] = useState(null);
 
   const [startForm, setStartForm] = useState({
     donation_type: 'whole_blood',
