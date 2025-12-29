@@ -19,6 +19,7 @@ import Laboratory from "./pages/Laboratory";
 import Processing from "./pages/Processing";
 import QCValidation from "./pages/QCValidation";
 import Inventory from "./pages/Inventory";
+import InventoryEnhanced from "./pages/InventoryEnhanced";
 import Requests from "./pages/Requests";
 import Distribution from "./pages/Distribution";
 import Returns from "./pages/Returns";
