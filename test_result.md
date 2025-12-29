@@ -109,6 +109,8 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Custom Roles & Permissions feature has been implemented. The User Management page at /users has two tabs: (1) Users tab showing all system users with role badges, custom permissions indicator, and actions for edit/permissions/activate/delete. (2) Roles & Permissions tab showing default roles with their modules and a section for custom admin-created roles. The 'Create Custom Role' button opens a dialog to define new roles with selected module permissions."
+  - agent: "testing"
+    message: "✅ Backend APIs testing completed successfully. All 4 Custom Roles & Permissions APIs are working correctly: (1) GET /api/users/roles returns 8 default roles and custom roles array, (2) POST /api/users/roles creates custom roles with test data, (3) DELETE /api/users/roles/{role_id} deletes roles successfully, (4) PUT /api/users/{user_id}/permissions updates user permissions. Minor issue: some users missing custom_permissions field in GET /api/users response, but core functionality works. Ready for frontend testing."
 
 test_credentials:
   admin:
