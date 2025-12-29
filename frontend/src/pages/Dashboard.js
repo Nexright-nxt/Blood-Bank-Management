@@ -36,15 +36,14 @@ const roleLabels = {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [inventory, setInventory] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState(null);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       const [statsRes, inventoryRes] = await Promise.all([
         dashboardAPI.getStats(),
@@ -52,12 +51,28 @@ export default function Dashboard() {
       ]);
       setStats(statsRes.data);
       setInventory(inventoryRes.data);
+      setLastUpdated(new Date());
     } catch (error) {
       toast.error('Failed to load dashboard data');
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    if (!autoRefresh) return;
+    
+    const interval = setInterval(() => {
+      fetchData();
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, [autoRefresh, fetchData]);
 
   const inventoryChartData = Object.entries(inventory || {}).map(([bloodGroup, data]) => ({
     name: bloodGroup,
