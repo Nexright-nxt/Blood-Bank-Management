@@ -533,6 +533,9 @@ export default function InventoryEnhanced() {
             <Button onClick={handleQuickSearch} className="bg-teal-600 hover:bg-teal-700">
               <Search className="w-4 h-4" />
             </Button>
+            <Button variant="outline" onClick={() => setShowBarcodeScanner(true)} title="Scan Barcode">
+              <ScanLine className="w-4 h-4" />
+            </Button>
             <Button variant="outline" onClick={() => setShowSearchDialog(true)}>
               <Filter className="w-4 h-4 mr-1" />
               Advanced
