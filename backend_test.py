@@ -2521,68 +2521,67 @@ class BloodBankAPITester:
         
         return success1 and success2 and success3 and success4 and success5
 
+    def run_enhanced_collection_tests(self):
+        """Run Enhanced Collection Page API tests as per review request"""
+        print("🚀 Starting Enhanced Collection Page API Testing...")
+        print(f"🌐 Base URL: {self.base_url}")
+        
+        # Login first
+        if not self.test_user_login(self.admin_email, self.admin_password):
+            print("❌ Login failed - cannot continue with tests")
+            return False
+        
+        # Test auth/me to get admin user ID
+        if not self.test_auth_me():
+            print("❌ Auth/me failed - cannot get user ID")
+            return False
+        
+        # Enhanced Collection Page API tests
+        tests = [
+            ("Enhanced Collection Page APIs", self.test_enhanced_collection_page_apis),
+            ("Inventory Enhanced Search API", self.test_inventory_enhanced_search_api),
+        ]
+        
+        # Run tests
+        for test_name, test_func in tests:
+            print(f"\n{'='*60}")
+            print(f"🧪 Running: {test_name}")
+            print('='*60)
+            try:
+                success = test_func()
+                if success:
+                    print(f"✅ {test_name} - PASSED")
+                else:
+                    print(f"❌ {test_name} - FAILED")
+            except Exception as e:
+                print(f"💥 {test_name} - ERROR: {str(e)}")
+        
+        # Final summary
+        print(f"\n{'='*60}")
+        print("📊 ENHANCED COLLECTION PAGE TEST SUMMARY")
+        print('='*60)
+        print(f"Total tests run: {self.tests_run}")
+        print(f"Tests passed: {self.tests_passed}")
+        print(f"Tests failed: {self.tests_run - self.tests_passed}")
+        print(f"Success rate: {(self.tests_passed/self.tests_run)*100:.1f}%")
+        
+        return self.tests_passed == self.tests_run
+
 def main():
-    print("🩸 Blood Bank Management System API Testing - Blood Pack Label Printing")
+    print("🩸 Enhanced Collection Page API Testing")
     print("=" * 70)
     
     tester = BloodBankAPITester()
     
-    # Test sequence to create test data and test label APIs
-    test_sequence = [
-        # Core Auth APIs
-        ("Admin Login", lambda: tester.test_user_login(tester.admin_email, tester.admin_password)),
-        ("Auth Me Endpoint", tester.test_auth_me),
-        
-        # Create test data workflow
-        ("Public Donor Registration", tester.test_public_donor_register),
-        ("Donor Request Approval", tester.test_donor_request_approve),
-        ("Donor Eligibility Check", tester.test_donor_eligibility),
-        ("Health Screening", tester.test_health_screening),
-        ("Blood Collection Start", tester.test_blood_collection_start),
-        ("Blood Collection Complete", tester.test_blood_collection_complete),
-        ("Lab Testing", tester.test_lab_testing),
-        ("Component Processing", tester.test_component_processing),
-        ("QC Validation", tester.test_qc_validation),
-        
-        # Test Label APIs - Primary Focus
-        ("Blood Pack Label APIs", tester.test_label_apis),
-        
-        # Test Enhanced Inventory Management System
-        ("Enhanced Inventory Management APIs", tester.test_enhanced_inventory_apis),
-        
-        # Additional verification
-        ("Inventory Summary", tester.test_inventory_summary),
-    ]
+    # Run only the Enhanced Collection Page tests as per review request
+    success = tester.run_enhanced_collection_tests()
     
-    failed_tests = []
-    
-    for test_name, test_func in test_sequence:
-        print(f"\n📋 Running: {test_name}")
-        try:
-            if not test_func():
-                failed_tests.append(test_name)
-                print(f"❌ {test_name} failed")
-            else:
-                print(f"✅ {test_name} passed")
-        except Exception as e:
-            failed_tests.append(test_name)
-            print(f"❌ {test_name} failed with exception: {str(e)}")
-    
-    # Print final results
-    print("\n" + "=" * 60)
-    print(f"📊 Test Results: {tester.tests_passed}/{tester.tests_run} tests passed")
-    
-    if failed_tests:
-        print(f"\n❌ Failed Tests ({len(failed_tests)}):")
-        for test in failed_tests:
-            print(f"   - {test}")
+    if success:
+        print("\n🎉 All Enhanced Collection Page API tests passed!")
+        return 0
     else:
-        print("\n🎉 All tests passed!")
-    
-    success_rate = (tester.tests_passed / tester.tests_run * 100) if tester.tests_run > 0 else 0
-    print(f"📈 Success Rate: {success_rate:.1f}%")
-    
-    return 0 if len(failed_tests) == 0 else 1
+        print("\n💥 Some Enhanced Collection Page API tests failed!")
+        return 1
 
 if __name__ == "__main__":
     sys.exit(main())
