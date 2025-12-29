@@ -1644,19 +1644,19 @@ class BloodBankAPITester:
         return success1 and success2 and success3 and success4 and success5 and success6
 
 def main():
-    print("🩸 Blood Bank Management System API Testing - Enhanced Donor Registration")
+    print("🩸 Blood Bank Management System API Testing - Custom Roles & Permissions")
     print("=" * 60)
     
     tester = BloodBankAPITester()
     
-    # Test sequence focused on Enhanced Donor Registration from the review request
+    # Test sequence focused on Custom Roles & Permissions from the review request
     test_sequence = [
         # Core Auth APIs
         ("Admin Login", lambda: tester.test_user_login(tester.admin_email, tester.admin_password)),
         ("Auth Me Endpoint", tester.test_auth_me),
         
-        # Enhanced Donor Registration APIs - Primary Focus
-        ("Enhanced Donor Registration APIs", tester.test_enhanced_donor_registration_apis),
+        # Custom Roles & Permissions APIs - Primary Focus
+        ("Custom Roles & Permissions APIs", tester.test_custom_roles_apis),
         
         # Additional Core APIs for context
         ("Dashboard Stats", tester.test_dashboard_stats),
