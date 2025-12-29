@@ -3,39 +3,51 @@
 backend:
   - task: "Custom Roles API - Create Role"
     implemented: true
-    working: "needs_testing"
+    working: true
     file: "/app/backend/routers/users.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
-    status_history: []
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ POST /api/users/roles working correctly. Successfully created test role 'test_supervisor' with permissions ['inventory', 'storage', 'reports']. Returns status 'success' and complete role object with ID, name, display_name, permissions, and description."
 
   - task: "Custom Roles API - Get Roles"
     implemented: true
-    working: "needs_testing"
+    working: true
     file: "/app/backend/routers/users.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
-    status_history: []
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ GET /api/users/roles working correctly. Returns default_permissions object with all 8 predefined roles (admin, registration, phlebotomist, lab_tech, processing, qc_manager, inventory, distribution) and custom_roles array. Response structure is valid."
 
   - task: "Custom Roles API - Delete Role"
     implemented: true
-    working: "needs_testing"
+    working: true
     file: "/app/backend/routers/users.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
-    status_history: []
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ DELETE /api/users/roles/{role_id} working correctly. Successfully deleted the test role created earlier. Returns status 'success' as expected."
 
   - task: "User Permissions API - Update Permissions"
     implemented: true
-    working: "needs_testing"
+    working: true
     file: "/app/backend/routers/users.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
-    status_history: []
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ PUT /api/users/{user_id}/permissions working correctly. Successfully updated user custom permissions to ['inventory', 'reports']. Returns status 'success'. Minor: Some users missing custom_permissions field in GET /api/users response, but core functionality works."
 
 frontend:
   - task: "User Management Page - Users Tab"
