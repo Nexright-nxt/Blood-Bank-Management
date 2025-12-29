@@ -498,31 +498,3 @@ export default function Processing() {
     </div>
   );
 }
-
-          <DialogFooter className="mt-6">
-            <Button variant="outline" onClick={() => { setShowBatchDialog(false); resetForm(); }}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleBatchProcess}
-              className="bg-teal-600 hover:bg-teal-700"
-              disabled={!processForm.component_type || !processForm.volume || batchProcessing}
-            >
-              {batchProcessing ? (
-                <>
-                  <RefreshCw className="w-4 h-4 mr-1 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  <Layers className="w-4 h-4 mr-1" />
-                  Create {selectedUnits.length} Components
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
-}
