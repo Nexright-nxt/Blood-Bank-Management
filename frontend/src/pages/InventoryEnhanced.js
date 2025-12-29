@@ -419,6 +419,76 @@ export default function InventoryEnhanced() {
     setShowRelationshipDialog(true);
   };
 
+  // View item details
+  const handleViewItemDetail = (item) => {
+    setSelectedItem(item);
+    setShowItemDetailDialog(true);
+  };
+
+  // Navigate to storage location
+  const handleNavigateToStorage = async (storageId) => {
+    setShowItemDetailDialog(false);
+    setQuickSearchResult(null);
+    setViewMode(VIEW_MODES.STORAGE);
+    
+    // Find and open the storage
+    try {
+      const response = await inventoryEnhancedAPI.getByStorage();
+      const storage = response.data.find(s => s.id === storageId || s.location_code === storageId);
+      if (storage) {
+        handleOpenStorage(storage);
+      }
+    } catch (error) {
+      toast.error('Failed to navigate to storage');
+    }
+  };
+
+  // Advanced search
+  const handleAdvancedSearch = async () => {
+    setAdvancedSearchLoading(true);
+    try {
+      const params = {
+        blood_groups: advancedFilters.blood_groups.length > 0 ? advancedFilters.blood_groups.join(',') : undefined,
+        component_types: advancedFilters.component_types.length > 0 ? advancedFilters.component_types.join(',') : undefined,
+        statuses: advancedFilters.statuses.length > 0 ? advancedFilters.statuses.join(',') : undefined,
+        expiry_from: advancedFilters.expiry_from || undefined,
+        expiry_to: advancedFilters.expiry_to || undefined,
+      };
+      
+      const response = await inventoryEnhancedAPI.search(params);
+      setSearchResults(response.data);
+      toast.success(`Found ${response.data.total} items`);
+    } catch (error) {
+      toast.error('Search failed');
+    } finally {
+      setAdvancedSearchLoading(false);
+    }
+  };
+
+  // Clear advanced filters
+  const handleClearFilters = () => {
+    setAdvancedFilters({
+      blood_groups: [],
+      component_types: [],
+      statuses: [],
+      expiry_from: '',
+      expiry_to: '',
+    });
+    setSearchResults(null);
+  };
+
+  // Toggle filter selection
+  const toggleFilterSelection = (field, value) => {
+    setAdvancedFilters(prev => {
+      const current = prev[field] || [];
+      const exists = current.includes(value);
+      return {
+        ...prev,
+        [field]: exists ? current.filter(v => v !== value) : [...current, value],
+      };
+    });
+  };
+
   // Drag and Drop handlers
   const handleDragStart = (event) => {
     const { active } = event;
