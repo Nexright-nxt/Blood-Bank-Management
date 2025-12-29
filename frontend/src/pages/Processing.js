@@ -47,6 +47,11 @@ export default function Processing() {
   const [componentVolumes, setComponentVolumes] = useState({});
   const [componentStorages, setComponentStorages] = useState({});
   const [batchId, setBatchId] = useState('');
+  
+  // Label printing state
+  const [showLabelDialog, setShowLabelDialog] = useState(false);
+  const [showBulkLabelDialog, setShowBulkLabelDialog] = useState(false);
+  const [labelData, setLabelData] = useState(null);
 
   useEffect(() => {
     fetchData();
