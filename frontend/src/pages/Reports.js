@@ -464,6 +464,136 @@ export default function Reports() {
           </div>
         </TabsContent>
       </Tabs>
+
+      {/* Export Dialog */}
+      <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileDown className="w-5 h-5 text-teal-600" />
+              Export Data
+            </DialogTitle>
+            <DialogDescription>
+              Download reports as CSV files
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Data Type *</Label>
+              <Select 
+                value={exportForm.type}
+                onValueChange={(v) => setExportForm({ ...exportForm, type: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="donors">
+                    <div className="flex items-center gap-2">
+                      <Users className="w-4 h-4" />
+                      Donors
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="inventory">
+                    <div className="flex items-center gap-2">
+                      <Package className="w-4 h-4" />
+                      Inventory
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="donations">
+                    <div className="flex items-center gap-2">
+                      <Droplet className="w-4 h-4" />
+                      Donations
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="discards">
+                    <div className="flex items-center gap-2">
+                      <Trash2 className="w-4 h-4" />
+                      Discards
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="requests">
+                    <div className="flex items-center gap-2">
+                      <ClipboardList className="w-4 h-4" />
+                      Requests
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {(exportForm.type === 'donations' || exportForm.type === 'discards' || exportForm.type === 'requests') && (
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Start Date</Label>
+                  <Input
+                    type="date"
+                    value={exportForm.startDate}
+                    onChange={(e) => setExportForm({ ...exportForm, startDate: e.target.value })}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>End Date</Label>
+                  <Input
+                    type="date"
+                    value={exportForm.endDate}
+                    onChange={(e) => setExportForm({ ...exportForm, endDate: e.target.value })}
+                  />
+                </div>
+              </div>
+            )}
+
+            {(exportForm.type === 'donors' || exportForm.type === 'inventory') && (
+              <div className="space-y-2">
+                <Label>Blood Group (Optional)</Label>
+                <Select 
+                  value={exportForm.bloodGroup}
+                  onValueChange={(v) => setExportForm({ ...exportForm, bloodGroup: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="All blood groups" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All</SelectItem>
+                    <SelectItem value="A+">A+</SelectItem>
+                    <SelectItem value="A-">A-</SelectItem>
+                    <SelectItem value="B+">B+</SelectItem>
+                    <SelectItem value="B-">B-</SelectItem>
+                    <SelectItem value="AB+">AB+</SelectItem>
+                    <SelectItem value="AB-">AB-</SelectItem>
+                    <SelectItem value="O+">O+</SelectItem>
+                    <SelectItem value="O-">O-</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowExportDialog(false)}>
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleExport}
+              className="bg-teal-600 hover:bg-teal-700"
+              disabled={exportLoading}
+            >
+              {exportLoading ? (
+                <>
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  Exporting...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4 mr-2" />
+                  Download CSV
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
