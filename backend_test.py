@@ -798,45 +798,29 @@ class BloodBankAPITester:
         return success1 and success2 and success3 and success4 and success5
 
 def main():
-    print("🩸 Blood Bank Management System API Testing - Phase 3 Features")
+    print("🩸 Blood Bank Management System API Testing - Phase 1 Features")
     print("=" * 60)
     
     tester = BloodBankAPITester()
     
-    # Test sequence focused on the review request requirements
+    # Test sequence focused on Phase 1 features from the review request
     test_sequence = [
         # Core Auth APIs
         ("Admin Login", lambda: tester.test_user_login(tester.admin_email, tester.admin_password)),
         ("Auth Me Endpoint", tester.test_auth_me),
         
-        # Public Donor Registration Flow
-        ("Public Donor Registration", tester.test_public_donor_register),
-        ("Public Donor Status Check", tester.test_public_donor_status),
+        # Phase 1 Features - Storage Management APIs
+        ("Storage Management APIs", tester.test_storage_management_apis),
         
-        # Staff Donor Request Management
-        ("Staff Donor Requests List", tester.test_donor_requests_list),
-        ("Staff Approve Donor Request", tester.test_donor_request_approve),
+        # Phase 1 Features - Pre-Lab QC APIs
+        ("Pre-Lab QC APIs", tester.test_pre_lab_qc_apis),
         
-        # Donor OTP Login Flow
-        ("Donor OTP Request", tester.test_donor_otp_request),
-        ("Donor OTP Verification", tester.test_donor_otp_verify),
+        # Phase 1 Features - Notifications APIs
+        ("Notifications APIs", tester.test_notifications_apis),
         
-        # Dashboard and Core APIs
+        # Additional Core APIs for context
         ("Dashboard Stats", tester.test_dashboard_stats),
-        ("Donors CRUD List", tester.test_donors_list),
         ("Inventory Summary", tester.test_inventory_summary),
-        
-        # Phase 3 Features - Alerts System
-        ("Alerts System APIs", tester.test_alerts_endpoints),
-        
-        # Phase 3 Features - Enhanced Reports
-        ("Enhanced Reports APIs", tester.test_reports_endpoints),
-        
-        # Phase 3 Features - Returns Management
-        ("Returns Management APIs", tester.test_returns_endpoints),
-        
-        # Phase 3 Features - Discards Management
-        ("Discards Management APIs", tester.test_discards_endpoints),
     ]
     
     failed_tests = []
