@@ -369,6 +369,8 @@ async def approve_donor_request(request_id: str, current_user: dict = Depends(ge
         full_name=request["full_name"],
         date_of_birth=request["date_of_birth"],
         gender=request["gender"],
+        weight=request.get("weight"),
+        height=request.get("height"),
         phone=request["phone"],
         email=request.get("email"),
         address=request["address"],
@@ -378,6 +380,11 @@ async def approve_donor_request(request_id: str, current_user: dict = Depends(ge
         consent_given=request["consent_given"],
         registration_channel="online",
         qr_code=qr_code,
+        photo_url=request.get("photo_url"),
+        id_proof_url=request.get("id_proof_url"),
+        medical_report_urls=request.get("medical_report_urls", []),
+        health_questionnaire=request.get("health_questionnaire"),
+        questionnaire_date=datetime.now(timezone.utc).isoformat().split("T")[0] if request.get("health_questionnaire") else None,
         created_by=current_user["id"]
     )
     
