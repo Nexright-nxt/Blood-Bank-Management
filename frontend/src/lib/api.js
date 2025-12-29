@@ -299,4 +299,12 @@ export const inventoryEnhancedAPI = {
   getAuditTrail: (itemId) => api.get(`/inventory-enhanced/audit/${itemId}`),
 };
 
+// Component-Unit Relationship APIs
+export const relationshipAPI = {
+  getUnitRelationships: (unitId) => api.get(`/relationships/unit/${unitId}`),
+  getComponentRelationships: (componentId) => api.get(`/relationships/component/${componentId}`),
+  getRelationshipTree: (itemId, itemType) => api.get(`/relationships/tree/${itemId}`, { params: { item_type: itemType } }),
+  getBatchRelationships: (unitIds, componentIds) => api.get('/relationships/batch', { params: { unit_ids: unitIds, component_ids: componentIds } }),
+};
+
 export default api;
