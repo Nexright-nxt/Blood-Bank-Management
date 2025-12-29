@@ -61,7 +61,12 @@ export const donorRequestAPI = {
 export const userAPI = {
   getAll: () => api.get('/users'),
   update: (id, data) => api.put(`/users/${id}`, data),
+  updatePermissions: (id, permissions) => api.put(`/users/${id}/permissions`, permissions),
   delete: (id) => api.delete(`/users/${id}`),
+  getRoles: () => api.get('/users/roles'),
+  createRole: (data) => api.post('/users/roles', data),
+  deleteRole: (id) => api.delete(`/users/roles/${id}`),
+  getModules: () => api.get('/users/permissions/modules'),
 };
 
 // Donor APIs
