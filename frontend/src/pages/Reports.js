@@ -75,7 +75,7 @@ export default function Reports() {
       if (exportForm.startDate) params.start_date = exportForm.startDate;
       if (exportForm.endDate) params.end_date = exportForm.endDate;
       if (exportForm.status) params.status = exportForm.status;
-      if (exportForm.bloodGroup) params.blood_group = exportForm.bloodGroup;
+      if (exportForm.bloodGroup && exportForm.bloodGroup !== 'all') params.blood_group = exportForm.bloodGroup;
 
       switch (exportForm.type) {
         case 'donors':
