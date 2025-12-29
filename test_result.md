@@ -3,21 +3,27 @@
 backend:
   - task: "Label API - Get Blood Unit Label"
     implemented: true
-    working: "needs_testing"
+    working: true
     file: "/app/backend/routers/labels.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
-    status_history: []
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ GET /api/labels/blood-unit/{unit_id} API working correctly. Returns all required fields: unit_id, blood_group, component_type (whole_blood), volume, collection_date, expiry_date, donor_id, test_status, batch_number, storage_temp (2-6°C), blood_bank_name (BLOODLINK BLOOD BANK), warnings (list), status. Properly handles invalid IDs with 404 response. Tested with real blood unit data."
 
   - task: "Label API - Get Component Label"
     implemented: true
-    working: "needs_testing"
+    working: true
     file: "/app/backend/routers/labels.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
-    status_history: []
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "✅ GET /api/labels/component/{component_id} API working correctly. Returns all required fields including component-specific data: unit_id, blood_group, component_type (prc/plasma/ffp/platelets/cryoprecipitate), volume, collection_date, expiry_date, donor_id, test_status, batch_number, storage_temp, blood_bank_name, warnings, status, parent_unit_id. Properly handles invalid IDs with 404 response. Tested with real component data."
 
 frontend:
   - task: "Blood Pack Label Component"
