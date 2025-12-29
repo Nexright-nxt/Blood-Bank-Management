@@ -215,6 +215,7 @@ export default function Processing() {
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
           Refresh
         </Button>
+        </div>
       </div>
 
       <Tabs defaultValue="process">
