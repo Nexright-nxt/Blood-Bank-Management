@@ -11,12 +11,6 @@ export default function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 60000); // Refresh every minute
-    return () => clearInterval(interval);
-  }, []);
-
   const fetchNotifications = async () => {
     try {
       const [notifRes, countRes] = await Promise.all([
@@ -29,6 +23,12 @@ export default function NotificationBell() {
       console.error('Failed to fetch notifications');
     }
   };
+
+  useEffect(() => {
+    fetchNotifications();
+    const interval = setInterval(fetchNotifications, 60000); // Refresh every minute
+    return () => clearInterval(interval);
+  }, []);
 
   const handleClick = async (notification) => {
     if (!notification.is_read) {
