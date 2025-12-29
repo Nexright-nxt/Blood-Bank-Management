@@ -18,3 +18,4 @@ from .storage import router as storage_router
 from .pre_lab_qc import router as pre_lab_qc_router
 from .notifications import router as notifications_router
 from .logistics import router as logistics_router
+from .labels import router as labels_router
