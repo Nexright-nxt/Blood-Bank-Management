@@ -71,6 +71,9 @@ app.include_router(discard_router, prefix="/api")
 app.include_router(reports_router, prefix="/api")
 app.include_router(dashboard_router, prefix="/api")
 app.include_router(alerts_router, prefix="/api")
+app.include_router(storage_router, prefix="/api")
+app.include_router(pre_lab_qc_router, prefix="/api")
+app.include_router(notifications_router, prefix="/api")
 
 
 async def create_default_admin():
