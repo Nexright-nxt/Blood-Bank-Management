@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import time
 
 class DonorRegistrationTester:
-    def __init__(self, base_url="https://donortrack-5.preview.emergentagent.com/api"):
+    def __init__(self, base_url="https://hemotrack-1.preview.emergentagent.com/api"):
         self.base_url = base_url
         self.staff_token = None
         self.donor_token = None
