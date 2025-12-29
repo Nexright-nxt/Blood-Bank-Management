@@ -221,6 +221,15 @@ test_plan:
     - "Enhanced Returns APIs"
     - "Enhanced Discards APIs"
     - "Enhanced Requests APIs with Priority Scoring"
+    - "Logistics Page Dashboard Stats"
+    - "Logistics Status Filter"
+    - "Logistics Create Shipment Dialog"
+    - "Logistics View Tracking Dialog"
+    - "Returns Page 4 Stat Cards"
+    - "Returns Table Storage Column"
+    - "Returns Log Return Dialog with Hospital Fields"
+    - "Returns Process Dialog with QC Evaluation"
+    - "Navigation Logistics Link Positioning"
   stuck_tasks: []
   test_all: false
   test_priority: "high_first"
