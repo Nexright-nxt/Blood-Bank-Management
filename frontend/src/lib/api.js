@@ -160,16 +160,30 @@ export const issuanceAPI = {
 
 // Return APIs
 export const returnAPI = {
-  create: (data) => api.post('/returns', null, { params: data }),
-  getAll: () => api.get('/returns'),
-  process: (id, data) => api.put(`/returns/${id}/process`, null, { params: data }),
+  create: (data) => api.post('/returns', data),
+  getAll: (params) => api.get('/returns', { params }),
+  process: (id, data) => api.put(`/returns/${id}/process`, data),
 };
 
 // Discard APIs
 export const discardAPI = {
-  create: (data) => api.post('/discards', null, { params: data }),
+  create: (data) => api.post('/discards', data),
   getAll: (params) => api.get('/discards', { params }),
+  getSummary: () => api.get('/discards/summary'),
+  authorize: (id, data) => api.put(`/discards/${id}/authorize`, data),
   markDestroyed: (id) => api.put(`/discards/${id}/destroy`),
+  autoExpire: () => api.post('/discards/auto-expire'),
+};
+
+// Logistics APIs
+export const logisticsAPI = {
+  createShipment: (data) => api.post('/logistics/shipments', data),
+  getShipments: (params) => api.get('/logistics/shipments', { params }),
+  getShipment: (id) => api.get(`/logistics/shipments/${id}`),
+  dispatchShipment: (id) => api.put(`/logistics/shipments/${id}/dispatch`),
+  updateLocation: (id, params) => api.put(`/logistics/shipments/${id}/update-location`, null, { params }),
+  deliverShipment: (id, receivedBy, notes) => api.put(`/logistics/shipments/${id}/deliver`, null, { params: { received_by: receivedBy, notes } }),
+  getDashboard: () => api.get('/logistics/dashboard'),
 };
 
 // Report APIs
