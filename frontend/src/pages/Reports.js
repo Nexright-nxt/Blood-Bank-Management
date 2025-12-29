@@ -66,6 +66,57 @@ export default function Reports() {
     }
   };
 
+  const handleExport = async () => {
+    setExportLoading(true);
+    try {
+      let response;
+      const params = {};
+      
+      if (exportForm.startDate) params.start_date = exportForm.startDate;
+      if (exportForm.endDate) params.end_date = exportForm.endDate;
+      if (exportForm.status) params.status = exportForm.status;
+      if (exportForm.bloodGroup) params.blood_group = exportForm.bloodGroup;
+
+      switch (exportForm.type) {
+        case 'donors':
+          response = await reportAPI.exportDonors(params);
+          break;
+        case 'inventory':
+          response = await reportAPI.exportInventory(params);
+          break;
+        case 'donations':
+          response = await reportAPI.exportDonations(params);
+          break;
+        case 'discards':
+          response = await reportAPI.exportDiscards(params);
+          break;
+        case 'requests':
+          response = await reportAPI.exportRequests(params);
+          break;
+        default:
+          throw new Error('Invalid export type');
+      }
+
+      // Download the file
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${exportForm.type}_export_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast.success(`${exportForm.type} exported successfully`);
+      setShowExportDialog(false);
+    } catch (error) {
+      toast.error('Failed to export data');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
   const inventoryChartData = inventoryReport?.by_blood_group ? 
     Object.entries(inventoryReport.by_blood_group).map(([group, data]) => ({
       name: group,
