@@ -98,6 +98,18 @@ frontend:
         agent: "testing"
         comment: "Processing Multi-Select successfully tested. Select all checkbox is visible and functional, individual unit checkboxes work correctly. Batch Process button appears when units are selected and shows count. Select all functionality works properly. Multi-select feature is fully implemented and working. Note: Testing limited by availability of units in 'lab' status."
 
+  - task: "Processing Multi-Component Feature"
+    implemented: true
+    working: false
+    file: "frontend/src/pages/Processing.js"
+    stuck_count: 1
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: false
+        agent: "testing"
+        comment: "CRITICAL ISSUE: Processing multi-component dialog not opening when Process button is clicked. Page loads correctly with 16 blood units available for processing. Process buttons are visible and clickable, but clicking them does not open the expected dialog for component selection (PRC, Plasma, FFP, Platelets, Cryoprecipitate). Backend APIs are working correctly - component creation API tested successfully (created COMP-2025-000089). The dialog implementation exists in code but has a frontend bug preventing it from opening. This blocks the core multi-component processing feature."
+
   - task: "Navigation Updates"
     implemented: true
     working: true
