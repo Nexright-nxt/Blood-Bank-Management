@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { bloodUnitAPI, componentAPI } from '../lib/api';
 import { toast } from 'sonner';
-import { Layers, Plus, Search } from 'lucide-react';
+import { Layers, Plus, Search, CheckSquare, Square, RefreshCw } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -9,8 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../co
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import { Badge } from '../components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Checkbox } from '../components/ui/checkbox';
 
 const componentTypes = [
   { value: 'prc', label: 'Packed Red Cells (PRC)', expiry: 42, temp: '2-6°C' },
@@ -36,7 +37,10 @@ export default function Processing() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedUnit, setSelectedUnit] = useState(null);
+  const [selectedUnits, setSelectedUnits] = useState([]);
   const [showProcessDialog, setShowProcessDialog] = useState(false);
+  const [showBatchDialog, setShowBatchDialog] = useState(false);
+  const [batchProcessing, setBatchProcessing] = useState(false);
 
   const [processForm, setProcessForm] = useState({
     component_type: '',
@@ -100,6 +104,69 @@ export default function Processing() {
     setSelectedUnit(null);
   };
 
+  const toggleSelectUnit = (unit) => {
+    setSelectedUnits(prev => {
+      const isSelected = prev.some(u => u.id === unit.id);
+      if (isSelected) {
+        return prev.filter(u => u.id !== unit.id);
+      }
+      return [...prev, unit];
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedUnits.length === filteredUnits.length) {
+      setSelectedUnits([]);
+    } else {
+      setSelectedUnits([...filteredUnits]);
+    }
+  };
+
+  const handleBatchProcess = async () => {
+    if (selectedUnits.length === 0 || !processForm.component_type || !processForm.volume) {
+      toast.error('Please select units and fill required fields');
+      return;
+    }
+
+    setBatchProcessing(true);
+    const componentType = componentTypes.find(c => c.value === processForm.component_type);
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + (componentType?.expiry || 35));
+
+    let successCount = 0;
+    let failCount = 0;
+
+    for (const unit of selectedUnits) {
+      try {
+        await componentAPI.create({
+          parent_unit_id: unit.id,
+          component_type: processForm.component_type,
+          volume: parseFloat(processForm.volume),
+          storage_location: processForm.storage_location || undefined,
+          batch_id: processForm.batch_id || undefined,
+          expiry_date: expiryDate.toISOString().split('T')[0],
+        });
+        successCount++;
+      } catch (error) {
+        failCount++;
+      }
+    }
+
+    setBatchProcessing(false);
+    
+    if (successCount > 0) {
+      toast.success(`Created ${successCount} components successfully`);
+    }
+    if (failCount > 0) {
+      toast.error(`Failed to create ${failCount} components`);
+    }
+    
+    setShowBatchDialog(false);
+    setSelectedUnits([]);
+    fetchData();
+    resetForm();
+  };
+
   const filteredUnits = units.filter(u => 
     !searchTerm || 
     u.unit_id?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -115,9 +182,26 @@ export default function Processing() {
   return (
     <div className="space-y-6 animate-fade-in" data-testid="processing-page">
       {/* Header */}
-      <div className="page-header">
-        <h1 className="page-title">Component Processing</h1>
-        <p className="page-subtitle">Process blood units into components</p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="page-title">Component Processing</h1>
+          <p className="page-subtitle">Process blood units into components</p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={fetchData} disabled={loading}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          {selectedUnits.length > 0 && (
+            <Button 
+              className="bg-teal-600 hover:bg-teal-700"
+              onClick={() => setShowBatchDialog(true)}
+            >
+              <Layers className="w-4 h-4 mr-2" />
+              Batch Process ({selectedUnits.length})
+            </Button>
+          )}
+        </div>
       </div>
 
       <Tabs defaultValue="process">
@@ -164,6 +248,13 @@ export default function Processing() {
                 <Table className="table-dense">
                   <TableHeader>
                     <TableRow>
+                      <TableHead className="w-10">
+                        <Checkbox
+                          checked={selectedUnits.length === filteredUnits.length && filteredUnits.length > 0}
+                          onCheckedChange={toggleSelectAll}
+                          data-testid="select-all-checkbox"
+                        />
+                      </TableHead>
                       <TableHead>Unit ID</TableHead>
                       <TableHead>Blood Group</TableHead>
                       <TableHead>Volume</TableHead>
@@ -172,36 +263,49 @@ export default function Processing() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredUnits.map((unit) => (
-                      <TableRow key={unit.id} className="data-table-row">
-                        <TableCell className="font-mono">{unit.unit_id}</TableCell>
-                        <TableCell>
-                          {unit.confirmed_blood_group ? (
-                            <span className="blood-group-badge">{unit.confirmed_blood_group}</span>
-                          ) : unit.blood_group ? (
-                            <span className="blood-group-badge">{unit.blood_group}</span>
-                          ) : (
-                            <span className="text-slate-400">-</span>
-                          )}
-                        </TableCell>
-                        <TableCell>{unit.volume} mL</TableCell>
-                        <TableCell>{unit.collection_date}</TableCell>
-                        <TableCell className="text-right">
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setSelectedUnit(unit);
-                              setShowProcessDialog(true);
-                            }}
-                            className="bg-teal-600 hover:bg-teal-700"
-                            data-testid={`process-unit-${unit.id}`}
-                          >
-                            <Layers className="w-4 h-4 mr-1" />
-                            Process
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {filteredUnits.map((unit) => {
+                      const isSelected = selectedUnits.some(u => u.id === unit.id);
+                      return (
+                        <TableRow 
+                          key={unit.id} 
+                          className={`data-table-row ${isSelected ? 'bg-teal-50 dark:bg-teal-900/20' : ''}`}
+                        >
+                          <TableCell>
+                            <Checkbox
+                              checked={isSelected}
+                              onCheckedChange={() => toggleSelectUnit(unit)}
+                              data-testid={`select-unit-${unit.id}`}
+                            />
+                          </TableCell>
+                          <TableCell className="font-mono">{unit.unit_id}</TableCell>
+                          <TableCell>
+                            {unit.confirmed_blood_group ? (
+                              <span className="blood-group-badge">{unit.confirmed_blood_group}</span>
+                            ) : unit.blood_group ? (
+                              <span className="blood-group-badge">{unit.blood_group}</span>
+                            ) : (
+                              <span className="text-slate-400">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>{unit.volume} mL</TableCell>
+                          <TableCell>{unit.collection_date}</TableCell>
+                          <TableCell className="text-right">
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setSelectedUnit(unit);
+                                setShowProcessDialog(true);
+                              }}
+                              className="bg-teal-600 hover:bg-teal-700"
+                              data-testid={`process-unit-${unit.id}`}
+                            >
+                              <Layers className="w-4 h-4 mr-1" />
+                              Process
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </Table>
               )}
