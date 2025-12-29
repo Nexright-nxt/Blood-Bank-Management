@@ -1,6 +1,9 @@
 from fastapi import APIRouter, Depends
+from fastapi.responses import StreamingResponse
 from typing import Optional
 from datetime import datetime, timezone, timedelta
+import csv
+import io
 
 import sys
 sys.path.append('..')
@@ -9,6 +12,16 @@ from database import db
 from services import get_current_user
 
 router = APIRouter(prefix="/reports", tags=["Reports"])
+
+def generate_csv(data: list, headers: list) -> io.StringIO:
+    """Generate CSV from data"""
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=headers)
+    writer.writeheader()
+    for row in data:
+        writer.writerow({k: row.get(k, '') for k in headers})
+    output.seek(0)
+    return output
 
 @router.get("/daily-collections")
 async def get_daily_collections_report(
@@ -28,70 +41,94 @@ async def get_daily_collections_report(
     for d in donations:
         dtype = d.get("donation_type", "unknown")
         if dtype not in by_type:
-            by_type[dtype] = 0
-        by_type[dtype] += 1
+            by_type[dtype] = {"count": 0, "volume": 0}
+        by_type[dtype]["count"] += 1
+        by_type[dtype]["volume"] += d.get("volume_collected", 0) or 0
+    
+    # Get screenings for the day
+    screenings = await db.screenings.find({
+        "screening_date": date
+    }, {"_id": 0}).to_list(1000)
+    
+    failed_screenings = [s for s in screenings if s.get("result") == "rejected"]
     
     adverse_reactions = [d for d in donations if d.get("adverse_reaction")]
     
     return {
         "date": date,
         "total_donations": len(donations),
-        "total_volume_ml": total_volume,
-        "by_donation_type": by_type,
+        "total_volume": total_volume,
+        "by_type": by_type,
+        "rejections": len(failed_screenings),
+        "failed_screenings": len(failed_screenings),
         "adverse_reactions_count": len(adverse_reactions),
         "adverse_reactions": adverse_reactions
     }
 
 @router.get("/inventory-status")
 async def get_inventory_status_report(current_user: dict = Depends(get_current_user)):
-    status_counts = {}
-    for status in ["collected", "lab", "processing", "quarantine", "ready_to_use", "reserved", "issued", "discarded"]:
-        count = await db.blood_units.count_documents({"status": status})
-        status_counts[status] = count
+    # Blood units by status
+    by_blood_group = {}
+    for bg in ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]:
+        whole_blood = await db.blood_units.count_documents({
+            "confirmed_blood_group": bg,
+            "status": "ready_to_use"
+        })
+        components = await db.components.count_documents({
+            "blood_group": bg,
+            "status": "ready_to_use"
+        })
+        by_blood_group[bg] = {
+            "whole_blood": whole_blood,
+            "components": components
+        }
     
-    component_status = {}
-    for status in ["processing", "ready_to_use", "reserved", "issued", "discarded"]:
-        count = await db.components.count_documents({"status": status})
-        component_status[status] = count
+    # Components by type
+    by_component_type = {}
+    for ctype in ["prc", "plasma", "ffp", "platelets", "cryoprecipitate"]:
+        count = await db.components.count_documents({
+            "component_type": ctype,
+            "status": "ready_to_use"
+        })
+        by_component_type[ctype] = count
     
     return {
         "report_date": datetime.now(timezone.utc).isoformat(),
-        "blood_units_by_status": status_counts,
-        "components_by_status": component_status,
-        "total_units": sum(status_counts.values()),
-        "total_components": sum(component_status.values())
+        "by_blood_group": by_blood_group,
+        "by_component_type": by_component_type
     }
 
 @router.get("/expiry-analysis")
 async def get_expiry_analysis_report(current_user: dict = Depends(get_current_user)):
     now = datetime.now(timezone.utc)
+    today = now.isoformat().split("T")[0]
     
-    expired = await db.blood_units.count_documents({
+    expired = await db.components.count_documents({
         "status": "ready_to_use",
-        "expiry_date": {"$lt": now.isoformat().split("T")[0]}
+        "expiry_date": {"$lt": today}
     })
     
-    expiring_7_days = await db.blood_units.count_documents({
+    expiring_3_days = await db.components.count_documents({
         "status": "ready_to_use",
         "expiry_date": {
-            "$gte": now.isoformat().split("T")[0],
-            "$lte": (now + timedelta(days=7)).isoformat().split("T")[0]
+            "$gte": today,
+            "$lte": (now + timedelta(days=3)).isoformat().split("T")[0]
         }
     })
     
-    expiring_30_days = await db.blood_units.count_documents({
+    expiring_7_days = await db.components.count_documents({
         "status": "ready_to_use",
         "expiry_date": {
-            "$gte": now.isoformat().split("T")[0],
-            "$lte": (now + timedelta(days=30)).isoformat().split("T")[0]
+            "$gte": today,
+            "$lte": (now + timedelta(days=7)).isoformat().split("T")[0]
         }
     })
     
     return {
         "report_date": now.isoformat(),
-        "expired_units": expired,
-        "expiring_within_7_days": expiring_7_days,
-        "expiring_within_30_days": expiring_30_days
+        "expired": expired,
+        "expiring_in_3_days": expiring_3_days,
+        "expiring_in_7_days": expiring_7_days
     }
 
 @router.get("/discard-analysis")
@@ -161,3 +198,137 @@ async def get_testing_outcomes_report(
         "reactive_breakdown": reactive_details,
         "period": {"start": start_date, "end": end_date}
     }
+
+# ==================== EXPORT ENDPOINTS ====================
+
+@router.get("/export/donors")
+async def export_donors(
+    status: Optional[str] = None,
+    blood_group: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Export donors list as CSV"""
+    query = {}
+    if status:
+        query["status"] = status
+    if blood_group:
+        query["blood_group"] = blood_group
+    
+    donors = await db.donors.find(query, {"_id": 0, "qr_code": 0}).to_list(10000)
+    
+    headers = ["donor_id", "full_name", "blood_group", "gender", "phone", "email", "status", "total_donations", "registration_channel"]
+    csv_data = generate_csv(donors, headers)
+    
+    return StreamingResponse(
+        iter([csv_data.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=donors_export_{datetime.now().strftime('%Y%m%d')}.csv"}
+    )
+
+@router.get("/export/inventory")
+async def export_inventory(
+    status: Optional[str] = None,
+    blood_group: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Export inventory as CSV"""
+    query = {}
+    if status:
+        query["status"] = status
+    if blood_group:
+        query["blood_group"] = blood_group
+    
+    components = await db.components.find(query, {"_id": 0}).to_list(10000)
+    
+    headers = ["component_id", "component_type", "blood_group", "volume", "status", "storage_location", "expiry_date", "created_at"]
+    csv_data = generate_csv(components, headers)
+    
+    return StreamingResponse(
+        iter([csv_data.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=inventory_export_{datetime.now().strftime('%Y%m%d')}.csv"}
+    )
+
+@router.get("/export/donations")
+async def export_donations(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Export donations as CSV"""
+    query = {}
+    if start_date:
+        query["collection_start_time"] = {"$gte": start_date}
+    if end_date:
+        if "collection_start_time" in query:
+            query["collection_start_time"]["$lte"] = end_date
+        else:
+            query["collection_start_time"] = {"$lte": end_date}
+    
+    donations = await db.donations.find(query, {"_id": 0}).to_list(10000)
+    
+    headers = ["donation_id", "donor_id", "donation_type", "volume_collected", "collection_start_time", "phlebotomist", "status"]
+    csv_data = generate_csv(donations, headers)
+    
+    return StreamingResponse(
+        iter([csv_data.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=donations_export_{datetime.now().strftime('%Y%m%d')}.csv"}
+    )
+
+@router.get("/export/discards")
+async def export_discards(
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Export discards as CSV"""
+    query = {}
+    if start_date:
+        query["discard_date"] = {"$gte": start_date}
+    if end_date:
+        if "discard_date" in query:
+            query["discard_date"]["$lte"] = end_date
+        else:
+            query["discard_date"] = {"$lte": end_date}
+    
+    discards = await db.discards.find(query, {"_id": 0}).to_list(10000)
+    
+    headers = ["discard_id", "component_id", "reason", "reason_details", "discard_date", "category", "authorized"]
+    csv_data = generate_csv(discards, headers)
+    
+    return StreamingResponse(
+        iter([csv_data.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=discards_export_{datetime.now().strftime('%Y%m%d')}.csv"}
+    )
+
+@router.get("/export/requests")
+async def export_requests(
+    status: Optional[str] = None,
+    start_date: Optional[str] = None,
+    end_date: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Export blood requests as CSV"""
+    query = {}
+    if status:
+        query["status"] = status
+    if start_date:
+        query["requested_date"] = {"$gte": start_date}
+    if end_date:
+        if "requested_date" in query:
+            query["requested_date"]["$lte"] = end_date
+        else:
+            query["requested_date"] = {"$lte": end_date}
+    
+    requests = await db.blood_requests.find(query, {"_id": 0}).to_list(10000)
+    
+    headers = ["request_id", "request_type", "requester_name", "hospital_name", "blood_group", "product_type", "quantity", "urgency", "status", "requested_date"]
+    csv_data = generate_csv(requests, headers)
+    
+    return StreamingResponse(
+        iter([csv_data.getvalue()]),
+        media_type="text/csv",
+        headers={"Content-Disposition": f"attachment; filename=requests_export_{datetime.now().strftime('%Y%m%d')}.csv"}
+    )
