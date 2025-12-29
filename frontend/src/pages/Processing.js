@@ -534,6 +534,22 @@ export default function Processing() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Single Label Print Dialog */}
+      <LabelPrintDialog 
+        open={showLabelDialog}
+        onOpenChange={setShowLabelDialog}
+        labelData={labelData}
+        title="Print Component Label"
+      />
+
+      {/* Bulk Label Print Dialog */}
+      <BulkLabelPrintDialog 
+        open={showBulkLabelDialog}
+        onOpenChange={setShowBulkLabelDialog}
+        items={components}
+        title="Bulk Print Component Labels"
+      />
     </div>
   );
 }
