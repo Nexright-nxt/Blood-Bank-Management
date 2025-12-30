@@ -111,8 +111,8 @@ issuance_router = APIRouter(prefix="/issuances", tags=["Issuances"])
 
 @issuance_router.post("")
 async def create_issuance(
-    request_id: str,
-    component_ids: List[str],
+    request_id: str = Query(..., description="Request ID"),
+    component_ids: List[str] = Query(..., description="List of component IDs"),
     current_user: dict = Depends(get_current_user)
 ):
     request = await db.blood_requests.find_one(
