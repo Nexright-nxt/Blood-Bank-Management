@@ -161,7 +161,13 @@ export const requestAPI = {
 
 // Issuance APIs
 export const issuanceAPI = {
-  create: (requestId, componentIds) => api.post('/issuances', null, { params: { request_id: requestId, component_ids: componentIds } }),
+  create: (requestId, componentIds) => {
+    // Build query string manually for proper array parameter format
+    const params = new URLSearchParams();
+    params.append('request_id', requestId);
+    componentIds.forEach(id => params.append('component_ids', id));
+    return api.post(`/issuances?${params.toString()}`);
+  },
   getAll: (params) => api.get('/issuances', { params }),
   pack: (id) => api.put(`/issuances/${id}/pack`),
   ship: (id) => api.put(`/issuances/${id}/ship`),
