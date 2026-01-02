@@ -537,6 +537,114 @@ export default function Configuration() {
           </Card>
         </TabsContent>
 
+        {/* STORAGE TYPES TAB */}
+        <TabsContent value="storage" className="mt-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Storage Types</CardTitle>
+                <CardDescription>Define custom storage types for blood products. Default types cannot be modified.</CardDescription>
+              </div>
+              <Button onClick={() => { 
+                setSelectedStorageType({ 
+                  type_code: '', 
+                  type_name: '', 
+                  default_temp_range: '', 
+                  description: '',
+                  icon: '📦', 
+                  color: 'slate',
+                  suitable_for: []
+                }); 
+                setShowStorageTypeDialog(true); 
+              }}>
+                <Plus className="w-4 h-4 mr-2" />
+                Add Storage Type
+              </Button>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Icon</TableHead>
+                    <TableHead>Type Code</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Temperature Range</TableHead>
+                    <TableHead>Suitable For</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {storageTypes.map((st) => (
+                    <TableRow key={st.type_code || st.id}>
+                      <TableCell className="text-2xl">{st.icon}</TableCell>
+                      <TableCell className="font-mono text-sm">{st.type_code}</TableCell>
+                      <TableCell className="font-medium">{st.type_name}</TableCell>
+                      <TableCell>{st.default_temp_range}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          {(st.suitable_for || []).map((item, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs">{item}</Badge>
+                          ))}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge className={st.is_custom ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}>
+                          {st.is_custom ? 'Custom' : 'Default'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={st.is_active ? 'default' : 'secondary'}>
+                          {st.is_active ? 'Active' : 'Inactive'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {st.is_custom && (
+                          <div className="flex justify-end gap-1">
+                            <Button size="sm" variant="ghost" onClick={() => { 
+                              setSelectedStorageType({...st, _isEditing: true}); 
+                              setShowStorageTypeDialog(true); 
+                            }}>
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="ghost" onClick={async () => {
+                              try {
+                                await configAPI.toggleStorageType(st.type_code);
+                                toast.success('Storage type status updated');
+                                fetchData();
+                              } catch (err) {
+                                toast.error('Failed to toggle status');
+                              }
+                            }}>
+                              {st.is_active ? <ToggleRight className="w-4 h-4 text-emerald-600" /> : <ToggleLeft className="w-4 h-4" />}
+                            </Button>
+                            <Button size="sm" variant="ghost" className="text-red-600" onClick={async () => {
+                              if (!window.confirm('Are you sure you want to delete this storage type?')) return;
+                              try {
+                                await configAPI.deleteStorageType(st.type_code);
+                                toast.success('Storage type deleted');
+                                fetchData();
+                              } catch (err) {
+                                toast.error(err.response?.data?.detail || 'Failed to delete');
+                              }
+                            }}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        )}
+                        {!st.is_custom && (
+                          <span className="text-xs text-slate-400">System type</span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
         {/* VEHICLES TAB */}
         <TabsContent value="vehicles" className="mt-6">
           <Card>
