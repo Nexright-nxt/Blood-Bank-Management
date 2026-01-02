@@ -25,3 +25,4 @@ from .donors_enhanced import router as donors_enhanced_router
 from .configuration import router as configuration_router
 from .logistics_enhanced import router as logistics_enhanced_router
 from .organizations import router as organizations_router
+from .inter_org_requests import router as inter_org_requests_router
