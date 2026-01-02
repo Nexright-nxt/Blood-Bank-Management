@@ -31,8 +31,13 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const login = async (email, password) => {
-    const response = await axios.post(`${API_URL}/auth/login`, { email, password });
+  const login = async (email, password, orgId = null) => {
+    const payload = { email, password };
+    if (orgId) {
+      payload.org_id = orgId;
+    }
+    
+    const response = await axios.post(`${API_URL}/auth/login`, payload);
     const { token: newToken, user: userData } = response.data;
     
     localStorage.setItem('token', newToken);
@@ -56,6 +61,16 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // Helper functions for permission checks
+  const isSystemAdmin = () => user?.user_type === 'system_admin';
+  const isSuperAdmin = () => user?.user_type === 'super_admin';
+  const isTenantAdmin = () => user?.user_type === 'tenant_admin';
+  const isStaff = () => user?.user_type === 'staff';
+  
+  const canManageOrganizations = () => isSystemAdmin() || isSuperAdmin();
+  const canManageUsers = () => isSystemAdmin() || isSuperAdmin() || isTenantAdmin();
+  const canViewNetworkInventory = () => isSystemAdmin() || isSuperAdmin() || isTenantAdmin();
+
   const value = {
     user,
     token,
@@ -64,6 +79,14 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     isAuthenticated: !!user,
+    // Permission helpers
+    isSystemAdmin,
+    isSuperAdmin,
+    isTenantAdmin,
+    isStaff,
+    canManageOrganizations,
+    canManageUsers,
+    canViewNetworkInventory,
   };
 
   return (
