@@ -36,6 +36,7 @@ import LogisticsEnhanced from "./pages/LogisticsEnhanced";
 import PublicTracking from "./pages/PublicTracking";
 import Organizations from "./pages/Organizations";
 import BloodRequests from "./pages/BloodRequests";
+import NetworkDashboard from "./pages/NetworkDashboard";
 import "./App.css";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
