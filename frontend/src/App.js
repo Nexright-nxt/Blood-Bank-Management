@@ -159,6 +159,13 @@ function AppRoutes() {
           </ProtectedRoute>
         } />
         
+        {/* Network Dashboard */}
+        <Route path="network" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <NetworkDashboard />
+          </ProtectedRoute>
+        } />
+        
         {/* Admin */}
         <Route path="users" element={
           <ProtectedRoute allowedRoles={['admin']}>
