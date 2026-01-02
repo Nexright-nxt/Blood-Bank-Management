@@ -666,3 +666,215 @@ async def get_config_enums():
         "modules": ["donor", "screening", "collection", "lab", "inventory", "request", "processing", "qc"],
         "tables": ["donors", "screenings", "donations", "blood_units", "lab_tests", "components", "inventory", "requests", "issuances"]
     }
+
+# ==================== CUSTOM STORAGE TYPES APIs ====================
+
+# Default storage types
+DEFAULT_STORAGE_TYPES = [
+    {"type_code": "refrigerator", "type_name": "Refrigerator", "default_temp_range": "2-6°C", "icon": "🧊", "color": "blue", "suitable_for": ["whole_blood", "prc"], "is_system": True},
+    {"type_code": "freezer", "type_name": "Freezer", "default_temp_range": "-25 to -30°C", "icon": "❄️", "color": "indigo", "suitable_for": ["plasma", "ffp", "cryoprecipitate"], "is_system": True},
+    {"type_code": "platelet_incubator", "type_name": "Platelet Incubator", "default_temp_range": "20-24°C", "icon": "🔬", "color": "amber", "suitable_for": ["platelets"], "is_system": True},
+    {"type_code": "quarantine_area", "type_name": "Quarantine Area", "default_temp_range": "Variable", "icon": "⚠️", "color": "red", "suitable_for": ["quarantine"], "is_system": True},
+]
+
+@router.get("/storage-types")
+async def get_storage_types(
+    is_active: Optional[bool] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Get all storage types (default + custom)"""
+    # Get custom types from database
+    query = {}
+    if is_active is not None:
+        query["is_active"] = is_active
+    
+    custom_types = await db.custom_storage_types.find(query, {"_id": 0}).to_list(100)
+    
+    # Combine with default types
+    all_types = []
+    
+    # Add default types first
+    for dt in DEFAULT_STORAGE_TYPES:
+        all_types.append({
+            **dt,
+            "id": dt["type_code"],
+            "is_active": True,
+            "is_custom": False
+        })
+    
+    # Add custom types
+    for ct in custom_types:
+        ct["is_custom"] = True
+        all_types.append(ct)
+    
+    return all_types
+
+@router.get("/storage-types/{type_code}")
+async def get_storage_type(type_code: str, current_user: dict = Depends(get_current_user)):
+    """Get a specific storage type"""
+    # Check default types first
+    for dt in DEFAULT_STORAGE_TYPES:
+        if dt["type_code"] == type_code:
+            return {**dt, "id": dt["type_code"], "is_active": True, "is_custom": False}
+    
+    # Check custom types
+    custom = await db.custom_storage_types.find_one({"type_code": type_code}, {"_id": 0})
+    if custom:
+        custom["is_custom"] = True
+        return custom
+    
+    raise HTTPException(status_code=404, detail="Storage type not found")
+
+@router.post("/storage-types")
+async def create_storage_type(
+    type_code: str,
+    type_name: str,
+    default_temp_range: str,
+    description: Optional[str] = None,
+    icon: str = "📦",
+    color: str = "slate",
+    suitable_for: Optional[List[str]] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Create a new custom storage type"""
+    if current_user["role"] not in ["admin", "config_manager", "inventory"]:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    # Normalize type_code
+    type_code = type_code.lower().replace(" ", "_").replace("-", "_")
+    
+    # Check if type_code already exists in defaults
+    for dt in DEFAULT_STORAGE_TYPES:
+        if dt["type_code"] == type_code:
+            raise HTTPException(status_code=400, detail=f"Storage type '{type_code}' already exists as a default type")
+    
+    # Check if type_code already exists in custom types
+    existing = await db.custom_storage_types.find_one({"type_code": type_code})
+    if existing:
+        raise HTTPException(status_code=400, detail=f"Storage type '{type_code}' already exists")
+    
+    new_type = {
+        "id": str(uuid.uuid4()),
+        "type_code": type_code,
+        "type_name": type_name,
+        "description": description,
+        "default_temp_range": default_temp_range,
+        "icon": icon,
+        "color": color,
+        "suitable_for": suitable_for or [],
+        "is_active": True,
+        "is_custom": True,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": current_user["id"]
+    }
+    
+    await db.custom_storage_types.insert_one(new_type)
+    await log_config_change("storage_type", type_code, "create", None, new_type, current_user["id"])
+    
+    return {"status": "success", "storage_type": new_type}
+
+@router.put("/storage-types/{type_code}")
+async def update_storage_type(
+    type_code: str,
+    type_name: Optional[str] = None,
+    default_temp_range: Optional[str] = None,
+    description: Optional[str] = None,
+    icon: Optional[str] = None,
+    color: Optional[str] = None,
+    suitable_for: Optional[List[str]] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """Update a custom storage type"""
+    if current_user["role"] not in ["admin", "config_manager", "inventory"]:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    # Check if it's a default type
+    for dt in DEFAULT_STORAGE_TYPES:
+        if dt["type_code"] == type_code:
+            raise HTTPException(status_code=400, detail="Cannot modify default storage types")
+    
+    existing = await db.custom_storage_types.find_one({"type_code": type_code}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Custom storage type not found")
+    
+    update_data = {}
+    if type_name is not None:
+        update_data["type_name"] = type_name
+    if default_temp_range is not None:
+        update_data["default_temp_range"] = default_temp_range
+    if description is not None:
+        update_data["description"] = description
+    if icon is not None:
+        update_data["icon"] = icon
+    if color is not None:
+        update_data["color"] = color
+    if suitable_for is not None:
+        update_data["suitable_for"] = suitable_for
+    
+    if update_data:
+        update_data["updated_at"] = datetime.now(timezone.utc).isoformat()
+        await db.custom_storage_types.update_one(
+            {"type_code": type_code},
+            {"$set": update_data}
+        )
+        await log_config_change("storage_type", type_code, "update", existing, update_data, current_user["id"])
+    
+    return {"status": "success"}
+
+@router.put("/storage-types/{type_code}/toggle")
+async def toggle_storage_type(
+    type_code: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Toggle custom storage type active status"""
+    if current_user["role"] not in ["admin", "config_manager", "inventory"]:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    # Check if it's a default type
+    for dt in DEFAULT_STORAGE_TYPES:
+        if dt["type_code"] == type_code:
+            raise HTTPException(status_code=400, detail="Cannot deactivate default storage types")
+    
+    existing = await db.custom_storage_types.find_one({"type_code": type_code}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Custom storage type not found")
+    
+    new_status = not existing.get("is_active", True)
+    
+    await db.custom_storage_types.update_one(
+        {"type_code": type_code},
+        {"$set": {"is_active": new_status}}
+    )
+    
+    action = "activate" if new_status else "deactivate"
+    await log_config_change("storage_type", type_code, action, existing, {"is_active": new_status}, current_user["id"])
+    
+    return {"status": "success", "is_active": new_status}
+
+@router.delete("/storage-types/{type_code}")
+async def delete_storage_type(
+    type_code: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """Delete a custom storage type"""
+    if current_user["role"] not in ["admin", "config_manager"]:
+        raise HTTPException(status_code=403, detail="Permission denied")
+    
+    # Check if it's a default type
+    for dt in DEFAULT_STORAGE_TYPES:
+        if dt["type_code"] == type_code:
+            raise HTTPException(status_code=400, detail="Cannot delete default storage types")
+    
+    existing = await db.custom_storage_types.find_one({"type_code": type_code}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Custom storage type not found")
+    
+    # Check if any storage locations use this type
+    in_use = await db.storage_locations.count_documents({"storage_type": type_code})
+    if in_use > 0:
+        raise HTTPException(status_code=400, detail=f"Cannot delete: {in_use} storage locations use this type")
+    
+    await db.custom_storage_types.delete_one({"type_code": type_code})
+    await log_config_change("storage_type", type_code, "delete", existing, None, current_user["id"])
+    
+    return {"status": "success"}
