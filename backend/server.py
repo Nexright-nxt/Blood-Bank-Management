@@ -20,7 +20,7 @@ from routers import (
     reports_router, dashboard_router, alerts_router,
     storage_router, pre_lab_qc_router, notifications_router,
     logistics_router, labels_router, inventory_enhanced_router,
-    relationships_router
+    relationships_router, donors_enhanced_router
 )
 
 # Configure logging
