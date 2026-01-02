@@ -30,6 +30,7 @@ import StorageManagement from "./pages/StorageManagement";
 import PreLabQC from "./pages/PreLabQC";
 import Logistics from "./pages/Logistics";
 import UserManagement from "./pages/UserManagement";
+import Leaderboard from "./pages/Leaderboard";
 import "./App.css";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
