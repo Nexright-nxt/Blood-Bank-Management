@@ -24,3 +24,4 @@ from .relationships import router as relationships_router
 from .donors_enhanced import router as donors_enhanced_router
 from .configuration import router as configuration_router
 from .logistics_enhanced import router as logistics_enhanced_router
+from .organizations import router as organizations_router
