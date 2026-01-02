@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { donorAPI, screeningAPI, donationAPI, labelAPI } from '../lib/api';
+import { donorAPI, screeningAPI, donationAPI, labelAPI, donationSessionAPI } from '../lib/api';
 import { toast } from 'sonner';
 import { 
   Search, Droplet, Clock, CheckCircle, AlertTriangle, Printer, 
-  RefreshCw, Users, Activity, ChevronRight, Beaker, Heart
+  RefreshCw, Users, Activity, ChevronRight, Beaker, Heart, XCircle,
+  Filter, UserX, Calendar, Ban
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -20,19 +21,31 @@ import { Badge } from '../components/ui/badge';
 import { ScrollArea } from '../components/ui/scroll-area';
 import LabelPrintDialog from '../components/LabelPrintDialog';
 
+// Status badge styles
+const STATUS_BADGES = {
+  eligible: { bg: 'bg-emerald-100 text-emerald-700', icon: CheckCircle, label: 'Eligible' },
+  deactivated: { bg: 'bg-slate-100 text-slate-500', icon: Ban, label: 'Deactivated' },
+  deferred: { bg: 'bg-red-100 text-red-700', icon: XCircle, label: 'Deferred' },
+  not_eligible: { bg: 'bg-amber-100 text-amber-700', icon: Clock, label: 'Not Eligible' },
+  age_restriction: { bg: 'bg-orange-100 text-orange-700', icon: UserX, label: 'Age Restriction' },
+  in_progress: { bg: 'bg-blue-100 text-blue-700', icon: Activity, label: 'In Progress' },
+};
+
 export default function Collection() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState('eligible');
+  const [activeTab, setActiveTab] = useState('all');
   
   // Lists
-  const [eligibleDonors, setEligibleDonors] = useState([]);
+  const [allDonors, setAllDonors] = useState([]);
   const [todayDonations, setTodayDonations] = useState([]);
   const [todaySummary, setTodaySummary] = useState(null);
   
-  // Search
+  // Filters
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [filterBloodGroup, setFilterBloodGroup] = useState('all');
   
   // Selected donor for collection
   const [donor, setDonor] = useState(null);
@@ -66,12 +79,12 @@ export default function Collection() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [eligibleRes, donationsRes, summaryRes] = await Promise.all([
-        donationAPI.getEligibleDonors(),
+      const [donorsRes, donationsRes, summaryRes] = await Promise.all([
+        donorAPI.getDonorsWithStatus({ is_active: 'all' }),
         donationAPI.getTodayDonations(),
         donationAPI.getTodaySummary(),
       ]);
-      setEligibleDonors(eligibleRes.data || []);
+      setAllDonors(donorsRes.data || []);
       setTodayDonations(donationsRes.data || []);
       setTodaySummary(summaryRes.data);
     } catch (error) {
@@ -95,39 +108,28 @@ export default function Collection() {
     }
   };
 
-  const handleSearch = async () => {
-    if (!searchTerm.trim()) return;
-    
-    setLoading(true);
-    try {
-      const response = await donorAPI.getAll({ search: searchTerm });
-      if (response.data.length === 0) {
-        toast.error('No donor found');
-      } else if (response.data.length === 1) {
-        const donor = response.data[0];
-        setDonor(donor);
-        
-        // Get latest eligible screening
-        const screeningsRes = await screeningAPI.getAll({ donor_id: donor.id });
-        const eligibleScreening = screeningsRes.data.find(s => s.eligibility_status === 'eligible');
-        if (eligibleScreening) {
-          setScreening(eligibleScreening);
-          setShowCollectionForm(true);
-        } else {
-          toast.warning('No eligible screening found. Please complete screening first.');
-        }
-      } else {
-        toast.info(`Found ${response.data.length} donors. Please be more specific.`);
-      }
-    } catch (error) {
-      toast.error('Search failed');
-    } finally {
-      setLoading(false);
+  const handleSelectDonor = async (donorData) => {
+    if (donorData.eligibility_status !== 'eligible') {
+      toast.error(`Cannot start collection: ${donorData.eligibility_reason || 'Not eligible'}`);
+      return;
     }
-  };
-
-  const handleStartCollectionFromList = (eligibleDonor) => {
-    fetchDonorAndStartCollection(eligibleDonor.id, eligibleDonor.screening_id);
+    
+    try {
+      // Get latest eligible screening
+      const screeningsRes = await screeningAPI.getAll({ donor_id: donorData.id });
+      const eligibleScreening = screeningsRes.data.find(s => s.eligibility_status === 'eligible');
+      
+      if (!eligibleScreening) {
+        toast.error('No eligible screening found. Please complete screening first.');
+        return;
+      }
+      
+      setDonor(donorData);
+      setScreening(eligibleScreening);
+      setShowCollectionForm(true);
+    } catch (error) {
+      toast.error('Failed to fetch screening data');
+    }
   };
 
   const handleStartCollection = async () => {
@@ -167,7 +169,7 @@ export default function Collection() {
       
       setCompletionResult(response.data);
       setShowCompleteDialog(true);
-      fetchData(); // Refresh lists
+      fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to complete collection');
     } finally {
@@ -195,13 +197,47 @@ export default function Collection() {
     setCompleteForm({ volume: '', adverse_reaction: false, adverse_reaction_details: '' });
   };
 
-  // Filter eligible donors by search
-  const filteredEligibleDonors = eligibleDonors.filter(d => 
-    !searchTerm || 
-    d.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    d.donor_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    d.phone?.includes(searchTerm)
-  );
+  // Filter donors
+  const filteredDonors = allDonors.filter(d => {
+    // Search filter
+    if (searchTerm && 
+        !d.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !d.donor_id?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !d.phone?.includes(searchTerm)) {
+      return false;
+    }
+    
+    // Status filter
+    if (filterStatus === 'eligible' && d.eligibility_status !== 'eligible') return false;
+    if (filterStatus === 'not_eligible' && d.eligibility_status === 'eligible') return false;
+    
+    // Blood group filter
+    if (filterBloodGroup !== 'all' && d.blood_group !== filterBloodGroup) return false;
+    
+    return true;
+  });
+
+  // Count by status
+  const statusCounts = {
+    total: allDonors.length,
+    eligible: allDonors.filter(d => d.eligibility_status === 'eligible').length,
+    not_eligible: allDonors.filter(d => d.eligibility_status !== 'eligible').length,
+  };
+
+  const renderStatusBadge = (status, reason) => {
+    const config = STATUS_BADGES[status] || STATUS_BADGES.not_eligible;
+    const Icon = config.icon;
+    
+    return (
+      <div className="flex flex-col">
+        <Badge className={config.bg}>
+          <Icon className="w-3 h-3 mr-1" />
+          {config.label}
+        </Badge>
+        {reason && <span className="text-xs text-slate-500 mt-1 max-w-[200px] truncate">{reason}</span>}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-6 animate-fade-in" data-testid="collection-page">
@@ -223,25 +259,11 @@ export default function Collection() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-teal-600">Eligible Donors</p>
-                <p className="text-2xl font-bold text-teal-700">{eligibleDonors.length}</p>
+                <p className="text-sm text-teal-600">Total Donors</p>
+                <p className="text-2xl font-bold text-teal-700">{statusCounts.total}</p>
               </div>
               <div className="w-12 h-12 rounded-full bg-teal-200 flex items-center justify-center">
                 <Users className="w-6 h-6 text-teal-600" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-blue-600">Today's Total</p>
-                <p className="text-2xl font-bold text-blue-700">{todaySummary?.total || 0}</p>
-              </div>
-              <div className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center">
-                <Activity className="w-6 h-6 text-blue-600" />
               </div>
             </div>
           </CardContent>
@@ -251,11 +273,25 @@ export default function Collection() {
           <CardContent className="pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-emerald-600">Completed</p>
-                <p className="text-2xl font-bold text-emerald-700">{todaySummary?.completed || 0}</p>
+                <p className="text-sm text-emerald-600">Eligible</p>
+                <p className="text-2xl font-bold text-emerald-700">{statusCounts.eligible}</p>
               </div>
               <div className="w-12 h-12 rounded-full bg-emerald-200 flex items-center justify-center">
                 <CheckCircle className="w-6 h-6 text-emerald-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-blue-50 to-blue-100">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-blue-600">Today's Collections</p>
+                <p className="text-2xl font-bold text-blue-700">{todaySummary?.total || 0}</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-blue-200 flex items-center justify-center">
+                <Activity className="w-6 h-6 text-blue-600" />
               </div>
             </div>
           </CardContent>
@@ -290,32 +326,50 @@ export default function Collection() {
         </Card>
       </div>
 
-      {/* Search Bar */}
+      {/* Search and Filters */}
       <Card className="p-4">
-        <div className="flex gap-4">
-          <div className="flex-1 relative">
+        <div className="flex flex-wrap gap-4">
+          <div className="flex-1 min-w-[200px] relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <Input
               placeholder="Search by donor ID, name, or phone..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
               className="pl-9"
-              data-testid="donor-search"
             />
           </div>
-          <Button onClick={handleSearch} disabled={loading} data-testid="search-btn">
-            Search
-          </Button>
+          <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <SelectTrigger className="w-[150px]">
+              <Filter className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Status</SelectItem>
+              <SelectItem value="eligible">Eligible Only</SelectItem>
+              <SelectItem value="not_eligible">Not Eligible</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={filterBloodGroup} onValueChange={setFilterBloodGroup}>
+            <SelectTrigger className="w-[130px]">
+              <Droplet className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Blood" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Blood</SelectItem>
+              {['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'].map(bg => (
+                <SelectItem key={bg} value={bg}>{bg}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
       </Card>
 
-      {/* Tabs for Eligible and Today's Collections */}
+      {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2 max-w-md">
-          <TabsTrigger value="eligible" className="flex items-center gap-2">
-            <Heart className="w-4 h-4" />
-            Eligible ({filteredEligibleDonors.length})
+          <TabsTrigger value="all" className="flex items-center gap-2">
+            <Users className="w-4 h-4" />
+            All Donors ({filteredDonors.length})
           </TabsTrigger>
           <TabsTrigger value="today" className="flex items-center gap-2">
             <Beaker className="w-4 h-4" />
@@ -323,41 +377,46 @@ export default function Collection() {
           </TabsTrigger>
         </TabsList>
 
-        {/* Eligible Donors Tab */}
-        <TabsContent value="eligible" className="mt-4">
+        {/* All Donors Tab */}
+        <TabsContent value="all" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Eligible Donors Awaiting Collection</CardTitle>
+              <CardTitle>All Donors with Eligibility Status</CardTitle>
               <CardDescription>
-                Donors who have passed screening and are ready to donate
+                View all donors and their current eligibility for blood donation
               </CardDescription>
             </CardHeader>
             <CardContent>
-              {filteredEligibleDonors.length === 0 ? (
+              {filteredDonors.length === 0 ? (
                 <div className="text-center py-8 text-slate-500">
                   <Users className="w-12 h-12 mx-auto mb-2 text-slate-300" />
-                  <p>No eligible donors awaiting collection</p>
+                  <p>No donors match your filters</p>
                 </div>
               ) : (
-                <ScrollArea className="h-[400px]">
+                <ScrollArea className="h-[450px]">
                   <Table className="table-dense">
                     <TableHeader>
                       <TableRow>
                         <TableHead>Donor ID</TableHead>
                         <TableHead>Name</TableHead>
+                        <TableHead>Age</TableHead>
                         <TableHead>Blood Group</TableHead>
                         <TableHead>Phone</TableHead>
-                        <TableHead>Screening Date</TableHead>
-                        <TableHead>Hemoglobin</TableHead>
                         <TableHead>Status</TableHead>
+                        <TableHead>Eligible Date</TableHead>
                         <TableHead className="text-right">Action</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {filteredEligibleDonors.map((d) => (
-                        <TableRow key={d.id} className="cursor-pointer hover:bg-slate-50">
+                      {filteredDonors.map((d) => (
+                        <TableRow key={d.id} className={d.eligibility_status === 'eligible' ? 'bg-emerald-50/30' : ''}>
                           <TableCell className="font-mono text-sm">{d.donor_id}</TableCell>
                           <TableCell className="font-medium">{d.full_name}</TableCell>
+                          <TableCell>
+                            <span className={`text-sm ${d.age < 18 || d.age > 65 ? 'text-red-600 font-medium' : ''}`}>
+                              {d.age} yrs
+                            </span>
+                          </TableCell>
                           <TableCell>
                             {d.blood_group ? (
                               <span className="blood-group-badge">{d.blood_group}</span>
@@ -366,29 +425,27 @@ export default function Collection() {
                             )}
                           </TableCell>
                           <TableCell className="text-sm text-slate-600">{d.phone || '-'}</TableCell>
-                          <TableCell className="text-sm">{d.screening_date}</TableCell>
-                          <TableCell className="text-sm">
-                            <span className={d.hemoglobin >= 12.5 ? 'text-emerald-600' : 'text-red-600'}>
-                              {d.hemoglobin} g/dL
-                            </span>
-                          </TableCell>
                           <TableCell>
-                            {d.has_active_donation ? (
-                              <Badge className="bg-amber-100 text-amber-700">In Progress</Badge>
-                            ) : (
-                              <Badge className="bg-emerald-100 text-emerald-700">Ready</Badge>
-                            )}
+                            {renderStatusBadge(d.eligibility_status, d.eligibility_reason)}
+                          </TableCell>
+                          <TableCell className="text-sm">
+                            {d.eligible_date || '-'}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button 
-                              size="sm" 
-                              onClick={() => handleStartCollectionFromList(d)}
-                              className="bg-teal-600 hover:bg-teal-700"
-                              disabled={d.has_active_donation}
-                            >
-                              {d.has_active_donation ? 'Continue' : 'Start Collection'}
-                              <ChevronRight className="w-4 h-4 ml-1" />
-                            </Button>
+                            {d.eligibility_status === 'eligible' ? (
+                              <Button 
+                                size="sm" 
+                                onClick={() => handleSelectDonor(d)}
+                                className="bg-teal-600 hover:bg-teal-700"
+                              >
+                                Select
+                                <ChevronRight className="w-4 h-4 ml-1" />
+                              </Button>
+                            ) : (
+                              <Button size="sm" variant="ghost" disabled>
+                                Not Available
+                              </Button>
+                            )}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -651,15 +708,6 @@ export default function Collection() {
                 <span className="text-slate-500">Unit ID:</span>
                 <span className="font-mono font-bold">{completionResult?.unit_id}</span>
               </div>
-              {completionResult?.barcode && (
-                <div className="flex justify-center pt-2">
-                  <img 
-                    src={`data:image/png;base64,${completionResult.barcode}`} 
-                    alt="Unit Barcode"
-                    className="h-16"
-                  />
-                </div>
-              )}
             </div>
           </div>
           <DialogFooter className="flex gap-2 sm:gap-2">
