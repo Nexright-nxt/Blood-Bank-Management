@@ -63,10 +63,12 @@ function AppRoutes() {
   
   return (
     <Routes>
-      {/* Public Donor Routes (No auth required) */}
+      {/* Public Routes (No auth required) */}
       <Route path="/donor" element={<DonorLanding />} />
       <Route path="/donor/dashboard" element={<DonorDashboard />} />
       <Route path="/donor/status" element={<DonorStatus />} />
+      <Route path="/track/:trackingNumber" element={<PublicTracking />} />
+      <Route path="/track" element={<PublicTracking />} />
       
       {/* Staff Login */}
       <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
@@ -118,6 +120,7 @@ function AppRoutes() {
         <Route path="requests" element={<Requests />} />
         <Route path="distribution" element={<Distribution />} />
         <Route path="logistics" element={<Logistics />} />
+        <Route path="logistics-enhanced" element={<LogisticsEnhanced />} />
         
         {/* Returns & Discards */}
         <Route path="returns" element={<Returns />} />
@@ -131,6 +134,13 @@ function AppRoutes() {
         
         {/* Alerts */}
         <Route path="alerts" element={<Alerts />} />
+        
+        {/* Configuration (Admin Only) */}
+        <Route path="configuration" element={
+          <ProtectedRoute allowedRoles={['admin', 'config_manager']}>
+            <Configuration />
+          </ProtectedRoute>
+        } />
         
         {/* Admin */}
         <Route path="users" element={
