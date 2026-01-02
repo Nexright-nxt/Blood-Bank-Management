@@ -113,8 +113,8 @@ export default function StorageManagement() {
   };
 
   const getStorageIcon = (type) => {
-    const found = STORAGE_TYPES.find(t => t.value === type);
-    return found?.icon || '📦';
+    const typeInfo = getStorageTypeInfo(type);
+    return typeInfo?.icon || '📦';
   };
 
   return (
