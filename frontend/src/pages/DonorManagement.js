@@ -1,43 +1,56 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { donorAPI } from '../lib/api';
+import { donorAPI, donationSessionAPI } from '../lib/api';
 import { toast } from 'sonner';
-import { Plus, Search, Filter, Eye, UserCheck, UserX } from 'lucide-react';
+import { 
+  Plus, Search, Filter, Eye, UserCheck, UserX, Clipboard, Droplet, 
+  RefreshCw, Users, CheckCircle, XCircle, Clock, Ban, Activity
+} from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import { Badge } from '../components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
-
-const statusColors = {
-  active: 'bg-emerald-100 text-emerald-700 border-emerald-200',
-  deferred_temporary: 'bg-amber-100 text-amber-700 border-amber-200',
-  deferred_permanent: 'bg-red-100 text-red-700 border-red-200',
-};
+import { ScrollArea } from '../components/ui/scroll-area';
 
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
+
+// Status badge configurations
+const STATUS_CONFIG = {
+  eligible: { bg: 'bg-emerald-100 text-emerald-700', icon: CheckCircle },
+  deactivated: { bg: 'bg-slate-100 text-slate-500', icon: Ban },
+  deferred: { bg: 'bg-red-100 text-red-700', icon: XCircle },
+  not_eligible: { bg: 'bg-amber-100 text-amber-700', icon: Clock },
+  age_restriction: { bg: 'bg-orange-100 text-orange-700', icon: UserX },
+  in_progress: { bg: 'bg-blue-100 text-blue-700', icon: Activity },
+};
 
 export default function DonorManagement() {
   const navigate = useNavigate();
   const [donors, setDonors] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [actionLoading, setActionLoading] = useState(null);
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [activeFilter, setActiveFilter] = useState('active'); // active, deactivated, all
+  const [eligibilityFilter, setEligibilityFilter] = useState('all'); // all, eligible, not_eligible
   const [bloodGroupFilter, setBloodGroupFilter] = useState('all');
 
   useEffect(() => {
     fetchDonors();
-  }, [statusFilter, bloodGroupFilter]);
+  }, [activeFilter, eligibilityFilter, bloodGroupFilter]);
 
   const fetchDonors = async () => {
+    setLoading(true);
     try {
-      const params = {};
-      if (statusFilter !== 'all') params.status = statusFilter;
-      if (bloodGroupFilter !== 'all') params.blood_group = bloodGroupFilter;
-      if (search) params.search = search;
+      const params = {
+        is_active: activeFilter,
+        filter_status: eligibilityFilter !== 'all' ? eligibilityFilter : undefined,
+        blood_group: bloodGroupFilter !== 'all' ? bloodGroupFilter : undefined,
+        search: search || undefined,
+      };
       
-      const response = await donorAPI.getAll(params);
+      const response = await donorAPI.getDonorsWithStatus(params);
       setDonors(response.data);
     } catch (error) {
       toast.error('Failed to fetch donors');
@@ -50,6 +63,25 @@ export default function DonorManagement() {
     fetchDonors();
   };
 
+  const handleStartScreening = async (donor) => {
+    if (donor.eligibility_status !== 'eligible') {
+      toast.error(donor.eligibility_reason || 'Donor is not eligible');
+      return;
+    }
+    
+    setActionLoading(donor.id);
+    try {
+      const response = await donationSessionAPI.create(donor.id);
+      toast.success(`Session started: ${response.data.session_id}`);
+      navigate(`/screening?donor=${donor.id}&session=${response.data.session_id}`);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to start screening');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  // Filter donors by search
   const filteredDonors = donors.filter(donor => {
     if (!search) return true;
     const searchLower = search.toLowerCase();
@@ -60,6 +92,25 @@ export default function DonorManagement() {
     );
   });
 
+  // Count statistics
+  const stats = {
+    total: donors.length,
+    eligible: donors.filter(d => d.eligibility_status === 'eligible').length,
+    active: donors.filter(d => d.is_active !== false).length,
+    deactivated: donors.filter(d => d.is_active === false).length,
+  };
+
+  const renderStatusBadge = (status) => {
+    const config = STATUS_CONFIG[status] || STATUS_CONFIG.not_eligible;
+    const Icon = config.icon;
+    return (
+      <Badge className={config.bg}>
+        <Icon className="w-3 h-3 mr-1" />
+        {status?.replace('_', ' ')}
+      </Badge>
+    );
+  };
+
   return (
     <div className="space-y-6 animate-fade-in" data-testid="donor-management">
       {/* Header */}
@@ -68,129 +119,177 @@ export default function DonorManagement() {
           <h1 className="page-title">Donor Management</h1>
           <p className="page-subtitle">Register and manage blood donors</p>
         </div>
-        <Button 
-          onClick={() => navigate('/donors/register')}
-          className="bg-teal-600 hover:bg-teal-700"
-          data-testid="register-donor-btn"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Register New Donor
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={fetchDonors} disabled={loading}>
+            <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button 
+            onClick={() => navigate('/donors/register')}
+            className="bg-teal-600 hover:bg-teal-700"
+            data-testid="register-donor-btn"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            Register New Donor
+          </Button>
+        </div>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <Card className="bg-gradient-to-br from-slate-50 to-slate-100">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-slate-600">Total Donors</p>
+                <p className="text-2xl font-bold text-slate-700">{stats.total}</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-slate-200 flex items-center justify-center">
+                <Users className="w-6 h-6 text-slate-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-emerald-600">Eligible</p>
+                <p className="text-2xl font-bold text-emerald-700">{stats.eligible}</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-emerald-200 flex items-center justify-center">
+                <CheckCircle className="w-6 h-6 text-emerald-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-teal-50 to-teal-100">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-teal-600">Active</p>
+                <p className="text-2xl font-bold text-teal-700">{stats.active}</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-teal-200 flex items-center justify-center">
+                <UserCheck className="w-6 h-6 text-teal-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <Card className="bg-gradient-to-br from-red-50 to-red-100">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-red-600">Deactivated</p>
+                <p className="text-2xl font-bold text-red-700">{stats.deactivated}</p>
+              </div>
+              <div className="w-12 h-12 rounded-full bg-red-200 flex items-center justify-center">
+                <Ban className="w-6 h-6 text-red-600" />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-              <Input
-                placeholder="Search by name, ID, or phone..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-                className="pl-9"
-                data-testid="search-input"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-48" data-testid="status-filter">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="deferred_temporary">Temporarily Deferred</SelectItem>
-                <SelectItem value="deferred_permanent">Permanently Deferred</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={bloodGroupFilter} onValueChange={setBloodGroupFilter}>
-              <SelectTrigger className="w-full md:w-48" data-testid="blood-group-filter">
-                <SelectValue placeholder="Filter by blood group" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Blood Groups</SelectItem>
-                {bloodGroups.map(bg => (
-                  <SelectItem key={bg} value={bg}>{bg}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Button variant="outline" onClick={handleSearch} data-testid="search-btn">
-              <Filter className="w-4 h-4 mr-2" />
-              Apply
-            </Button>
+      <Card className="p-4">
+        <div className="flex flex-wrap gap-4">
+          <div className="flex-1 min-w-[200px] relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input
+              placeholder="Search by ID, name, or phone..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+              className="pl-9"
+              data-testid="search-input"
+            />
           </div>
-        </CardContent>
+          
+          <Select value={activeFilter} onValueChange={setActiveFilter}>
+            <SelectTrigger className="w-[140px]" data-testid="active-filter">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="deactivated">Deactivated</SelectItem>
+              <SelectItem value="all">All</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Select value={eligibilityFilter} onValueChange={setEligibilityFilter}>
+            <SelectTrigger className="w-[150px]">
+              <SelectValue placeholder="Eligibility" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Eligibility</SelectItem>
+              <SelectItem value="eligible">Eligible Only</SelectItem>
+              <SelectItem value="not_eligible">Not Eligible</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <Select value={bloodGroupFilter} onValueChange={setBloodGroupFilter}>
+            <SelectTrigger className="w-[130px]" data-testid="blood-group-filter">
+              <SelectValue placeholder="Blood Group" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Blood</SelectItem>
+              {bloodGroups.map(bg => (
+                <SelectItem key={bg} value={bg}>{bg}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          <Button onClick={handleSearch} disabled={loading}>
+            <Search className="w-4 h-4 mr-2" />
+            Search
+          </Button>
+        </div>
       </Card>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="card-stat">
-          <CardContent className="pt-6">
-            <p className="text-sm text-slate-500">Total Donors</p>
-            <p className="text-2xl font-bold">{donors.length}</p>
-          </CardContent>
-        </Card>
-        <Card className="card-stat">
-          <CardContent className="pt-6">
-            <p className="text-sm text-slate-500">Active</p>
-            <p className="text-2xl font-bold text-emerald-600">
-              {donors.filter(d => d.status === 'active').length}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="card-stat">
-          <CardContent className="pt-6">
-            <p className="text-sm text-slate-500">Temp. Deferred</p>
-            <p className="text-2xl font-bold text-amber-600">
-              {donors.filter(d => d.status === 'deferred_temporary').length}
-            </p>
-          </CardContent>
-        </Card>
-        <Card className="card-stat">
-          <CardContent className="pt-6">
-            <p className="text-sm text-slate-500">Perm. Deferred</p>
-            <p className="text-2xl font-bold text-red-600">
-              {donors.filter(d => d.status === 'deferred_permanent').length}
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Table */}
+      {/* Donor Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Registered Donors</CardTitle>
+          <CardTitle>Donors ({filteredDonors.length})</CardTitle>
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="flex justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal-600"></div>
+            <div className="flex items-center justify-center py-12">
+              <RefreshCw className="w-8 h-8 animate-spin text-slate-400" />
             </div>
           ) : filteredDonors.length === 0 ? (
-            <div className="text-center py-8 text-slate-500">
-              No donors found. Click "Register New Donor" to add one.
+            <div className="text-center py-12 text-slate-500">
+              <Users className="w-12 h-12 mx-auto mb-2 text-slate-300" />
+              <p>No donors found</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <Table className="table-dense">
+            <ScrollArea className="h-[500px]">
+              <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Donor ID</TableHead>
                     <TableHead>Name</TableHead>
+                    <TableHead>Age</TableHead>
                     <TableHead>Blood Group</TableHead>
                     <TableHead>Phone</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Donations</TableHead>
-                    <TableHead>Last Donation</TableHead>
+                    <TableHead>Total Donations</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredDonors.map((donor) => (
-                    <TableRow key={donor.id} className="data-table-row" data-testid={`donor-row-${donor.id}`}>
+                    <TableRow key={donor.id} className={donor.is_active === false ? 'opacity-60' : ''}>
                       <TableCell className="font-mono text-sm">{donor.donor_id}</TableCell>
                       <TableCell className="font-medium">{donor.full_name}</TableCell>
+                      <TableCell>
+                        <span className={`text-sm ${donor.age < 18 || donor.age > 65 ? 'text-red-600 font-medium' : ''}`}>
+                          {donor.age} yrs
+                        </span>
+                      </TableCell>
                       <TableCell>
                         {donor.blood_group ? (
                           <span className="blood-group-badge">{donor.blood_group}</span>
@@ -198,41 +297,45 @@ export default function DonorManagement() {
                           <span className="text-slate-400">-</span>
                         )}
                       </TableCell>
-                      <TableCell>{donor.phone}</TableCell>
+                      <TableCell className="text-sm">{donor.phone}</TableCell>
                       <TableCell>
-                        <Badge className={`${statusColors[donor.status]} border`}>
-                          {donor.status === 'active' ? (
-                            <><UserCheck className="w-3 h-3 mr-1" /> Active</>
-                          ) : donor.status === 'deferred_temporary' ? (
-                            <><UserX className="w-3 h-3 mr-1" /> Temp. Deferred</>
-                          ) : (
-                            <><UserX className="w-3 h-3 mr-1" /> Perm. Deferred</>
-                          )}
-                        </Badge>
+                        {renderStatusBadge(donor.eligibility_status)}
                       </TableCell>
-                      <TableCell>{donor.total_donations || 0}</TableCell>
-                      <TableCell>
-                        {donor.last_donation_date ? (
-                          new Date(donor.last_donation_date).toLocaleDateString()
-                        ) : (
-                          <span className="text-slate-400">Never</span>
-                        )}
-                      </TableCell>
+                      <TableCell className="text-center">{donor.total_donations || 0}</TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate(`/donors/${donor.id}`)}
-                          data-testid={`view-donor-${donor.id}`}
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Button>
+                        <div className="flex justify-end gap-1">
+                          {/* Start Screening */}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            title="Start Screening"
+                            onClick={() => handleStartScreening(donor)}
+                            disabled={donor.eligibility_status !== 'eligible' || actionLoading === donor.id}
+                            className={donor.eligibility_status === 'eligible' ? 'text-teal-600 hover:text-teal-700 hover:bg-teal-50' : ''}
+                          >
+                            {actionLoading === donor.id ? (
+                              <RefreshCw className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Clipboard className="w-4 h-4" />
+                            )}
+                          </Button>
+                          
+                          {/* View Details */}
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            title="View Details"
+                            onClick={() => navigate(`/donors/${donor.donor_id}`)}
+                          >
+                            <Eye className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
-            </div>
+            </ScrollArea>
           )}
         </CardContent>
       </Card>
