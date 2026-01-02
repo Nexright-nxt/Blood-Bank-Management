@@ -4370,13 +4370,18 @@ class BloodBankAPITester:
         return all_passed
 
     def run_multi_tenancy_tests(self):
-        """Run Multi-Tenancy System Phase 1 Backend API tests as per review request"""
-        print("🚀 Starting Multi-Tenancy System Phase 1 Backend API Testing...")
+        """Run Multi-Tenancy System Phases 2-3 Backend API tests as per review request"""
+        print("🚀 Starting Multi-Tenancy System Phases 2-3 Backend API Testing...")
         print(f"🌐 Base URL: {self.base_url}")
         
-        # Multi-Tenancy System Phase 1 API tests
+        # Login first
+        if not self.test_user_login(self.admin_email, self.admin_password):
+            print("❌ Failed to login - cannot proceed with tests")
+            return False
+        
+        # Multi-Tenancy System Phases 2-3 API tests
         tests = [
-            ("Multi-Tenancy System Phase 1 Backend APIs", self.test_multi_tenancy_apis),
+            ("Multi-Tenancy System Phases 2-3 Backend APIs", self.test_multi_tenancy_phase_2_3_apis),
         ]
         
         # Run tests
@@ -4398,7 +4403,7 @@ class BloodBankAPITester:
         
         # Final summary
         print(f"\n{'='*60}")
-        print("📊 MULTI-TENANCY SYSTEM PHASE 1 TEST SUMMARY")
+        print("📊 MULTI-TENANCY SYSTEM PHASES 2-3 TEST SUMMARY")
         print('='*60)
         print(f"Total tests run: {self.tests_run}")
         print(f"Tests passed: {self.tests_passed}")
@@ -4408,19 +4413,19 @@ class BloodBankAPITester:
         return all_passed
 
 def main():
-    print("🏢 Multi-Tenancy System Phase 1 Backend API Testing")
+    print("🏢 Multi-Tenancy System Phases 2-3 Backend API Testing")
     print("=" * 70)
     
     tester = BloodBankAPITester()
     
-    # Run the Multi-Tenancy System Phase 1 tests as per review request
+    # Run the Multi-Tenancy System Phases 2-3 tests as per review request
     success = tester.run_multi_tenancy_tests()
     
     if success:
-        print("\n🎉 All Multi-Tenancy System Phase 1 API tests passed!")
+        print("\n🎉 All Multi-Tenancy System Phases 2-3 API tests passed!")
         return 0
     else:
-        print("\n💥 Some Multi-Tenancy System Phase 1 API tests failed!")
+        print("\n💥 Some Multi-Tenancy System Phases 2-3 API tests failed!")
         return 1
 
 if __name__ == "__main__":
