@@ -31,6 +31,9 @@ import PreLabQC from "./pages/PreLabQC";
 import Logistics from "./pages/Logistics";
 import UserManagement from "./pages/UserManagement";
 import Leaderboard from "./pages/Leaderboard";
+import Configuration from "./pages/Configuration";
+import LogisticsEnhanced from "./pages/LogisticsEnhanced";
+import PublicTracking from "./pages/PublicTracking";
 import "./App.css";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
