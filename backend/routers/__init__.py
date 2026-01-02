@@ -21,3 +21,4 @@ from .logistics import router as logistics_router
 from .labels import router as labels_router
 from .inventory_enhanced import router as inventory_enhanced_router
 from .relationships import router as relationships_router
+from .donors_enhanced import router as donors_enhanced_router
