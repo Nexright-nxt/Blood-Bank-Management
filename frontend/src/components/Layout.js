@@ -34,6 +34,7 @@ const roleLabels = {
 const navItems = [
   { path: '/dashboard', icon: Home, label: 'Dashboard', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution', 'config_manager'] },
   { path: '/organizations', icon: Building2, label: 'Organizations', roles: ['admin'] },
+  { path: '/blood-requests', icon: ArrowLeftRight, label: 'Blood Requests', roles: ['admin', 'inventory', 'distribution'] },
   { path: '/donor-requests', icon: UserPlus, label: 'Donor Requests', roles: ['admin', 'registration'] },
   { path: '/donors', icon: Users, label: 'Donor Management', roles: ['admin', 'registration'] },
   { path: '/screening', icon: Clipboard, label: 'Screening', roles: ['admin', 'registration', 'phlebotomist'] },
