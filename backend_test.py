@@ -3029,11 +3029,13 @@ class BloodBankAPITester:
                     success7 = False
         
         # Test 8: Vehicles APIs
-        # Create vehicle
+        # Create vehicle with unique registration number
+        import time
+        unique_suffix = str(int(time.time()) % 10000)
         test_vehicle_data = {
             "vehicle_type": "van",
             "vehicle_model": "Toyota Innova",
-            "registration_number": "MH12AB1234",
+            "registration_number": f"MH12AB{unique_suffix}",
             "capacity": 10,
             "driver_name": "John Driver",
             "driver_phone": "9876543210"
