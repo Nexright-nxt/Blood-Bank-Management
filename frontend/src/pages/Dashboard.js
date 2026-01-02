@@ -1,11 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { dashboardAPI, inventoryAPI } from '../lib/api';
+import { dashboardAPI, inventoryAPI, donationSessionAPI } from '../lib/api';
 import { toast } from 'sonner';
 import {
   Users, Droplet, AlertTriangle, Clock, Package, ClipboardList,
-  TrendingUp, Activity, RefreshCw, Zap
+  TrendingUp, Activity, RefreshCw, Zap, Clipboard, CheckCircle, PlayCircle
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
