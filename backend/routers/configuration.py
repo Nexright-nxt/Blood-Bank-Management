@@ -766,14 +766,18 @@ async def create_storage_type(
         "default_temp_range": default_temp_range,
         "icon": icon,
         "color": color,
-        "suitable_for": suitable_for or [],
+        "suitable_for": suitable_for if isinstance(suitable_for, list) else [],
         "is_active": True,
         "is_custom": True,
         "created_at": datetime.now(timezone.utc).isoformat(),
         "created_by": current_user["id"]
     }
     
-    await db.custom_storage_types.insert_one(new_type)
+    await db.custom_storage_types.insert_one(new_type.copy())
+    
+    # Remove _id if it was added by MongoDB
+    new_type.pop("_id", None)
+    
     await log_config_change("storage_type", type_code, "create", None, new_type, current_user["id"])
     
     return {"status": "success", "storage_type": new_type}
