@@ -1,27 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { organizationAPI } from '../lib/api';
 import { toast } from 'sonner';
-import { Droplet, Eye, EyeOff, LogIn, Shield } from 'lucide-react';
+import { Droplet, Eye, EyeOff, LogIn, Shield, Building2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [organizations, setOrganizations] = useState([]);
+  const [loadingOrgs, setLoadingOrgs] = useState(true);
   
-  const [loginForm, setLoginForm] = useState({ email: '', password: '' });
+  const [loginForm, setLoginForm] = useState({ email: '', password: '', org_id: '' });
+
+  useEffect(() => {
+    fetchOrganizations();
+  }, []);
+
+  const fetchOrganizations = async () => {
+    try {
+      const res = await organizationAPI.getPublicOrgs();
+      setOrganizations(res.data);
+    } catch (error) {
+      console.error('Failed to fetch organizations:', error);
+    } finally {
+      setLoadingOrgs(false);
+    }
+  };
 
   const handleLogin = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
-      await login(loginForm.email, loginForm.password);
+      await login(loginForm.email, loginForm.password, loginForm.org_id || null);
       toast.success('Login successful!');
       navigate('/dashboard');
     } catch (error) {
@@ -83,6 +102,41 @@ export default function Login() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleLogin} className="space-y-4">
+              {/* Organization Selection */}
+              {organizations.length > 0 && (
+                <div className="space-y-2">
+                  <Label htmlFor="org-select">
+                    <div className="flex items-center gap-2">
+                      <Building2 className="w-4 h-4" />
+                      Organization
+                    </div>
+                  </Label>
+                  <Select 
+                    value={loginForm.org_id} 
+                    onValueChange={(value) => setLoginForm({ ...loginForm, org_id: value })}
+                  >
+                    <SelectTrigger id="org-select" data-testid="org-select">
+                      <SelectValue placeholder={loadingOrgs ? "Loading..." : "Select organization (optional for system admin)"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">
+                        <span className="text-slate-500">No organization (System Admin)</span>
+                      </SelectItem>
+                      {organizations.map((org) => (
+                        <SelectItem key={org.id} value={org.id}>
+                          <div className="flex items-center gap-2">
+                            <span>{org.org_name}</span>
+                            {org.city && (
+                              <span className="text-xs text-slate-500">({org.city})</span>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="login-email">Email</Label>
                 <Input
