@@ -2899,14 +2899,19 @@ class BloodBankAPITester:
                 print(f"   ❌ Missing keys in form response: {[k for k in required_keys if k not in response2]}")
                 success2 = False
         
-        # Test 3: Update form schema (PUT)
+        # Test 3: Update form schema (PUT) - Include all system fields
         test_form_schema = [
             {"name": "donor_id", "label": "Donor ID", "field_type": "text", "required": True, "is_system_field": True, "order": 0},
             {"name": "full_name", "label": "Full Name", "field_type": "text", "required": True, "order": 1},
             {"name": "date_of_birth", "label": "Date of Birth", "field_type": "date", "required": True, "order": 2},
             {"name": "gender", "label": "Gender", "field_type": "radio", "required": True, "options": ["Male", "Female", "Other"], "order": 3},
-            {"name": "phone", "label": "Phone Number", "field_type": "phone", "required": True, "order": 4},
-            {"name": "test_field", "label": "Test Field", "field_type": "text", "required": False, "order": 5}
+            {"name": "blood_group", "label": "Blood Group", "field_type": "dropdown", "required": False, "is_system_field": True, "options": ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"], "order": 4},
+            {"name": "phone", "label": "Phone Number", "field_type": "phone", "required": True, "order": 5},
+            {"name": "email", "label": "Email", "field_type": "email", "required": False, "order": 6},
+            {"name": "address", "label": "Address", "field_type": "textarea", "required": True, "order": 7},
+            {"name": "identity_type", "label": "Identity Type", "field_type": "dropdown", "required": True, "options": ["Aadhar", "PAN", "Passport", "Driving License", "Voter ID"], "order": 8},
+            {"name": "identity_number", "label": "Identity Number", "field_type": "text", "required": True, "order": 9},
+            {"name": "test_field", "label": "Test Field", "field_type": "text", "required": False, "order": 10}
         ]
         
         success3, response3 = self.run_test(
