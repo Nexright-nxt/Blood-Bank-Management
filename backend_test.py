@@ -1894,12 +1894,13 @@ class BloodBankAPITester:
         )
         
         if success11 and response11:
-            required_keys = ['total_units', 'by_blood_group', 'by_component_type', 'by_status']
+            required_keys = ['total_units_available', 'total_components_available', 'units_by_blood_group', 'components_by_type']
             missing_keys = [k for k in required_keys if k not in response11]
             if not missing_keys:
                 print("   ✅ Inventory summary structure valid")
-                print(f"   ✅ Total units: {response11.get('total_units', 0)}")
-                blood_groups = response11.get('by_blood_group', {})
+                print(f"   ✅ Total units: {response11.get('total_units_available', 0)}")
+                print(f"   ✅ Total components: {response11.get('total_components_available', 0)}")
+                blood_groups = response11.get('units_by_blood_group', {})
                 if blood_groups:
                     print(f"   ✅ Blood group breakdown: {len(blood_groups)} groups")
                 else:
