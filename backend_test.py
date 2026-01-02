@@ -1616,8 +1616,10 @@ class BloodBankAPITester:
         # ============== Test Inter-Org Requests CRUD ==============
         
         # Test 1: POST /api/inter-org-requests - Create blood request
+        # For system admin, we need to specify a requesting org since they don't belong to one
         test_request_data = {
             "request_type": "internal",
+            "requesting_org_id": bloodlink_central_id,  # System admin can specify requesting org
             "fulfilling_org_id": bloodlink_central_id,
             "component_type": "prc",
             "blood_group": "O+",
