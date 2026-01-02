@@ -143,6 +143,13 @@ function AppRoutes() {
           </ProtectedRoute>
         } />
         
+        {/* Organizations (System/Super Admin Only) */}
+        <Route path="organizations" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Organizations />
+          </ProtectedRoute>
+        } />
+        
         {/* Admin */}
         <Route path="users" element={
           <ProtectedRoute allowedRoles={['admin']}>
