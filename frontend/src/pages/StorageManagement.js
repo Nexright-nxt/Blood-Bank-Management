@@ -319,17 +319,14 @@ export default function StorageManagement() {
             
             <div>
               <Label>Storage Type *</Label>
-              <Select value={formData.storage_type} onValueChange={(v) => {
-                const type = STORAGE_TYPES.find(t => t.value === v);
-                setFormData({...formData, storage_type: v, temperature_range: type?.temp || ''});
-              }}>
+              <Select value={formData.storage_type} onValueChange={handleTypeChange}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  {STORAGE_TYPES.map(type => (
-                    <SelectItem key={type.value} value={type.value}>
-                      {type.icon} {type.label} ({type.temp})
+                  {storageTypes.map(type => (
+                    <SelectItem key={type.type_code} value={type.type_code}>
+                      {type.icon} {type.type_name} ({type.default_temp_range})
                     </SelectItem>
                   ))}
                 </SelectContent>
