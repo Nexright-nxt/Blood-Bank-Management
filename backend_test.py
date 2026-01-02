@@ -1919,16 +1919,19 @@ class BloodBankAPITester:
         )
         
         if success12 and response12:
-            if isinstance(response12, list):
-                print(f"   ✅ Found {len(response12)} expiring items")
-                if len(response12) > 0:
-                    item = response12[0]
-                    if 'org_id' in item:
-                        print("   ✅ Expiring items include org_id for filtering")
+            # The expiring API returns a dict with expiring_units and expiring_components arrays
+            if 'expiring_units' in response12 and 'expiring_components' in response12:
+                expiring_units = response12.get('expiring_units', [])
+                expiring_components = response12.get('expiring_components', [])
+                print(f"   ✅ Found {len(expiring_units)} expiring units and {len(expiring_components)} expiring components")
+                if len(expiring_units) > 0:
+                    unit = expiring_units[0]
+                    if 'org_id' in unit:
+                        print("   ✅ Expiring units include org_id for filtering")
                     else:
-                        print("   ⚠️ Expiring items missing org_id field")
+                        print("   ⚠️ Expiring units missing org_id field")
             else:
-                print(f"   ❌ Expected list response, got: {type(response12)}")
+                print(f"   ❌ Expected dict with expiring_units and expiring_components, got: {list(response12.keys())}")
                 success12 = False
         
         # Test 13: GET /api/donors - Should filter by accessible orgs
