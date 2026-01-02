@@ -175,3 +175,7 @@ test_credentials:
   admin:
     email: "admin@bloodbank.com"
     password: "adminpassword"
+
+  - agent: "main"
+    message: "Completed Dashboard Active Sessions feature. Added a new 'Active Donation Sessions' section to the Dashboard that displays: 1) Clickable session cards showing donor name, ID, and blood group, 2) Visual progress indicator (Screening → Collection → Done), 3) Status badges (In Screening/In Collection), 4) Navigation to continue session when clicked. The section only appears when there are active sessions. Also verified: DonorDetails page with deactivation/reactivation dialogs, DonorManagement page with Start Screening quick action, Screening page with eligible donors list, Collection page with all donors and status badges, and Leaderboard page with tier system. Ready for comprehensive testing."
+
