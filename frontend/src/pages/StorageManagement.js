@@ -372,6 +372,12 @@ export default function StorageManagement() {
                       {type.icon} {type.type_name} ({type.default_temp_range})
                     </SelectItem>
                   ))}
+                  <SelectItem value="__create_new__" className="text-teal-600 font-medium border-t mt-1 pt-1">
+                    <div className="flex items-center gap-2">
+                      <PlusCircle className="w-4 h-4" />
+                      Create New Storage Type...
+                    </div>
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
