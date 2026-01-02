@@ -39,18 +39,21 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [inventory, setInventory] = useState(null);
+  const [activeSessions, setActiveSessions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
 
   const fetchData = useCallback(async () => {
     try {
-      const [statsRes, inventoryRes] = await Promise.all([
+      const [statsRes, inventoryRes, sessionsRes] = await Promise.all([
         dashboardAPI.getStats(),
-        inventoryAPI.getByBloodGroup()
+        inventoryAPI.getByBloodGroup(),
+        donationSessionAPI.getAll({ status: 'active' }).catch(() => ({ data: [] }))
       ]);
       setStats(statsRes.data);
       setInventory(inventoryRes.data);
+      setActiveSessions(sessionsRes.data || []);
       setLastUpdated(new Date());
     } catch (error) {
       toast.error('Failed to load dashboard data');
