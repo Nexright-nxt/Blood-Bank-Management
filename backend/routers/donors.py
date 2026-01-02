@@ -452,7 +452,11 @@ async def reject_donor_request(
 
 # ==================== STAFF DONOR MANAGEMENT ROUTES ====================
 @router.post("/donors")
-async def create_donor(donor_data: DonorCreate, current_user: dict = Depends(get_current_user)):
+async def create_donor(
+    donor_data: DonorCreate, 
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(WriteAccess)
+):
     existing = await db.donors.find_one({
         "identity_type": donor_data.identity_type,
         "identity_number": donor_data.identity_number
@@ -468,6 +472,8 @@ async def create_donor(donor_data: DonorCreate, current_user: dict = Depends(get
     doc = donor.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
     doc['updated_at'] = doc['updated_at'].isoformat()
+    # Add org_id from current user's org
+    doc['org_id'] = access.get_default_org_id()
     
     await db.donors.insert_one(doc)
     return {"status": "success", "donor_id": donor.donor_id, "id": donor.id}
@@ -477,9 +483,12 @@ async def get_donors(
     search: Optional[str] = None,
     status: Optional[str] = None,
     blood_group: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(ReadAccess)
 ):
-    query = {}
+    # Build org-filtered query
+    query = access.filter()
+    
     if status:
         query["status"] = status
     if blood_group:
@@ -495,19 +504,49 @@ async def get_donors(
     return donors
 
 @router.get("/donors/{donor_id}")
-async def get_donor(donor_id: str, current_user: dict = Depends(get_current_user)):
+async def get_donor(
+    donor_id: str, 
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(ReadAccess)
+):
+    # First find the donor
     donor = await db.donors.find_one(
         {"$or": [{"id": donor_id}, {"donor_id": donor_id}]},
         {"_id": 0}
     )
     if not donor:
         raise HTTPException(status_code=404, detail="Donor not found")
+    
+    # Check org access
+    donor_org_id = donor.get("org_id")
+    if donor_org_id and not access.can_access(donor_org_id):
+        raise HTTPException(status_code=403, detail="Access denied to this donor's organization")
+    
     return donor
 
 @router.put("/donors/{donor_id}")
-async def update_donor(donor_id: str, updates: dict, current_user: dict = Depends(get_current_user)):
+async def update_donor(
+    donor_id: str, 
+    updates: dict, 
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(WriteAccess)
+):
+    # Find donor first to check org access
+    donor = await db.donors.find_one(
+        {"$or": [{"id": donor_id}, {"donor_id": donor_id}]}
+    )
+    if not donor:
+        raise HTTPException(status_code=404, detail="Donor not found")
+    
+    # Check write access to donor's org
+    donor_org_id = donor.get("org_id")
+    if donor_org_id and not access.can_access(donor_org_id):
+        raise HTTPException(status_code=403, detail="No write access to this donor's organization")
+    
     updates["updated_at"] = datetime.now(timezone.utc).isoformat()
     updates["updated_by"] = current_user["id"]
+    # Don't allow changing org_id
+    updates.pop("org_id", None)
     
     result = await db.donors.update_one(
         {"$or": [{"id": donor_id}, {"donor_id": donor_id}]},
