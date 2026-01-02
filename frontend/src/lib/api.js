@@ -349,4 +349,65 @@ export const relationshipAPI = {
   getBatchRelationships: (unitIds, componentIds) => api.get('/relationships/batch', { params: { unit_ids: unitIds, component_ids: componentIds } }),
 };
 
+// Configuration APIs
+export const configAPI = {
+  // Forms
+  getForms: () => api.get('/config/forms'),
+  getForm: (formName) => api.get(`/config/forms/${formName}`),
+  updateForm: (formName, formSchema) => api.put(`/config/forms/${formName}`, formSchema),
+  addFormField: (formName, field) => api.post(`/config/forms/${formName}/fields`, field),
+  
+  // Workflow Rules
+  getRules: (params) => api.get('/config/rules', { params }),
+  getRule: (ruleId) => api.get(`/config/rules/${ruleId}`),
+  createRule: (rule) => api.post('/config/rules', rule),
+  updateRule: (ruleId, rule) => api.put(`/config/rules/${ruleId}`, rule),
+  duplicateRule: (ruleId) => api.post(`/config/rules/${ruleId}/duplicate`),
+  toggleRule: (ruleId) => api.put(`/config/rules/${ruleId}/toggle`),
+  deleteRule: (ruleId) => api.delete(`/config/rules/${ruleId}`),
+  
+  // Triggers
+  getTriggers: (params) => api.get('/config/triggers', { params }),
+  createTrigger: (trigger) => api.post('/config/triggers', trigger),
+  toggleTrigger: (triggerId) => api.put(`/config/triggers/${triggerId}/toggle`),
+  deleteTrigger: (triggerId) => api.delete(`/config/triggers/${triggerId}`),
+  
+  // Vehicles
+  getVehicles: (params) => api.get('/config/vehicles', { params }),
+  createVehicle: (vehicle) => api.post('/config/vehicles', vehicle),
+  updateVehicle: (vehicleId, vehicle) => api.put(`/config/vehicles/${vehicleId}`, vehicle),
+  toggleVehicle: (vehicleId) => api.put(`/config/vehicles/${vehicleId}/toggle`),
+  
+  // Courier Partners
+  getCouriers: (params) => api.get('/config/couriers', { params }),
+  createCourier: (courier) => api.post('/config/couriers', courier),
+  updateCourier: (courierId, courier) => api.put(`/config/couriers/${courierId}`, courier),
+  toggleCourier: (courierId) => api.put(`/config/couriers/${courierId}/toggle`),
+  
+  // System Settings
+  getSettings: () => api.get('/config/settings'),
+  updateSettings: (settings) => api.put('/config/settings', settings),
+  
+  // Audit Logs
+  getAuditLogs: (params) => api.get('/config/audit-logs', { params }),
+  
+  // Enums
+  getEnums: () => api.get('/config/enums'),
+};
+
+// Enhanced Logistics APIs
+export const logisticsEnhancedAPI = {
+  createShipment: (data) => api.post('/logistics/shipments', data),
+  getShipments: (params) => api.get('/logistics/shipments', { params }),
+  getShipment: (id) => api.get(`/logistics/shipments/${id}`),
+  dispatchShipment: (id) => api.put(`/logistics/shipments/${id}/dispatch`),
+  addTrackingUpdate: (id, update) => api.post(`/logistics/shipments/${id}/tracking`, update),
+  deliverShipment: (id, receivedBy, notes) => 
+    api.put(`/logistics/shipments/${id}/deliver`, null, { params: { received_by: receivedBy, notes } }),
+  logTemperature: (id, temperature, location) => 
+    api.put(`/logistics/shipments/${id}/temperature`, null, { params: { temperature, location } }),
+  publicTrack: (trackingNumber) => api.get(`/logistics/track/${trackingNumber}`),
+  getDashboard: () => api.get('/logistics/dashboard'),
+};
+
 export default api;
