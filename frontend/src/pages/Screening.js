@@ -322,16 +322,16 @@ export default function Screening() {
         <TabsContent value="pending" className="mt-4">
           <Card>
             <CardHeader>
-              <CardTitle>Donors Awaiting Screening</CardTitle>
+              <CardTitle>Eligible Donors for Screening</CardTitle>
               <CardDescription>
-                Active donors who haven't been screened today
+                Active donors who meet all eligibility criteria (age 18-65, no active deferral, 56+ days since last donation)
               </CardDescription>
             </CardHeader>
             <CardContent>
               {filteredPendingDonors.length === 0 ? (
                 <div className="text-center py-8 text-slate-500">
                   <Users className="w-12 h-12 mx-auto mb-2 text-slate-300" />
-                  <p>No pending donors found</p>
+                  <p>No eligible donors found</p>
                 </div>
               ) : (
                 <ScrollArea className="h-[400px]">
@@ -340,9 +340,10 @@ export default function Screening() {
                       <TableRow>
                         <TableHead>Donor ID</TableHead>
                         <TableHead>Name</TableHead>
+                        <TableHead>Age</TableHead>
                         <TableHead>Blood Group</TableHead>
                         <TableHead>Phone</TableHead>
-                        <TableHead>Last Screening</TableHead>
+                        <TableHead>Last Donation</TableHead>
                         <TableHead className="text-right">Action</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -351,6 +352,11 @@ export default function Screening() {
                         <TableRow key={d.id} className="cursor-pointer hover:bg-slate-50">
                           <TableCell className="font-mono text-sm">{d.donor_id}</TableCell>
                           <TableCell className="font-medium">{d.full_name}</TableCell>
+                          <TableCell className="text-sm">
+                            <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-700">
+                              {d.age || calculateAge(d.date_of_birth)} yrs
+                            </span>
+                          </TableCell>
                           <TableCell>
                             {d.blood_group ? (
                               <span className="blood-group-badge">{d.blood_group}</span>
@@ -360,19 +366,10 @@ export default function Screening() {
                           </TableCell>
                           <TableCell className="text-sm text-slate-600">{d.phone || '-'}</TableCell>
                           <TableCell>
-                            {d.last_screening_date ? (
-                              <div className="flex items-center gap-2">
-                                <span className="text-sm">{d.last_screening_date}</span>
-                                <Badge className={
-                                  d.last_screening_status === 'eligible' 
-                                    ? 'bg-emerald-100 text-emerald-700' 
-                                    : 'bg-red-100 text-red-700'
-                                }>
-                                  {d.last_screening_status}
-                                </Badge>
-                              </div>
+                            {d.last_donation_date ? (
+                              <span className="text-sm">{d.last_donation_date}</span>
                             ) : (
-                              <span className="text-slate-400 text-sm">Never screened</span>
+                              <span className="text-slate-400 text-sm">Never donated</span>
                             )}
                           </TableCell>
                           <TableCell className="text-right">
