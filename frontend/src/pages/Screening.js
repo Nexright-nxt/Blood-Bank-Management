@@ -95,7 +95,7 @@ export default function Screening() {
     setLoading(true);
     try {
       const [pendingRes, completedRes, summaryRes] = await Promise.all([
-        screeningAPI.getPendingDonors(),
+        donorAPI.getEligibleForScreening(),
         screeningAPI.getAll({ date: new Date().toISOString().split('T')[0] }),
         screeningAPI.getTodaySummary(),
       ]);
