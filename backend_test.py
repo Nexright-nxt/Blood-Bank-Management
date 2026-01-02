@@ -2833,19 +2833,19 @@ class BloodBankAPITester:
         return all_passed
 
 def main():
-    print("🩸 Enhanced Collection Page API Testing")
+    print("🩸 Donor & Screening System Enhancement API Testing")
     print("=" * 70)
     
     tester = BloodBankAPITester()
     
-    # Run only the Enhanced Collection Page tests as per review request
+    # Run the Donor & Screening System Enhancement tests as per review request
     success = tester.run_enhanced_collection_tests()
     
     if success:
-        print("\n🎉 All Enhanced Collection Page API tests passed!")
+        print("\n🎉 All Donor & Screening System Enhancement API tests passed!")
         return 0
     else:
-        print("\n💥 Some Enhanced Collection Page API tests failed!")
+        print("\n💥 Some Donor & Screening System Enhancement API tests failed!")
         return 1
 
 if __name__ == "__main__":
