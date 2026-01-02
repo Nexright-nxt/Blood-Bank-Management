@@ -2785,8 +2785,8 @@ class BloodBankAPITester:
         return success1 and success2 and success3 and success4 and success5
 
     def run_enhanced_collection_tests(self):
-        """Run Enhanced Collection Page API tests as per review request"""
-        print("🚀 Starting Enhanced Collection Page API Testing...")
+        """Run Donor & Screening System Enhancement API tests as per review request"""
+        print("🚀 Starting Donor & Screening System Enhancement API Testing...")
         print(f"🌐 Base URL: {self.base_url}")
         
         # Login first
@@ -2799,13 +2799,13 @@ class BloodBankAPITester:
             print("❌ Auth/me failed - cannot get user ID")
             return False
         
-        # Enhanced Collection Page API tests
+        # Donor & Screening System Enhancement API tests
         tests = [
-            ("Enhanced Collection Page APIs", self.test_enhanced_collection_page_apis),
-            ("Inventory Enhanced Search API", self.test_inventory_enhanced_search_api),
+            ("Donor & Screening System Enhancement APIs", self.test_donor_screening_enhancement_apis),
         ]
         
         # Run tests
+        all_passed = True
         for test_name, test_func in tests:
             print(f"\n{'='*60}")
             print(f"🧪 Running: {test_name}")
@@ -2816,19 +2816,21 @@ class BloodBankAPITester:
                     print(f"✅ {test_name} - PASSED")
                 else:
                     print(f"❌ {test_name} - FAILED")
+                    all_passed = False
             except Exception as e:
                 print(f"💥 {test_name} - ERROR: {str(e)}")
+                all_passed = False
         
         # Final summary
         print(f"\n{'='*60}")
-        print("📊 ENHANCED COLLECTION PAGE TEST SUMMARY")
+        print("📊 DONOR & SCREENING SYSTEM ENHANCEMENT TEST SUMMARY")
         print('='*60)
         print(f"Total tests run: {self.tests_run}")
         print(f"Tests passed: {self.tests_passed}")
         print(f"Tests failed: {self.tests_run - self.tests_passed}")
         print(f"Success rate: {(self.tests_passed/self.tests_run)*100:.1f}%")
         
-        return self.tests_passed == self.tests_run
+        return all_passed
 
 def main():
     print("🩸 Enhanced Collection Page API Testing")
