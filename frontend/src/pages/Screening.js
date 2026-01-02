@@ -509,7 +509,7 @@ export default function Screening() {
                       )}
                     </div>
                     <div>
-                      <p className="font-semibold">{donor.full_name}</p>
+                      <p className="font-semibold">{donor.full_name}, {calculateAge(donor.date_of_birth)} years</p>
                       <p className="text-sm text-slate-500 font-mono">{donor.donor_id}</p>
                     </div>
                     {donor.blood_group && (
@@ -532,6 +532,120 @@ export default function Screening() {
                 )}
               </CardContent>
             </Card>
+          )}
+
+          {/* Donor Registration Info (Collapsible) */}
+          {donor && eligibility?.eligible && (
+            <Collapsible open={showRegistrationInfo} onOpenChange={setShowRegistrationInfo}>
+              <Card className="border-teal-200 bg-teal-50/30">
+                <CollapsibleTrigger asChild>
+                  <CardHeader className="cursor-pointer hover:bg-teal-50 transition-colors py-3">
+                    <div className="flex items-center justify-between">
+                      <CardTitle className="text-sm flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-teal-600" />
+                        Donor Registration Information
+                      </CardTitle>
+                      {showRegistrationInfo ? (
+                        <ChevronUp className="w-4 h-4 text-slate-400" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-slate-400" />
+                      )}
+                    </div>
+                  </CardHeader>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <CardContent className="pt-0 space-y-4">
+                    {/* Identity & Demographics */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                      <div>
+                        <span className="text-slate-500">Date of Birth</span>
+                        <p className="font-medium">{donor.date_of_birth} ({calculateAge(donor.date_of_birth)} yrs)</p>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">Gender</span>
+                        <p className="font-medium">{donor.gender}</p>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">ID Type</span>
+                        <p className="font-medium">{donor.identity_type}</p>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">ID Number</span>
+                        <p className="font-medium font-mono">{donor.identity_number}</p>
+                      </div>
+                    </div>
+
+                    {/* Physical Measurements */}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm border-t pt-3">
+                      <div className="flex items-center gap-2">
+                        <Scale className="w-4 h-4 text-slate-400" />
+                        <div>
+                          <span className="text-slate-500">Weight</span>
+                          <p className="font-medium">{donor.weight ? `${donor.weight} kg` : 'Not recorded'}</p>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">Height</span>
+                        <p className="font-medium">{donor.height ? `${donor.height} cm` : 'Not recorded'}</p>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">BMI</span>
+                        <p className="font-medium">{calculateBMI(donor.weight, donor.height) || '-'}</p>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">Blood Group</span>
+                        <p className="font-medium">{donor.blood_group || 'To be determined'}</p>
+                      </div>
+                    </div>
+
+                    {/* Contact Info */}
+                    <div className="grid grid-cols-2 gap-3 text-sm border-t pt-3">
+                      <div>
+                        <span className="text-slate-500">Phone</span>
+                        <p className="font-medium">{donor.phone}</p>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">Email</span>
+                        <p className="font-medium">{donor.email || '-'}</p>
+                      </div>
+                    </div>
+
+                    {/* Donation History */}
+                    <div className="grid grid-cols-2 gap-3 text-sm border-t pt-3">
+                      <div className="flex items-center gap-2">
+                        <Droplet className="w-4 h-4 text-red-400" />
+                        <div>
+                          <span className="text-slate-500">Total Donations</span>
+                          <p className="font-medium">{donor.total_donations || 0}</p>
+                        </div>
+                      </div>
+                      <div>
+                        <span className="text-slate-500">Last Donation</span>
+                        <p className="font-medium">{donor.last_donation_date || 'Never'}</p>
+                      </div>
+                    </div>
+
+                    {/* Health Questionnaire Summary */}
+                    {donor.health_questionnaire && (
+                      <div className="border-t pt-3">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Heart className="w-4 h-4 text-red-400" />
+                          <span className="text-sm font-medium text-slate-700">Health Questionnaire</span>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                          {Object.entries(donor.health_questionnaire).slice(0, 9).map(([key, value]) => (
+                            <div key={key} className={`p-1.5 rounded ${value === true ? 'bg-amber-50 text-amber-700' : 'bg-slate-50 text-slate-600'}`}>
+                              <span className="capitalize">{key.replace(/_/g, ' ')}: </span>
+                              <span className="font-medium">{value === true ? 'Yes' : value === false ? 'No' : value}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </CollapsibleContent>
+              </Card>
+            </Collapsible>
           )}
 
           {/* Screening Form */}
