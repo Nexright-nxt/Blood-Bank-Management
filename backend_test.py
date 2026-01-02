@@ -1616,11 +1616,12 @@ class BloodBankAPITester:
         # ============== Test Inter-Org Requests CRUD ==============
         
         # Test 1: POST /api/inter-org-requests - Create blood request
+        # Use B- blood group with PRC since it has 3 available components
         test_request_data = {
             "request_type": "internal",
             "fulfilling_org_id": bloodlink_central_id,
             "component_type": "prc",
-            "blood_group": "O+",
+            "blood_group": "B-",  # Changed to B- which has 3 available
             "quantity": 2,
             "urgency_level": "urgent",
             "clinical_indication": "Emergency surgery"
