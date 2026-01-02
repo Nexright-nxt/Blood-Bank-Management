@@ -112,6 +112,7 @@ export default function BloodRequests() {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter, urgencyFilter]);
 
   const fetchData = async () => {
