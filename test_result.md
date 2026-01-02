@@ -71,6 +71,18 @@ backend:
         comment: "All relationship APIs tested successfully. GET /api/relationships/unit/{unit_id} returns proper parent_unit object, components array, and summary with total_components, volumes, and status counts. GET /api/relationships/component/{component_id} returns full parent-component relationship tree with current_component_id highlighted. GET /api/relationships/tree/{item_id} auto-detects item type correctly and returns appropriate relationship tree. All endpoints handle non-existent IDs properly with 404 responses. Tested with real data including BU-2025-000001 unit. Response structures match API specifications exactly."
 
 frontend:
+  - task: "Custom Storage Types - Frontend"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/pages/Configuration.js, /app/frontend/src/pages/StorageManagement.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Custom Storage Types feature implemented in Configuration page with Storage tab showing storage types table, Add Storage Type button, Edit/Toggle/Delete buttons for custom types, and 'System type' label for default types. StorageManagement page updated to use configAPI.getStorageTypes() and auto-fill temperature range when selecting storage type in Add Storage Location dialog."
+
   - task: "Enhanced Collection Page - Frontend"
     implemented: true
     working: true
