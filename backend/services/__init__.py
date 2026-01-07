@@ -6,3 +6,6 @@ from .helpers import (
     generate_unit_id, generate_component_id, generate_request_id,
     generate_issue_id, generate_return_id, generate_discard_id
 )
+from .audit_service import (
+    AuditService, audit_log, audit_create, audit_update, audit_delete
+)
