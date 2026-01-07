@@ -35,7 +35,7 @@ const roleLabels = {
 };
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, token, isImpersonating } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [inventory, setInventory] = useState(null);
@@ -62,9 +62,11 @@ export default function Dashboard() {
     }
   }, []);
 
+  // Fetch data on mount and when token changes (including context switch)
   useEffect(() => {
+    setLoading(true);
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, token]);
 
   // Auto-refresh every 30 seconds
   useEffect(() => {
