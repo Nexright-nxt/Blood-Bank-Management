@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { organizationAPI, documentAPI } from '../lib/api';
+import { organizationAPI, documentAPI, complianceAPI, trainingAPI } from '../lib/api';
 import api from '../lib/api';
 import { toast } from 'sonner';
 import {
@@ -9,7 +9,8 @@ import {
   Edit2, Trash2, UserPlus, Mail, Phone, MapPin, FileText,
   Shield, Clock, CheckCircle, AlertTriangle, RefreshCw,
   BarChart3, Droplet, Calendar, Upload, Download, Eye,
-  File, FileCheck, FileWarning, X
+  File, FileCheck, FileWarning, X, ClipboardCheck, GraduationCap,
+  BookOpen, Award, Link2, PlayCircle, XCircle
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -28,6 +29,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
+import { Progress } from '../components/ui/progress';
 
 const USER_ROLES = [
   { value: 'admin', label: 'Administrator' },
