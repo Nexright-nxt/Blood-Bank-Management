@@ -39,7 +39,7 @@ class TestDocumentManagement:
             payload["org_id"] = org_id
         response = self.session.post(f"{BASE_URL}/api/auth/login", json=payload)
         if response.status_code == 200:
-            token = response.json().get("access_token")
+            token = response.json().get("token")
             self.session.headers.update({"Authorization": f"Bearer {token}"})
             return token
         return None
