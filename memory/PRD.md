@@ -97,13 +97,12 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
 ## Prioritized Backlog
 
 ### P0 (Critical - Next)
-- [ ] **Phase D: Interactive Master & System Admin Dashboards** - Clickable cards, charts, activity feeds
+- [ ] **Phase E: Interactive Org & Branch Detail Pages** - Tabbed detail views for managing individual organizations
 
 ### P1 (High Priority)
-- [ ] Phase E: Interactive Org & Branch Detail Pages
+- [ ] Phase F: Document Management (uploading/managing licenses)
 
 ### P2 (Medium Priority)
-- [ ] Phase F: Document Management
 - [ ] Phase G: Compliance & Training Modules
 
 ### P3 (Future)
