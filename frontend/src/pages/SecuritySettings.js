@@ -711,33 +711,33 @@ export default function SecuritySettings() {
 
       {/* MFA Setup Dialog */}
       <Dialog open={showMfaSetup} onOpenChange={setShowMfaSetup}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Setup Two-Factor Authentication</DialogTitle>
             <DialogDescription>
-              Scan the QR code with your authenticator app (Google Authenticator, Authy, etc.)
+              Scan the QR code with your authenticator app
             </DialogDescription>
           </DialogHeader>
           {mfaSetupData && (
-            <div className="space-y-4">
+            <div className="space-y-3">
               <div className="flex justify-center">
-                <img src={mfaSetupData.qr_code_uri} alt="MFA QR Code" className="border rounded-lg" />
+                <img src={mfaSetupData.qr_code_uri} alt="MFA QR Code" className="border rounded-lg w-40 h-40" />
               </div>
               
               <div className="text-center">
-                <p className="text-sm text-slate-500 mb-1">Or enter this code manually:</p>
+                <p className="text-xs text-slate-500 mb-1">Or enter manually:</p>
                 <div className="flex items-center justify-center gap-2">
-                  <code className="bg-slate-100 px-3 py-1 rounded font-mono text-sm">
+                  <code className="bg-slate-100 px-2 py-1 rounded font-mono text-xs break-all">
                     {mfaSetupData.secret}
                   </code>
                   <Button variant="ghost" size="sm" onClick={() => copyToClipboard(mfaSetupData.secret)}>
-                    <Copy className="w-4 h-4" />
+                    <Copy className="w-3 h-3" />
                   </Button>
                 </div>
               </div>
 
               <div>
-                <Label>Enter verification code</Label>
+                <Label className="text-sm">Enter verification code</Label>
                 <Input
                   type="text"
                   maxLength={6}
@@ -749,28 +749,28 @@ export default function SecuritySettings() {
                 />
               </div>
 
-              <div className="bg-amber-50 p-3 rounded-lg">
-                <p className="text-sm font-medium text-amber-800 mb-2">Save your backup codes</p>
-                <div className="grid grid-cols-2 gap-2 text-sm font-mono">
+              <div className="bg-amber-50 p-2 rounded-lg">
+                <p className="text-xs font-medium text-amber-800 mb-1">Save your backup codes</p>
+                <div className="grid grid-cols-5 gap-1 text-xs font-mono">
                   {mfaSetupData.backup_codes?.map((code, idx) => (
-                    <div key={idx} className="bg-white px-2 py-1 rounded">{code}</div>
+                    <div key={idx} className="bg-white px-1 py-0.5 rounded text-center">{code}</div>
                   ))}
                 </div>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="mt-2 w-full"
+                  className="mt-2 w-full text-xs h-7"
                   onClick={() => copyToClipboard(mfaSetupData.backup_codes.join('\n'))}
                 >
-                  <Download className="w-4 h-4 mr-1" />
+                  <Download className="w-3 h-3 mr-1" />
                   Copy All Codes
                 </Button>
               </div>
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowMfaSetup(false)}>Cancel</Button>
-            <Button onClick={handleVerifyMfa} disabled={loading || verificationCode.length !== 6}>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" size="sm" onClick={() => setShowMfaSetup(false)}>Cancel</Button>
+            <Button size="sm" onClick={handleVerifyMfa} disabled={loading || verificationCode.length !== 6}>
               {loading ? 'Verifying...' : 'Enable MFA'}
             </Button>
           </DialogFooter>
