@@ -44,3 +44,7 @@ from .session import (
     ContextType, SecurityEvent,
     MAX_CONCURRENT_SESSIONS, SESSION_TIMEOUT_MINUTES
 )
+from .document import (
+    Document, DocumentCreate, DocumentUpdate, DocumentResponse,
+    DocumentType, DocumentStatus
+)
