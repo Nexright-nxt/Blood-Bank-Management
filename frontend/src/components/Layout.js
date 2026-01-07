@@ -62,6 +62,7 @@ const navItems = [
   { path: '/leaderboard', icon: Trophy, label: 'Leaderboard', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution'] },
   { path: '/alerts', icon: Bell, label: 'Alerts', roles: ['admin', 'qc_manager', 'inventory', 'registration'] },
   { path: '/configuration', icon: Cog, label: 'Configuration', roles: ['admin', 'config_manager'] },
+  { path: '/security', icon: ShieldCheck, label: 'Security', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution', 'config_manager'] },
   { path: '/users', icon: Settings, label: 'User Management', roles: ['admin'] },
 ];
 
