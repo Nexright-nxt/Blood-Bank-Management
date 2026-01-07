@@ -86,6 +86,47 @@ export const documentAPI = {
   getDownloadUrl: (orgId, docId) => `${API_URL}/documents/${orgId}/${docId}/download`,
 };
 
+// Compliance APIs
+export const complianceAPI = {
+  // Requirements
+  getRequirements: (params) => api.get('/compliance/requirements', { params }),
+  createRequirement: (data) => api.post('/compliance/requirements', data),
+  updateRequirement: (id, data) => api.put(`/compliance/requirements/${id}`, data),
+  deleteRequirement: (id) => api.delete(`/compliance/requirements/${id}`),
+  seedDefaults: () => api.post('/compliance/seed-defaults'),
+  
+  // Organization Compliance
+  getOrgCompliance: (orgId) => api.get(`/compliance/organizations/${orgId}`),
+  updateOrgCompliance: (orgId, requirementId, data) => 
+    api.post(`/compliance/organizations/${orgId}`, data, { params: { requirement_id: requirementId } }),
+  linkDocument: (orgId, requirementId, documentId) => 
+    api.post(`/compliance/organizations/${orgId}/link-document`, null, { 
+      params: { requirement_id: requirementId, document_id: documentId } 
+    }),
+  getOrgSummary: (orgId) => api.get(`/compliance/organizations/${orgId}/summary`),
+};
+
+// Training APIs
+export const trainingAPI = {
+  // Courses
+  getCourses: (params) => api.get('/training/courses', { params }),
+  createCourse: (data) => api.post('/training/courses', data),
+  updateCourse: (id, data) => api.put(`/training/courses/${id}`, data),
+  deleteCourse: (id) => api.delete(`/training/courses/${id}`),
+  seedDefaults: () => api.post('/training/seed-defaults'),
+  
+  // Training Records
+  getOrgRecords: (orgId, params) => api.get(`/training/organizations/${orgId}/records`, { params }),
+  assignTraining: (orgId, data) => api.post(`/training/organizations/${orgId}/assign`, data),
+  startTraining: (recordId) => api.put(`/training/records/${recordId}/start`),
+  completeTraining: (recordId, score, certDocId) => 
+    api.put(`/training/records/${recordId}/complete`, null, { 
+      params: { score, certificate_document_id: certDocId } 
+    }),
+  getUserRecords: (userId) => api.get(`/training/users/${userId}/records`),
+  getOrgSummary: (orgId) => api.get(`/training/organizations/${orgId}/summary`),
+};
+
 // Public Donor APIs (no auth required)
 export const publicDonorAPI = {
   register: (data) => api.post('/public/donor-register', data),
