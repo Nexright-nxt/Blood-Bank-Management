@@ -410,24 +410,40 @@ export default function Organizations() {
           </div>
           
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" onClick={() => viewDetails(org)}>
+            <Button variant="ghost" size="sm" onClick={() => viewDetails(org)} data-testid={`view-org-${org.id}`}>
               <Eye className="w-4 h-4" />
             </Button>
             {(isSystemAdmin() || (isSuperAdmin() && org.id === user?.org_id)) && (
               <>
-                <Button variant="ghost" size="sm" onClick={() => openEditDialog(org)}>
+                <Button variant="ghost" size="sm" onClick={() => openEditDialog(org)} data-testid={`edit-org-${org.id}`}>
                   <Edit2 className="w-4 h-4" />
                 </Button>
                 {level === 0 && (
-                  <Button variant="ghost" size="sm" onClick={() => openCreateDialog(org)}>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => openCreateWithAdminDialog(org)}
+                    title="Add Branch with Admin"
+                    data-testid={`add-branch-${org.id}`}
+                  >
                     <Plus className="w-4 h-4" />
                   </Button>
                 )}
                 <Button 
                   variant="ghost" 
+                  size="sm"
+                  onClick={() => openAddUserDialog(org)}
+                  title="Add User"
+                  data-testid={`add-user-${org.id}`}
+                >
+                  <UserPlus className="w-4 h-4" />
+                </Button>
+                <Button 
+                  variant="ghost" 
                   size="sm" 
                   className="text-red-500 hover:text-red-600"
                   onClick={() => handleDeactivate(org)}
+                  data-testid={`delete-org-${org.id}`}
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
