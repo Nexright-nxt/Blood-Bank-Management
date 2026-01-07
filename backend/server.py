@@ -23,7 +23,7 @@ from routers import (
     relationships_router, donors_enhanced_router,
     configuration_router, logistics_enhanced_router,
     organizations_router, inter_org_requests_router,
-    audit_logs_router
+    audit_logs_router, sessions_router
 )
 
 # Configure logging
@@ -89,6 +89,7 @@ app.include_router(logistics_enhanced_router, prefix="/api")
 app.include_router(organizations_router, prefix="/api")
 app.include_router(inter_org_requests_router, prefix="/api")
 app.include_router(audit_logs_router, prefix="/api")
+app.include_router(sessions_router, prefix="/api")
 
 
 async def create_default_admin():
