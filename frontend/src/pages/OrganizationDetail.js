@@ -505,6 +505,7 @@ export default function OrganizationDetail() {
           <TabsTrigger value="users">Users ({users.length})</TabsTrigger>
           <TabsTrigger value="inventory">Inventory</TabsTrigger>
           {organization.is_parent && <TabsTrigger value="branches">Branches ({branches.length})</TabsTrigger>}
+          <TabsTrigger value="documents">Documents ({documents.length})</TabsTrigger>
           <TabsTrigger value="activity">Activity</TabsTrigger>
         </TabsList>
 
