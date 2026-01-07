@@ -253,7 +253,7 @@ async def update_document(
 ):
     """Update document metadata"""
     
-    if org_id not in access.writable_org_ids:
+    if org_id not in access.org_ids:
         raise HTTPException(status_code=403, detail="No write access to this organization")
     
     doc = await db.documents.find_one({"id": doc_id, "org_id": org_id})
@@ -281,7 +281,7 @@ async def verify_document(
     if user_type not in ["system_admin", "super_admin"]:
         raise HTTPException(status_code=403, detail="Only admins can verify documents")
     
-    if org_id not in access.writable_org_ids:
+    if org_id not in access.org_ids:
         raise HTTPException(status_code=403, detail="No write access to this organization")
     
     doc = await db.documents.find_one({"id": doc_id, "org_id": org_id})
@@ -310,7 +310,7 @@ async def delete_document(
 ):
     """Delete a document"""
     
-    if org_id not in access.writable_org_ids:
+    if org_id not in access.org_ids:
         raise HTTPException(status_code=403, detail="No write access to this organization")
     
     doc = await db.documents.find_one({"id": doc_id, "org_id": org_id})
