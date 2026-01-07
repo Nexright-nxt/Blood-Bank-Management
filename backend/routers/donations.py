@@ -94,7 +94,8 @@ async def complete_donation(
         blood_group=screening.get("preliminary_blood_group") if screening else None,
         collection_date=datetime.now(timezone.utc).isoformat().split("T")[0],
         volume=volume,
-        created_by=current_user["id"]
+        created_by=current_user["id"],
+        org_id=donation.get("org_id") or access.get_default_org_id()
     )
     
     unit_doc = blood_unit.model_dump()
