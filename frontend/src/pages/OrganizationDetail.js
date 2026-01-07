@@ -343,6 +343,67 @@ export default function OrganizationDetail() {
     });
   };
 
+  // Compliance handlers
+  const handleUpdateComplianceStatus = async (requirementId, status) => {
+    try {
+      await complianceAPI.updateOrgCompliance(orgId, requirementId, { status });
+      toast.success('Compliance status updated');
+      fetchCompliance();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to update compliance');
+    }
+  };
+
+  const handleLinkDocumentToCompliance = async (requirementId, documentId) => {
+    try {
+      await complianceAPI.linkDocument(orgId, requirementId, documentId);
+      toast.success('Document linked to compliance');
+      setShowLinkDocDialog(false);
+      setSelectedRequirement(null);
+      fetchCompliance();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to link document');
+    }
+  };
+
+  // Training handlers
+  const handleAssignTraining = async () => {
+    if (!trainingFormData.user_id || !trainingFormData.course_id) {
+      toast.error('Please select a user and a course');
+      return;
+    }
+    
+    try {
+      await trainingAPI.assignTraining(orgId, trainingFormData);
+      toast.success('Training assigned successfully');
+      setShowAssignTrainingDialog(false);
+      setTrainingFormData({ user_id: '', course_id: '', notes: '' });
+      fetchTraining();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to assign training');
+    }
+  };
+
+  const handleStartTraining = async (recordId) => {
+    try {
+      await trainingAPI.startTraining(recordId);
+      toast.success('Training started');
+      fetchTraining();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to start training');
+    }
+  };
+
+  const handleCompleteTraining = async (recordId, score = null) => {
+    try {
+      await trainingAPI.completeTraining(recordId, score, null);
+      toast.success('Training marked as complete');
+      fetchTraining();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to complete training');
+    }
+  };
+
   const formatFileSize = (bytes) => {
     if (bytes < 1024) return `${bytes} B`;
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
