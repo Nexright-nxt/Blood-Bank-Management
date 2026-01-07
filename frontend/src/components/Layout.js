@@ -36,6 +36,7 @@ const navItems = [
   { path: '/network', icon: Globe, label: 'Network Overview', roles: ['admin'] },
   { path: '/organizations', icon: Building2, label: 'Organizations', roles: ['admin'] },
   { path: '/blood-requests', icon: ArrowLeftRight, label: 'Blood Requests', roles: ['admin', 'inventory', 'distribution'] },
+  { path: '/audit-logs', icon: History, label: 'Audit Logs', roles: ['admin'] },
   { path: '/donor-requests', icon: UserPlus, label: 'Donor Requests', roles: ['admin', 'registration'] },
   { path: '/donors', icon: Users, label: 'Donor Management', roles: ['admin', 'registration'] },
   { path: '/screening', icon: Clipboard, label: 'Screening', roles: ['admin', 'registration', 'phlebotomist'] },
