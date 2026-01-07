@@ -46,6 +46,7 @@ const USER_ROLES = [
 
 export default function Organizations() {
   const { user, isSystemAdmin, isSuperAdmin, isTenantAdmin } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [organizations, setOrganizations] = useState([]);
   const [hierarchy, setHierarchy] = useState([]);
