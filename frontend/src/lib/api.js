@@ -127,6 +127,42 @@ export const trainingAPI = {
   getOrgSummary: (orgId) => api.get(`/training/organizations/${orgId}/summary`),
 };
 
+// Security APIs
+export const securityAPI = {
+  // Password Policy
+  getPasswordPolicy: (orgId) => api.get('/security/password-policy', { params: { org_id: orgId } }),
+  updatePasswordPolicy: (updates, orgId) => api.put('/security/password-policy', updates, { params: { org_id: orgId } }),
+  validatePassword: (password, orgId) => api.post('/security/validate-password', null, { params: { password, org_id: orgId } }),
+  
+  // MFA
+  getMfaStatus: () => api.get('/security/mfa/status'),
+  setupTotpMfa: () => api.post('/security/mfa/setup/totp'),
+  verifyTotpSetup: (code) => api.post('/security/mfa/verify/totp', null, { params: { code } }),
+  enableEmailOtp: () => api.post('/security/mfa/enable-email'),
+  sendEmailOtp: (email) => api.post('/security/mfa/send-email-otp', null, { params: { email } }),
+  verifyEmailOtp: (email, otp) => api.post('/security/mfa/verify-email-otp', null, { params: { email, otp } }),
+  disableMfa: () => api.post('/security/mfa/disable'),
+  regenerateBackupCodes: () => api.post('/security/mfa/regenerate-backup-codes'),
+  enforceMfa: (userId) => api.post(`/security/mfa/enforce/${userId}`),
+  
+  // Sessions
+  getSessions: () => api.get('/security/sessions'),
+  revokeSession: (sessionId) => api.post(`/security/sessions/revoke/${sessionId}`),
+  revokeAllSessions: (keepCurrent) => api.post('/security/sessions/revoke-all', null, { params: { keep_current: keepCurrent } }),
+  getSessionConfig: (orgId) => api.get('/security/sessions/config', { params: { org_id: orgId } }),
+  updateSessionConfig: (params) => api.put('/security/sessions/config', null, { params }),
+  
+  // API Keys
+  listApiKeys: (orgId) => api.get('/security/api-keys', { params: { org_id: orgId } }),
+  createApiKey: (orgId, data) => api.post('/security/api-keys', data, { params: { org_id: orgId } }),
+  revokeApiKey: (keyId, orgId) => api.delete(`/security/api-keys/${keyId}`, { params: { org_id: orgId } }),
+  getApiKeyUsage: (keyId, orgId) => api.get(`/security/api-keys/${keyId}/usage`, { params: { org_id: orgId } }),
+  
+  // Lockout
+  getLockoutStatus: (userId) => api.get(`/security/lockout/status/${userId}`),
+  unlockAccount: (userId) => api.post(`/security/lockout/unlock/${userId}`),
+};
+
 // Public Donor APIs (no auth required)
 export const publicDonorAPI = {
   register: (data) => api.post('/public/donor-register', data),
