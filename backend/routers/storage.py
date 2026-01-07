@@ -8,6 +8,7 @@ sys.path.append('..')
 from database import db
 from models import StorageLocation, StorageLocationCreate, StorageType
 from services import get_current_user
+from middleware import ReadAccess, WriteAccess, OrgAccessHelper
 
 router = APIRouter(prefix="/storage", tags=["Storage Management"])
 
@@ -16,17 +17,24 @@ async def generate_storage_id() -> str:
     return f"STR-{str(count + 1).zfill(4)}"
 
 @router.post("")
-async def create_storage_location(data: StorageLocationCreate, current_user: dict = Depends(get_current_user)):
+async def create_storage_location(
+    data: StorageLocationCreate, 
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(WriteAccess)
+):
     if current_user["role"] not in ["admin", "inventory"]:
         raise HTTPException(status_code=403, detail="Insufficient permissions")
     
-    # Check for duplicate location code
-    existing = await db.storage_locations.find_one({"location_code": data.location_code})
+    # Check for duplicate location code within org
+    existing = await db.storage_locations.find_one(
+        access.filter({"location_code": data.location_code})
+    )
     if existing:
         raise HTTPException(status_code=400, detail="Location code already exists")
     
     storage = StorageLocation(**data.model_dump())
     storage.created_by = current_user["id"]
+    storage.org_id = access.get_default_org_id()
     
     doc = storage.model_dump()
     doc['created_at'] = doc['created_at'].isoformat()
@@ -40,7 +48,8 @@ async def get_storage_locations(
     storage_type: Optional[str] = None,
     facility: Optional[str] = None,
     is_active: Optional[bool] = True,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(ReadAccess)
 ):
     query = {}
     if storage_type:
@@ -50,12 +59,15 @@ async def get_storage_locations(
     if is_active is not None:
         query["is_active"] = is_active
     
-    locations = await db.storage_locations.find(query, {"_id": 0}).to_list(1000)
+    locations = await db.storage_locations.find(access.filter(query), {"_id": 0}).to_list(1000)
     return locations
 
 @router.get("/summary")
-async def get_storage_summary(current_user: dict = Depends(get_current_user)):
-    locations = await db.storage_locations.find({"is_active": True}, {"_id": 0}).to_list(1000)
+async def get_storage_summary(
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(ReadAccess)
+):
+    locations = await db.storage_locations.find(access.filter({"is_active": True}), {"_id": 0}).to_list(1000)
     
     summary = {
         "total_locations": len(locations),
