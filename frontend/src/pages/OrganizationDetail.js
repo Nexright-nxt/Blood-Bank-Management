@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { organizationAPI } from '../lib/api';
+import { organizationAPI, documentAPI } from '../lib/api';
 import api from '../lib/api';
 import { toast } from 'sonner';
 import {
   Building2, Users, Package, Activity, Settings, ArrowLeft,
   Edit2, Trash2, UserPlus, Mail, Phone, MapPin, FileText,
   Shield, Clock, CheckCircle, AlertTriangle, RefreshCw,
-  BarChart3, Droplet, Calendar
+  BarChart3, Droplet, Calendar, Upload, Download, Eye,
+  File, FileCheck, FileWarning, X
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -26,6 +27,7 @@ import {
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '../components/ui/select';
+import { Textarea } from '../components/ui/textarea';
 
 const USER_ROLES = [
   { value: 'admin', label: 'Administrator' },
