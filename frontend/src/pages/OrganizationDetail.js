@@ -84,13 +84,17 @@ export default function OrganizationDetail() {
   const [inventory, setInventory] = useState(null);
   const [auditLogs, setAuditLogs] = useState([]);
   const [branches, setBranches] = useState([]);
+  const [documents, setDocuments] = useState([]);
+  const [docStats, setDocStats] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   
   // Dialogs
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showAddUserDialog, setShowAddUserDialog] = useState(false);
   const [showEditUserDialog, setShowEditUserDialog] = useState(false);
+  const [showUploadDocDialog, setShowUploadDocDialog] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [uploadingDoc, setUploadingDoc] = useState(false);
   
   // Form data
   const [editFormData, setEditFormData] = useState({});
@@ -101,6 +105,17 @@ export default function OrganizationDetail() {
     phone: '',
     role: 'registration',
     user_type: 'staff',
+  });
+  const [docFormData, setDocFormData] = useState({
+    file: null,
+    doc_type: 'other',
+    title: '',
+    description: '',
+    issue_date: '',
+    expiry_date: '',
+    issuing_authority: '',
+    reference_number: '',
+    tags: '',
   });
 
   useEffect(() => {
