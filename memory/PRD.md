@@ -162,6 +162,7 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
 - `/app/frontend/src/context/AuthContext.js` - Auth state + context switching
 - `/app/frontend/src/components/Layout.js` - Header with context switcher
 - `/app/frontend/src/pages/AuditLogs.js` - Audit trail viewer
+- `/app/frontend/src/pages/OrganizationDetail.js` - Org detail with Documents tab
 
 ---
 
