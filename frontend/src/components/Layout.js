@@ -254,7 +254,7 @@ export default function Layout() {
           </div>
         )}
         
-        {isImpersonating() && (
+        {isImpersonating && (
           <div className="mx-4 mt-3 p-2 bg-amber-50 border border-amber-200 rounded-lg">
             <div className="flex items-center gap-2 text-amber-700">
               <Building2 className="w-4 h-4" />
