@@ -173,6 +173,80 @@ export default function Organizations() {
     }
   };
 
+  // Create organization with admin (System Admin only)
+  const handleCreateOrgWithAdmin = async () => {
+    if (!orgWithAdminData.org_name || !orgWithAdminData.admin_email || !orgWithAdminData.admin_password) {
+      toast.error('Organization name, admin email, and password are required');
+      return;
+    }
+    
+    try {
+      const response = await organizationAPI.createWithAdmin(orgWithAdminData);
+      toast.success(response.data.message);
+      setShowCreateWithAdminDialog(false);
+      resetOrgWithAdminForm();
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to create organization');
+    }
+  };
+
+  // Create branch with admin (Super Admin)
+  const handleCreateBranchWithAdmin = async () => {
+    if (!orgWithAdminData.org_name || !orgWithAdminData.admin_email || !orgWithAdminData.admin_password) {
+      toast.error('Branch name, admin email, and password are required');
+      return;
+    }
+    
+    try {
+      const response = await organizationAPI.createBranchWithAdmin(parentOrgForBranch.id, orgWithAdminData);
+      toast.success(response.data.message);
+      setShowCreateWithAdminDialog(false);
+      setParentOrgForBranch(null);
+      resetOrgWithAdminForm();
+      fetchData();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to create branch');
+    }
+  };
+
+  // Add user to organization
+  const handleAddUser = async () => {
+    if (!userFormData.email || !userFormData.password || !userFormData.full_name) {
+      toast.error('Email, password, and full name are required');
+      return;
+    }
+    
+    try {
+      const params = new URLSearchParams({
+        email: userFormData.email,
+        password: userFormData.password,
+        full_name: userFormData.full_name,
+        role: userFormData.role,
+        user_type: userFormData.user_type,
+      });
+      if (userFormData.phone) params.append('phone', userFormData.phone);
+      
+      await organizationAPI.createUser(selectedOrg.id, params.toString());
+      toast.success('User created successfully');
+      setShowAddUserDialog(false);
+      resetUserForm();
+      // Refresh user list
+      fetchOrgUsers(selectedOrg.id);
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to create user');
+    }
+  };
+
+  const fetchOrgUsers = async (orgId) => {
+    try {
+      const res = await organizationAPI.getUsers(orgId, true);
+      setOrgUsers(res.data);
+    } catch (error) {
+      console.error('Failed to fetch users:', error);
+    }
+  };
+
   const viewDetails = async (org) => {
     setSelectedOrg(org);
     setShowDetailsDialog(true);
