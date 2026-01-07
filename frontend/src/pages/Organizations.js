@@ -293,6 +293,18 @@ export default function Organizations() {
     setShowCreateDialog(true);
   };
 
+  const openCreateWithAdminDialog = (parentOrg = null) => {
+    resetOrgWithAdminForm();
+    setParentOrgForBranch(parentOrg);
+    setShowCreateWithAdminDialog(true);
+  };
+
+  const openAddUserDialog = (org) => {
+    setSelectedOrg(org);
+    resetUserForm();
+    setShowAddUserDialog(true);
+  };
+
   const resetForm = () => {
     setFormData({
       org_name: '',
@@ -307,6 +319,34 @@ export default function Organizations() {
       contact_phone: '',
       contact_email: '',
       license_number: '',
+    });
+  };
+
+  const resetOrgWithAdminForm = () => {
+    setOrgWithAdminData({
+      org_name: '',
+      org_type: 'standalone',
+      address: '',
+      city: '',
+      state: '',
+      country: '',
+      contact_phone: '',
+      license_number: '',
+      admin_email: '',
+      admin_password: '',
+      admin_full_name: '',
+      admin_phone: '',
+    });
+  };
+
+  const resetUserForm = () => {
+    setUserFormData({
+      email: '',
+      password: '',
+      full_name: '',
+      phone: '',
+      role: 'registration',
+      user_type: 'staff',
     });
   };
 
