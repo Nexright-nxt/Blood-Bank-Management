@@ -54,6 +54,17 @@ export const organizationAPI = {
   getInventorySummary: (id, includeChildren = false) => 
     api.get(`/organizations/${id}/inventory-summary`, { params: { include_children: includeChildren } }),
   
+  // Combined creation endpoints
+  createWithAdmin: (data) => api.post('/organizations/with-admin', data),
+  createBranchWithAdmin: (parentOrgId, data) => api.post(`/organizations/${parentOrgId}/branches/with-admin`, data),
+  
+  // User management
+  getUsers: (orgId, includeChildren = false) => 
+    api.get(`/organizations/${orgId}/users`, { params: { include_children: includeChildren } }),
+  createUser: (orgId, queryString) => api.post(`/organizations/${orgId}/users?${queryString}`),
+  updateUser: (orgId, userId, data) => api.put(`/organizations/${orgId}/users/${userId}`, data),
+  deactivateUser: (orgId, userId) => api.delete(`/organizations/${orgId}/users/${userId}`),
+  
   // External organizations
   getExternalOrgs: (params) => api.get('/organizations/external/list', { params }),
   createExternalOrg: (data) => api.post('/organizations/external', data),
