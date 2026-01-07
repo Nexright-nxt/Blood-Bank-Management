@@ -88,6 +88,7 @@ app.include_router(configuration_router, prefix="/api")
 app.include_router(logistics_enhanced_router, prefix="/api")
 app.include_router(organizations_router, prefix="/api")
 app.include_router(inter_org_requests_router, prefix="/api")
+app.include_router(audit_logs_router, prefix="/api")
 
 
 async def create_default_admin():
