@@ -22,7 +22,8 @@ from routers import (
     logistics_router, labels_router, inventory_enhanced_router,
     relationships_router, donors_enhanced_router,
     configuration_router, logistics_enhanced_router,
-    organizations_router, inter_org_requests_router
+    organizations_router, inter_org_requests_router,
+    audit_logs_router
 )
 
 # Configure logging
