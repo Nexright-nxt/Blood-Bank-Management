@@ -9,6 +9,7 @@ sys.path.append('..')
 from database import db
 from models import Component, ComponentCreate, UnitStatus, ComponentType
 from services import get_current_user, generate_component_id
+from middleware import ReadAccess, WriteAccess, OrgAccessHelper
 
 router = APIRouter(prefix="/components", tags=["Components"])
 
@@ -17,9 +18,13 @@ class MultiComponentCreate(BaseModel):
     components: List[dict]  # [{component_type, volume, batch_id?, expiry_days?}]
 
 @router.post("")
-async def create_component(component_data: ComponentCreate, current_user: dict = Depends(get_current_user)):
+async def create_component(
+    component_data: ComponentCreate, 
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(WriteAccess)
+):
     unit = await db.blood_units.find_one(
-        {"$or": [{"id": component_data.parent_unit_id}, {"unit_id": component_data.parent_unit_id}]},
+        access.filter({"$or": [{"id": component_data.parent_unit_id}, {"unit_id": component_data.parent_unit_id}]}),
         {"_id": 0}
     )
     if not unit:
@@ -29,6 +34,7 @@ async def create_component(component_data: ComponentCreate, current_user: dict =
     component.component_id = await generate_component_id()
     component.blood_group = unit.get("confirmed_blood_group") or unit.get("blood_group")
     component.processed_by = current_user["id"]
+    component.org_id = unit.get("org_id") or access.get_default_org_id()
     
     temp_ranges = {
         ComponentType.PRC: (2, 6),
@@ -54,10 +60,14 @@ async def create_component(component_data: ComponentCreate, current_user: dict =
     return {"status": "success", "component_id": component.component_id, "id": component.id}
 
 @router.post("/multi")
-async def create_multiple_components(data: MultiComponentCreate, current_user: dict = Depends(get_current_user)):
+async def create_multiple_components(
+    data: MultiComponentCreate, 
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(WriteAccess)
+):
     """Create multiple components from a single blood unit (multi-select)"""
     unit = await db.blood_units.find_one(
-        {"$or": [{"id": data.parent_unit_id}, {"unit_id": data.parent_unit_id}]},
+        access.filter({"$or": [{"id": data.parent_unit_id}, {"unit_id": data.parent_unit_id}]}),
         {"_id": 0}
     )
     if not unit:
@@ -117,7 +127,8 @@ async def create_multiple_components(data: MultiComponentCreate, current_user: d
             "expiry_date": expiry.strftime("%Y-%m-%d"),
             "qc_values": None,
             "created_at": datetime.now(timezone.utc).isoformat(),
-            "processed_by": current_user["id"]
+            "processed_by": current_user["id"],
+            "org_id": unit.get("org_id") or access.get_default_org_id()
         }
         
         await db.components.insert_one(component)
@@ -153,7 +164,8 @@ async def get_components(
     component_type: Optional[str] = None,
     blood_group: Optional[str] = None,
     parent_unit_id: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(ReadAccess)
 ):
     query = {}
     if status:
@@ -165,13 +177,17 @@ async def get_components(
     if parent_unit_id:
         query["parent_unit_id"] = parent_unit_id
     
-    components = await db.components.find(query, {"_id": 0}).to_list(1000)
+    components = await db.components.find(access.filter(query), {"_id": 0}).to_list(1000)
     return components
 
 @router.get("/{component_id}")
-async def get_component(component_id: str, current_user: dict = Depends(get_current_user)):
+async def get_component(
+    component_id: str, 
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(ReadAccess)
+):
     component = await db.components.find_one(
-        {"$or": [{"id": component_id}, {"component_id": component_id}]},
+        access.filter({"$or": [{"id": component_id}, {"component_id": component_id}]}),
         {"_id": 0}
     )
     if not component:
@@ -199,9 +215,14 @@ async def get_component(component_id: str, current_user: dict = Depends(get_curr
     }
 
 @router.put("/{component_id}")
-async def update_component(component_id: str, updates: dict, current_user: dict = Depends(get_current_user)):
+async def update_component(
+    component_id: str, 
+    updates: dict, 
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(WriteAccess)
+):
     result = await db.components.update_one(
-        {"$or": [{"id": component_id}, {"component_id": component_id}]},
+        access.filter({"$or": [{"id": component_id}, {"component_id": component_id}]}),
         {"$set": updates}
     )
     if result.modified_count == 0:
