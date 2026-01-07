@@ -74,12 +74,6 @@ export default function Layout() {
   const [loadingContexts, setLoadingContexts] = useState(false);
   const [switching, setSwitching] = useState(false);
 
-  useEffect(() => {
-    if (canSwitchContext()) {
-      loadSwitchableContexts();
-    }
-  }, [user]);
-
   const loadSwitchableContexts = async () => {
     setLoadingContexts(true);
     try {
@@ -91,6 +85,12 @@ export default function Layout() {
       setLoadingContexts(false);
     }
   };
+
+  useEffect(() => {
+    if (user && (user.user_type === 'system_admin' || user.user_type === 'super_admin')) {
+      loadSwitchableContexts();
+    }
+  }, [user]);
 
   const handleSwitchContext = async (orgId, userType) => {
     setSwitching(true);
