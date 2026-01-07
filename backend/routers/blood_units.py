@@ -8,6 +8,7 @@ sys.path.append('..')
 from database import db
 from models import ChainOfCustody, ChainOfCustodyCreate
 from services import get_current_user
+from middleware import ReadAccess, WriteAccess, OrgAccessHelper
 
 router = APIRouter(prefix="/blood-units", tags=["Blood Units"])
 
@@ -16,7 +17,8 @@ async def get_blood_units(
     status: Optional[str] = None,
     blood_group: Optional[str] = None,
     location: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(ReadAccess)
 ):
     query = {}
     if status:
@@ -29,13 +31,17 @@ async def get_blood_units(
     if location:
         query["current_location"] = location
     
-    units = await db.blood_units.find(query, {"_id": 0}).to_list(1000)
+    units = await db.blood_units.find(access.filter(query), {"_id": 0}).to_list(1000)
     return units
 
 @router.get("/{unit_id}")
-async def get_blood_unit(unit_id: str, current_user: dict = Depends(get_current_user)):
+async def get_blood_unit(
+    unit_id: str, 
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(ReadAccess)
+):
     unit = await db.blood_units.find_one(
-        {"$or": [{"id": unit_id}, {"unit_id": unit_id}]},
+        access.filter({"$or": [{"id": unit_id}, {"unit_id": unit_id}]}),
         {"_id": 0}
     )
     if not unit:
@@ -43,11 +49,16 @@ async def get_blood_unit(unit_id: str, current_user: dict = Depends(get_current_
     return unit
 
 @router.put("/{unit_id}")
-async def update_blood_unit(unit_id: str, updates: dict, current_user: dict = Depends(get_current_user)):
+async def update_blood_unit(
+    unit_id: str, 
+    updates: dict, 
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(WriteAccess)
+):
     updates["updated_at"] = datetime.now(timezone.utc).isoformat()
     
     result = await db.blood_units.update_one(
-        {"$or": [{"id": unit_id}, {"unit_id": unit_id}]},
+        access.filter({"$or": [{"id": unit_id}, {"unit_id": unit_id}]}),
         {"$set": updates}
     )
     if result.modified_count == 0:
@@ -55,9 +66,13 @@ async def update_blood_unit(unit_id: str, updates: dict, current_user: dict = De
     return {"status": "success"}
 
 @router.get("/{unit_id}/traceability")
-async def get_unit_traceability(unit_id: str, current_user: dict = Depends(get_current_user)):
+async def get_unit_traceability(
+    unit_id: str, 
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(ReadAccess)
+):
     unit = await db.blood_units.find_one(
-        {"$or": [{"id": unit_id}, {"unit_id": unit_id}]},
+        access.filter({"$or": [{"id": unit_id}, {"unit_id": unit_id}]}),
         {"_id": 0}
     )
     if not unit:
@@ -78,8 +93,13 @@ async def get_unit_traceability(unit_id: str, current_user: dict = Depends(get_c
 custody_router = APIRouter(prefix="/chain-custody", tags=["Chain of Custody"])
 
 @custody_router.post("")
-async def create_custody_record(custody_data: ChainOfCustodyCreate, current_user: dict = Depends(get_current_user)):
+async def create_custody_record(
+    custody_data: ChainOfCustodyCreate, 
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(WriteAccess)
+):
     custody = ChainOfCustody(**custody_data.model_dump())
+    custody.org_id = access.get_default_org_id()
     
     doc = custody.model_dump()
     doc['timestamp'] = doc['timestamp'].isoformat()
@@ -96,19 +116,24 @@ async def create_custody_record(custody_data: ChainOfCustodyCreate, current_user
 @custody_router.get("")
 async def get_custody_records(
     unit_id: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(ReadAccess)
 ):
     query = {}
     if unit_id:
         query["unit_id"] = unit_id
     
-    records = await db.chain_custody.find(query, {"_id": 0}).to_list(1000)
+    records = await db.chain_custody.find(access.filter(query), {"_id": 0}).to_list(1000)
     return records
 
 @custody_router.put("/{custody_id}/confirm")
-async def confirm_custody(custody_id: str, current_user: dict = Depends(get_current_user)):
+async def confirm_custody(
+    custody_id: str, 
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(WriteAccess)
+):
     result = await db.chain_custody.update_one(
-        {"id": custody_id},
+        access.filter({"id": custody_id}),
         {"$set": {"confirmed": True}}
     )
     if result.modified_count == 0:
