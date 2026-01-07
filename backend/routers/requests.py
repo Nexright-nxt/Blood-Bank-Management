@@ -8,6 +8,7 @@ sys.path.append('..')
 from database import db
 from models import BloodRequest, BloodRequestCreate, Issuance, RequestStatus, UnitStatus
 from services import get_current_user, generate_request_id, generate_issue_id
+from middleware import ReadAccess, WriteAccess, OrgAccessHelper
 
 router = APIRouter(prefix="/requests", tags=["Blood Requests"])
 
@@ -34,9 +35,14 @@ def calculate_priority_score(urgency: str, required_by_date: str = None, require
     return min(score, 150)  # Cap at 150
 
 @router.post("")
-async def create_blood_request(request_data: BloodRequestCreate, current_user: dict = Depends(get_current_user)):
+async def create_blood_request(
+    request_data: BloodRequestCreate, 
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(WriteAccess)
+):
     request = BloodRequest(**request_data.model_dump(exclude={'additional_items'}))
     request.request_id = await generate_request_id()
+    request.org_id = access.get_default_org_id()
     
     # Calculate priority score
     request.priority_score = calculate_priority_score(
@@ -59,7 +65,8 @@ async def create_blood_request(request_data: BloodRequestCreate, current_user: d
 async def get_blood_requests(
     status: Optional[str] = None,
     urgency: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(ReadAccess)
 ):
     query = {}
     if status:
@@ -67,13 +74,17 @@ async def get_blood_requests(
     if urgency:
         query["urgency"] = urgency
     
-    requests = await db.blood_requests.find(query, {"_id": 0}).to_list(1000)
+    requests = await db.blood_requests.find(access.filter(query), {"_id": 0}).to_list(1000)
     return requests
 
 @router.get("/{request_id}")
-async def get_blood_request(request_id: str, current_user: dict = Depends(get_current_user)):
+async def get_blood_request(
+    request_id: str, 
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(ReadAccess)
+):
     request = await db.blood_requests.find_one(
-        {"$or": [{"id": request_id}, {"request_id": request_id}]},
+        access.filter({"$or": [{"id": request_id}, {"request_id": request_id}]}),
         {"_id": 0}
     )
     if not request:
