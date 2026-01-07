@@ -473,14 +473,18 @@ export default function Organizations() {
           <p className="page-subtitle">Manage blood bank network hierarchy</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={fetchData} disabled={loading}>
+          <Button variant="outline" onClick={fetchData} disabled={loading} data-testid="refresh-orgs">
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
           {isSystemAdmin() && (
-            <Button className="bg-teal-600 hover:bg-teal-700" onClick={() => openCreateDialog()}>
+            <Button 
+              className="bg-teal-600 hover:bg-teal-700" 
+              onClick={() => openCreateWithAdminDialog()}
+              data-testid="add-org-with-admin"
+            >
               <Plus className="w-4 h-4 mr-2" />
-              Add Organization
+              Add Organization + Admin
             </Button>
           )}
         </div>
