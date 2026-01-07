@@ -8,17 +8,26 @@ sys.path.append('..')
 from database import db
 from models import Screening, ScreeningCreate
 from services import get_current_user
+from middleware import ReadAccess, WriteAccess, OrgAccessHelper
 
 router = APIRouter(prefix="/screenings", tags=["Screening"])
 
 @router.post("")
-async def create_screening(screening_data: ScreeningCreate, current_user: dict = Depends(get_current_user)):
-    donor = await db.donors.find_one({"id": screening_data.donor_id}, {"_id": 0})
+async def create_screening(
+    screening_data: ScreeningCreate, 
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(WriteAccess)
+):
+    donor = await db.donors.find_one(
+        access.filter({"id": screening_data.donor_id}), 
+        {"_id": 0}
+    )
     if not donor:
         raise HTTPException(status_code=404, detail="Donor not found")
     
     screening = Screening(**screening_data.model_dump())
     screening.screened_by = current_user["id"]
+    screening.org_id = donor.get("org_id") or access.get_default_org_id()
     
     issues = []
     if screening.hemoglobin < 12.5:
@@ -59,7 +68,8 @@ async def get_screenings(
     date: Optional[str] = None,
     status: Optional[str] = None,
     limit: int = 100,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(ReadAccess)
 ):
     query = {}
     if donor_id:
@@ -69,7 +79,7 @@ async def get_screenings(
     if status:
         query["eligibility_status"] = status
     
-    screenings = await db.screenings.find(query, {"_id": 0}).sort("created_at", -1).to_list(limit)
+    screenings = await db.screenings.find(access.filter(query), {"_id": 0}).sort("created_at", -1).to_list(limit)
     
     # Enrich with donor info
     for screening in screenings:
@@ -84,14 +94,15 @@ async def get_screenings(
 
 @router.get("/pending/donors")
 async def get_pending_screening_donors(
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(ReadAccess)
 ):
     """Get donors who need screening (registered but not screened today, or eligible to donate again)"""
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
-    # Get all active donors
+    # Get all active donors for accessible orgs
     donors = await db.donors.find(
-        {"status": "active"},
+        access.filter({"status": "active"}),
         {"_id": 0}
     ).to_list(1000)
     
@@ -126,14 +137,15 @@ async def get_pending_screening_donors(
 
 @router.get("/today/summary")
 async def get_today_screening_summary(
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(ReadAccess)
 ):
     """Get summary of today's screenings"""
     today = datetime.now(timezone.utc).strftime("%Y-%m-%d")
     
-    total = await db.screenings.count_documents({"screening_date": today})
-    eligible = await db.screenings.count_documents({"screening_date": today, "eligibility_status": "eligible"})
-    ineligible = await db.screenings.count_documents({"screening_date": today, "eligibility_status": "ineligible"})
+    total = await db.screenings.count_documents(access.filter({"screening_date": today}))
+    eligible = await db.screenings.count_documents(access.filter({"screening_date": today, "eligibility_status": "eligible"}))
+    ineligible = await db.screenings.count_documents(access.filter({"screening_date": today, "eligibility_status": "ineligible"}))
     
     return {
         "date": today,
@@ -143,8 +155,12 @@ async def get_today_screening_summary(
     }
 
 @router.get("/{screening_id}")
-async def get_screening(screening_id: str, current_user: dict = Depends(get_current_user)):
-    screening = await db.screenings.find_one({"id": screening_id}, {"_id": 0})
+async def get_screening(
+    screening_id: str, 
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(ReadAccess)
+):
+    screening = await db.screenings.find_one(access.filter({"id": screening_id}), {"_id": 0})
     if not screening:
         raise HTTPException(status_code=404, detail="Screening not found")
     return screening
