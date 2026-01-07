@@ -846,6 +846,53 @@ export default function Organizations() {
                   )}
                 </div>
               )}
+              
+              {/* Users Section */}
+              {orgUsers.length > 0 && (
+                <div>
+                  <h4 className="font-medium mb-3 flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    Users ({orgUsers.length})
+                  </h4>
+                  <div className="max-h-48 overflow-y-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Name</TableHead>
+                          <TableHead>Email</TableHead>
+                          <TableHead>Role</TableHead>
+                          <TableHead>Type</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {orgUsers.slice(0, 10).map(u => (
+                          <TableRow key={u.id}>
+                            <TableCell className="font-medium">{u.full_name}</TableCell>
+                            <TableCell className="text-sm text-slate-500">{u.email}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">{u.role}</Badge>
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={
+                                u.user_type === 'super_admin' ? 'bg-purple-100 text-purple-700' :
+                                u.user_type === 'tenant_admin' ? 'bg-blue-100 text-blue-700' :
+                                'bg-slate-100 text-slate-700'
+                              }>
+                                {u.user_type?.replace('_', ' ')}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                    {orgUsers.length > 10 && (
+                      <p className="text-sm text-slate-500 mt-2 text-center">
+                        +{orgUsers.length - 10} more users
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
           )}
           
