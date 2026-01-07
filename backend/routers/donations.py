@@ -115,7 +115,8 @@ async def get_donations(
     donor_id: Optional[str] = None,
     date: Optional[str] = None,
     status: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(ReadAccess)
 ):
     query = {}
     if donor_id:
@@ -125,19 +126,20 @@ async def get_donations(
     if status:
         query["status"] = status
     
-    donations = await db.donations.find(query, {"_id": 0}).to_list(1000)
+    donations = await db.donations.find(access.filter(query), {"_id": 0}).to_list(1000)
     return donations
 
 
 @router.get("/eligible-donors")
 async def get_eligible_donors_for_collection(
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    access: OrgAccessHelper = Depends(ReadAccess)
 ):
     """Get all eligible donors who have passed screening but haven't donated yet"""
     
     # Get all eligible screenings
     eligible_screenings = await db.screenings.find(
-        {"eligibility_status": "eligible"},
+        access.filter({"eligibility_status": "eligible"}),
         {"_id": 0}
     ).sort("created_at", -1).to_list(1000)
     
