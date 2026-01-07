@@ -1897,6 +1897,131 @@ export default function OrganizationDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Assign Training Dialog */}
+      <Dialog open={showAssignTrainingDialog} onOpenChange={setShowAssignTrainingDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Assign Training</DialogTitle>
+            <DialogDescription>Assign a training course to a staff member</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Staff Member *</Label>
+              <Select
+                value={trainingFormData.user_id}
+                onValueChange={(value) => setTrainingFormData({ ...trainingFormData, user_id: value })}
+              >
+                <SelectTrigger data-testid="training-user-select">
+                  <SelectValue placeholder="Select a staff member" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users.filter(u => u.is_active).map(u => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.full_name} ({u.role})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label>Training Course *</Label>
+              <Select
+                value={trainingFormData.course_id}
+                onValueChange={(value) => setTrainingFormData({ ...trainingFormData, course_id: value })}
+              >
+                <SelectTrigger data-testid="training-course-select">
+                  <SelectValue placeholder="Select a course" />
+                </SelectTrigger>
+                <SelectContent>
+                  {courses.map(c => (
+                    <SelectItem key={c.id} value={c.id}>
+                      <div className="flex items-center gap-2">
+                        <span>{c.name}</span>
+                        {c.is_mandatory && (
+                          <Badge className="bg-red-100 text-red-700 text-xs">Mandatory</Badge>
+                        )}
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <Label>Notes (optional)</Label>
+              <Textarea
+                value={trainingFormData.notes}
+                onChange={(e) => setTrainingFormData({ ...trainingFormData, notes: e.target.value })}
+                placeholder="Additional notes..."
+                rows={2}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowAssignTrainingDialog(false)}>Cancel</Button>
+            <Button 
+              className="bg-teal-600 hover:bg-teal-700" 
+              onClick={handleAssignTraining}
+              disabled={!trainingFormData.user_id || !trainingFormData.course_id}
+              data-testid="assign-training-submit"
+            >
+              <GraduationCap className="w-4 h-4 mr-1" />
+              Assign Training
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Link Document to Compliance Dialog */}
+      <Dialog open={showLinkDocDialog} onOpenChange={setShowLinkDocDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Link Document</DialogTitle>
+            <DialogDescription>
+              Link a document to {selectedRequirement?.name}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Select Document</Label>
+              <div className="space-y-2 mt-2 max-h-60 overflow-y-auto">
+                {documents.filter(d => 
+                  !selectedRequirement?.accepted_document_types?.length || 
+                  selectedRequirement.accepted_document_types.includes(d.doc_type)
+                ).map(doc => (
+                  <div 
+                    key={doc.id}
+                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-slate-50 cursor-pointer"
+                    onClick={() => handleLinkDocumentToCompliance(selectedRequirement?.id, doc.id)}
+                  >
+                    <div className="flex items-center gap-2">
+                      <File className="w-4 h-4 text-slate-400" />
+                      <div>
+                        <p className="font-medium text-sm">{doc.title}</p>
+                        <p className="text-xs text-slate-400">{doc.file_name}</p>
+                      </div>
+                    </div>
+                    <Badge className={DOC_TYPE_COLORS[doc.doc_type] || DOC_TYPE_COLORS.other}>
+                      {doc.doc_type}
+                    </Badge>
+                  </div>
+                ))}
+                {documents.length === 0 && (
+                  <p className="text-center text-slate-500 py-4">No documents available. Upload a document first.</p>
+                )}
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => {
+              setShowLinkDocDialog(false);
+              setSelectedRequirement(null);
+            }}>Cancel</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
