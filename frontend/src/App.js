@@ -187,6 +187,9 @@ function AppRoutes() {
             <UserManagement />
           </ProtectedRoute>
         } />
+        
+        {/* Security Settings */}
+        <Route path="security" element={<SecuritySettings />} />
       </Route>
       
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
