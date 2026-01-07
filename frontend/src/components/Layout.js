@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -6,7 +6,7 @@ import {
   Package, ClipboardList, Truck, RotateCcw, Trash2, BarChart3,
   Settings, LogOut, Menu, X, Sun, Moon, Home, Microscope, UserPlus, Bell,
   Warehouse, ClipboardCheck, Navigation, Trophy, Cog, Building2, ArrowLeftRight, Globe, History,
-  RefreshCw, ChevronDown, ArrowLeft
+  RefreshCw, ChevronDown, ArrowLeft, Lock
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback } from './ui/avatar';
@@ -36,34 +36,40 @@ const roleLabels = {
   config_manager: 'Config Manager',
 };
 
-const navItems = [
-  { path: '/dashboard', icon: Home, label: 'Dashboard', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution', 'config_manager'] },
-  { path: '/network', icon: Globe, label: 'Network Overview', roles: ['admin'] },
-  { path: '/organizations', icon: Building2, label: 'Organizations', roles: ['admin'] },
-  { path: '/blood-requests', icon: ArrowLeftRight, label: 'Blood Requests', roles: ['admin', 'inventory', 'distribution'] },
-  { path: '/audit-logs', icon: History, label: 'Audit Logs', roles: ['admin'] },
-  { path: '/donor-requests', icon: UserPlus, label: 'Donor Requests', roles: ['admin', 'registration'] },
-  { path: '/donors', icon: Users, label: 'Donor Management', roles: ['admin', 'registration'] },
-  { path: '/screening', icon: Clipboard, label: 'Screening', roles: ['admin', 'registration', 'phlebotomist'] },
-  { path: '/collection', icon: Droplet, label: 'Collection', roles: ['admin', 'phlebotomist'] },
-  { path: '/traceability', icon: Microscope, label: 'Traceability', roles: ['admin', 'lab_tech', 'processing', 'qc_manager'] },
-  { path: '/pre-lab-qc', icon: ClipboardCheck, label: 'Pre-Lab QC', roles: ['admin', 'lab_tech', 'qc_manager'] },
-  { path: '/laboratory', icon: FlaskConical, label: 'Laboratory', roles: ['admin', 'lab_tech'] },
-  { path: '/processing', icon: Layers, label: 'Processing', roles: ['admin', 'processing'] },
-  { path: '/qc-validation', icon: ShieldCheck, label: 'QC Validation', roles: ['admin', 'qc_manager'] },
-  { path: '/inventory', icon: Package, label: 'Inventory', roles: ['admin', 'inventory', 'distribution'] },
-  { path: '/storage', icon: Warehouse, label: 'Storage', roles: ['admin', 'inventory'] },
-  { path: '/requests', icon: ClipboardList, label: 'Requests', roles: ['admin', 'inventory', 'distribution'] },
-  { path: '/distribution', icon: Truck, label: 'Distribution', roles: ['admin', 'distribution'] },
-  { path: '/logistics-enhanced', icon: Navigation, label: 'Logistics', roles: ['admin', 'distribution'] },
-  { path: '/returns', icon: RotateCcw, label: 'Returns', roles: ['admin', 'inventory', 'qc_manager'] },
-  { path: '/discards', icon: Trash2, label: 'Discards', roles: ['admin', 'inventory', 'qc_manager'] },
-  { path: '/reports', icon: BarChart3, label: 'Reports', roles: ['admin', 'qc_manager', 'inventory'] },
-  { path: '/leaderboard', icon: Trophy, label: 'Leaderboard', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution'] },
-  { path: '/alerts', icon: Bell, label: 'Alerts', roles: ['admin', 'qc_manager', 'inventory', 'registration'] },
-  { path: '/configuration', icon: Cog, label: 'Configuration', roles: ['admin', 'config_manager'] },
-  { path: '/security', icon: ShieldCheck, label: 'Security', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution', 'config_manager'] },
-  { path: '/users', icon: Settings, label: 'User Management', roles: ['admin'] },
+// Platform/Admin modules - visible to System Admin in global context
+const platformModules = [
+  { path: '/network', icon: Globe, label: 'Network Overview', category: 'platform' },
+  { path: '/organizations', icon: Building2, label: 'Organizations', category: 'platform' },
+  { path: '/audit-logs', icon: History, label: 'Audit Logs', category: 'platform' },
+  { path: '/users', icon: Settings, label: 'User Management', category: 'platform' },
+  { path: '/security', icon: Lock, label: 'Security Settings', category: 'platform' },
+];
+
+// Operational modules - visible when in org/branch context
+const operationalModules = [
+  { path: '/dashboard', icon: Home, label: 'Dashboard', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution', 'config_manager'], category: 'operational' },
+  { path: '/blood-requests', icon: ArrowLeftRight, label: 'Blood Requests', roles: ['admin', 'inventory', 'distribution'], category: 'operational' },
+  { path: '/donor-requests', icon: UserPlus, label: 'Donor Requests', roles: ['admin', 'registration'], category: 'operational' },
+  { path: '/donors', icon: Users, label: 'Donor Management', roles: ['admin', 'registration'], category: 'operational' },
+  { path: '/screening', icon: Clipboard, label: 'Screening', roles: ['admin', 'registration', 'phlebotomist'], category: 'operational' },
+  { path: '/collection', icon: Droplet, label: 'Collection', roles: ['admin', 'phlebotomist'], category: 'operational' },
+  { path: '/traceability', icon: Microscope, label: 'Traceability', roles: ['admin', 'lab_tech', 'processing', 'qc_manager'], category: 'operational' },
+  { path: '/pre-lab-qc', icon: ClipboardCheck, label: 'Pre-Lab QC', roles: ['admin', 'lab_tech', 'qc_manager'], category: 'operational' },
+  { path: '/laboratory', icon: FlaskConical, label: 'Laboratory', roles: ['admin', 'lab_tech'], category: 'operational' },
+  { path: '/processing', icon: Layers, label: 'Processing', roles: ['admin', 'processing'], category: 'operational' },
+  { path: '/qc-validation', icon: ShieldCheck, label: 'QC Validation', roles: ['admin', 'qc_manager'], category: 'operational' },
+  { path: '/inventory', icon: Package, label: 'Inventory', roles: ['admin', 'inventory', 'distribution'], category: 'operational' },
+  { path: '/storage', icon: Warehouse, label: 'Storage', roles: ['admin', 'inventory'], category: 'operational' },
+  { path: '/requests', icon: ClipboardList, label: 'Requests', roles: ['admin', 'inventory', 'distribution'], category: 'operational' },
+  { path: '/distribution', icon: Truck, label: 'Distribution', roles: ['admin', 'distribution'], category: 'operational' },
+  { path: '/logistics-enhanced', icon: Navigation, label: 'Logistics', roles: ['admin', 'distribution'], category: 'operational' },
+  { path: '/returns', icon: RotateCcw, label: 'Returns', roles: ['admin', 'inventory', 'qc_manager'], category: 'operational' },
+  { path: '/discards', icon: Trash2, label: 'Discards', roles: ['admin', 'inventory', 'qc_manager'], category: 'operational' },
+  { path: '/reports', icon: BarChart3, label: 'Reports', roles: ['admin', 'qc_manager', 'inventory'], category: 'operational' },
+  { path: '/leaderboard', icon: Trophy, label: 'Leaderboard', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution'], category: 'operational' },
+  { path: '/alerts', icon: Bell, label: 'Alerts', roles: ['admin', 'qc_manager', 'inventory', 'registration'], category: 'operational' },
+  { path: '/configuration', icon: Cog, label: 'Configuration', roles: ['admin', 'config_manager'], category: 'operational' },
+  { path: '/security', icon: Lock, label: 'Security', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution', 'config_manager'], category: 'operational' },
 ];
 
 export default function Layout() {
