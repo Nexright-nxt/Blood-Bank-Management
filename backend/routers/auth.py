@@ -109,7 +109,7 @@ async def register(user_data: UserCreate, request: Request, current_user: dict =
     )
 
 @router.post("/login")
-async def login(credentials: UserLogin):
+async def login(credentials: UserLogin, request: Request):
     """
     Login with email, password, and optionally org_id.
     System admins don't need org_id.
@@ -117,12 +117,37 @@ async def login(credentials: UserLogin):
     """
     user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
     if not user:
+        # Log failed login attempt
+        await AuditService.log_auth(
+            AuditAction.LOGIN_FAILED,
+            credentials.email,
+            success=False,
+            request=request,
+            details="Invalid credentials - user not found"
+        )
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     if not verify_password(credentials.password, user["password_hash"]):
+        # Log failed login attempt
+        await AuditService.log_auth(
+            AuditAction.LOGIN_FAILED,
+            credentials.email,
+            success=False,
+            request=request,
+            user=user,
+            details="Invalid credentials - wrong password"
+        )
         raise HTTPException(status_code=401, detail="Invalid credentials")
     
     if not user.get("is_active", True):
+        await AuditService.log_auth(
+            AuditAction.LOGIN_FAILED,
+            credentials.email,
+            success=False,
+            request=request,
+            user=user,
+            details="Account is disabled"
+        )
         raise HTTPException(status_code=401, detail="Account is disabled")
     
     user_type = user.get("user_type", "staff")
@@ -157,6 +182,16 @@ async def login(credentials: UserLogin):
         user["role"],
         org_id=selected_org_id,
         user_type=user_type
+    )
+    
+    # Log successful login
+    await AuditService.log_auth(
+        AuditAction.LOGIN,
+        credentials.email,
+        success=True,
+        request=request,
+        user=user,
+        details=f"Successful login as {user_type}"
     )
     
     return {
