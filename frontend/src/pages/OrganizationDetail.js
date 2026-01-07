@@ -47,6 +47,32 @@ const USER_TYPE_COLORS = {
   staff: 'bg-slate-100 text-slate-700',
 };
 
+const DOCUMENT_TYPES = [
+  { value: 'license', label: 'License' },
+  { value: 'certification', label: 'Certification' },
+  { value: 'accreditation', label: 'Accreditation' },
+  { value: 'insurance', label: 'Insurance' },
+  { value: 'policy', label: 'Policy Document' },
+  { value: 'training', label: 'Training Certificate' },
+  { value: 'audit_report', label: 'Audit Report' },
+  { value: 'compliance', label: 'Compliance Document' },
+  { value: 'contract', label: 'Contract' },
+  { value: 'other', label: 'Other' },
+];
+
+const DOC_TYPE_COLORS = {
+  license: 'bg-green-100 text-green-700',
+  certification: 'bg-blue-100 text-blue-700',
+  accreditation: 'bg-purple-100 text-purple-700',
+  insurance: 'bg-amber-100 text-amber-700',
+  policy: 'bg-slate-100 text-slate-700',
+  training: 'bg-teal-100 text-teal-700',
+  audit_report: 'bg-indigo-100 text-indigo-700',
+  compliance: 'bg-cyan-100 text-cyan-700',
+  contract: 'bg-rose-100 text-rose-700',
+  other: 'bg-gray-100 text-gray-700',
+};
+
 export default function OrganizationDetail() {
   const { orgId } = useParams();
   const navigate = useNavigate();
