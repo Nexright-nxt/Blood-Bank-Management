@@ -1164,6 +1164,368 @@ export default function OrganizationDetail() {
             </Card>
           </div>
         </TabsContent>
+
+        {/* Compliance Tab */}
+        <TabsContent value="compliance" className="mt-4">
+          <div className="space-y-6">
+            {/* Compliance Stats */}
+            {complianceStats && (
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="text-center">
+                      <ClipboardCheck className="w-6 h-6 mx-auto text-blue-500 mb-1" />
+                      <p className="text-2xl font-bold">{complianceStats.total_requirements}</p>
+                      <p className="text-xs text-slate-500">Requirements</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="text-center">
+                      <CheckCircle className="w-6 h-6 mx-auto text-green-500 mb-1" />
+                      <p className="text-2xl font-bold text-green-600">{complianceStats.compliant}</p>
+                      <p className="text-xs text-slate-500">Compliant</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="text-center">
+                      <Clock className="w-6 h-6 mx-auto text-amber-500 mb-1" />
+                      <p className="text-2xl font-bold text-amber-600">{complianceStats.pending}</p>
+                      <p className="text-xs text-slate-500">Pending</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="text-center">
+                      <AlertTriangle className="w-6 h-6 mx-auto text-orange-500 mb-1" />
+                      <p className="text-2xl font-bold text-orange-600">{complianceStats.expiring_soon}</p>
+                      <p className="text-xs text-slate-500">Expiring Soon</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="text-center">
+                      <div className="w-6 h-6 mx-auto mb-1">
+                        <Progress value={complianceStats.compliance_rate} className="h-6" />
+                      </div>
+                      <p className="text-2xl font-bold text-teal-600">{complianceStats.compliance_rate}%</p>
+                      <p className="text-xs text-slate-500">Compliance Rate</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Compliance Requirements List */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ClipboardCheck className="w-5 h-5" />
+                  Compliance Requirements
+                </CardTitle>
+                <CardDescription>Track regulatory and certification compliance</CardDescription>
+              </CardHeader>
+              <CardContent>
+                {complianceData.length === 0 ? (
+                  <div className="text-center py-8 text-slate-500">
+                    No compliance requirements found
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Requirement</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Expiry</TableHead>
+                        <TableHead>Document</TableHead>
+                        {canEdit && <TableHead>Actions</TableHead>}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {complianceData.map((item) => (
+                        <TableRow key={item.requirement?.id} data-testid={`compliance-row-${item.requirement?.id}`}>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{item.requirement?.name}</p>
+                              <p className="text-xs text-slate-400">{item.requirement?.description}</p>
+                              {item.requirement?.is_mandatory && (
+                                <Badge className="mt-1 bg-red-100 text-red-700 text-xs">Mandatory</Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline" className="capitalize">
+                              {item.requirement?.category?.replace('_', ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={COMPLIANCE_STATUS_COLORS[item.status] || COMPLIANCE_STATUS_COLORS.pending}>
+                              {item.status?.replace('_', ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {item.compliance?.expiry_date ? (
+                              <div>
+                                <p className={item.is_expired ? 'text-red-600' : item.days_until_expiry <= 30 ? 'text-amber-600' : ''}>
+                                  {formatDate(item.compliance.expiry_date)}
+                                </p>
+                                {item.days_until_expiry !== null && (
+                                  <p className={`text-xs ${item.is_expired ? 'text-red-500' : item.days_until_expiry <= 30 ? 'text-amber-500' : 'text-slate-400'}`}>
+                                    {item.is_expired ? 'Expired' : `${item.days_until_expiry} days left`}
+                                  </p>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="text-slate-400">-</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            {item.compliance?.linked_document_id ? (
+                              <Badge className="bg-green-100 text-green-700">
+                                <Link2 className="w-3 h-3 mr-1" />
+                                Linked
+                              </Badge>
+                            ) : item.requirement?.requires_document ? (
+                              <Badge className="bg-amber-100 text-amber-700">Required</Badge>
+                            ) : (
+                              <span className="text-slate-400">-</span>
+                            )}
+                          </TableCell>
+                          {canEdit && (
+                            <TableCell>
+                              <div className="flex gap-1">
+                                {item.status !== 'compliant' && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-green-600"
+                                    onClick={() => handleUpdateComplianceStatus(item.requirement?.id, 'compliant')}
+                                    title="Mark Compliant"
+                                  >
+                                    <CheckCircle className="w-4 h-4" />
+                                  </Button>
+                                )}
+                                {item.requirement?.requires_document && documents.length > 0 && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => {
+                                      setSelectedRequirement(item.requirement);
+                                      setShowLinkDocDialog(true);
+                                    }}
+                                    title="Link Document"
+                                  >
+                                    <Link2 className="w-4 h-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          )}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        {/* Training Tab */}
+        <TabsContent value="training" className="mt-4">
+          <div className="space-y-6">
+            {/* Training Stats */}
+            {trainingStats && (
+              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="text-center">
+                      <BookOpen className="w-6 h-6 mx-auto text-blue-500 mb-1" />
+                      <p className="text-2xl font-bold">{trainingStats.total_assignments}</p>
+                      <p className="text-xs text-slate-500">Assignments</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="text-center">
+                      <Award className="w-6 h-6 mx-auto text-green-500 mb-1" />
+                      <p className="text-2xl font-bold text-green-600">{trainingStats.completed}</p>
+                      <p className="text-xs text-slate-500">Completed</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="text-center">
+                      <PlayCircle className="w-6 h-6 mx-auto text-blue-500 mb-1" />
+                      <p className="text-2xl font-bold text-blue-600">{trainingStats.in_progress}</p>
+                      <p className="text-xs text-slate-500">In Progress</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="text-center">
+                      <Clock className="w-6 h-6 mx-auto text-slate-400 mb-1" />
+                      <p className="text-2xl font-bold text-slate-600">{trainingStats.not_started}</p>
+                      <p className="text-xs text-slate-500">Not Started</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="pt-4">
+                    <div className="text-center">
+                      <div className="w-6 h-6 mx-auto mb-1">
+                        <Progress value={trainingStats.completion_rate} className="h-6" />
+                      </div>
+                      <p className="text-2xl font-bold text-teal-600">{trainingStats.completion_rate}%</p>
+                      <p className="text-xs text-slate-500">Completion Rate</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Training Records */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <GraduationCap className="w-5 h-5" />
+                    Staff Training Records
+                  </CardTitle>
+                  <CardDescription>Manage staff training and certifications</CardDescription>
+                </div>
+                {canEdit && (
+                  <Button onClick={() => setShowAssignTrainingDialog(true)} data-testid="assign-training-btn">
+                    <UserPlus className="w-4 h-4 mr-1" />
+                    Assign Training
+                  </Button>
+                )}
+              </CardHeader>
+              <CardContent>
+                {trainingRecords.length === 0 ? (
+                  <div className="text-center py-12">
+                    <GraduationCap className="w-12 h-12 mx-auto text-slate-300 mb-3" />
+                    <p className="text-slate-500">No training records found</p>
+                    {canEdit && (
+                      <Button
+                        variant="outline"
+                        className="mt-4"
+                        onClick={() => setShowAssignTrainingDialog(true)}
+                      >
+                        <UserPlus className="w-4 h-4 mr-1" />
+                        Assign First Training
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Staff Member</TableHead>
+                        <TableHead>Course</TableHead>
+                        <TableHead>Category</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Progress</TableHead>
+                        {canEdit && <TableHead>Actions</TableHead>}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {trainingRecords.map((record) => (
+                        <TableRow key={record.id} data-testid={`training-row-${record.id}`}>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <div className="w-8 h-8 rounded-full bg-teal-100 flex items-center justify-center">
+                                <span className="text-sm font-medium text-teal-700">
+                                  {record.user?.full_name?.charAt(0) || 'U'}
+                                </span>
+                              </div>
+                              <div>
+                                <p className="font-medium">{record.user?.full_name || 'Unknown'}</p>
+                                <p className="text-xs text-slate-400">{record.user?.role}</p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div>
+                              <p className="font-medium">{record.course?.name || 'Unknown Course'}</p>
+                              <p className="text-xs text-slate-400">{record.course?.duration_hours}h</p>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={TRAINING_CATEGORY_COLORS[record.course?.category] || TRAINING_CATEGORY_COLORS.general}>
+                              {record.course?.category}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={TRAINING_STATUS_COLORS[record.status] || TRAINING_STATUS_COLORS.not_started}>
+                              {record.status?.replace('_', ' ')}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {record.status === 'completed' ? (
+                              <div>
+                                <p className="text-sm text-green-600">Completed</p>
+                                {record.expiry_date && (
+                                  <p className={`text-xs ${record.is_expired ? 'text-red-500' : 'text-slate-400'}`}>
+                                    {record.is_expired ? 'Expired' : `Valid until ${formatDate(record.expiry_date)}`}
+                                  </p>
+                                )}
+                                {record.score && (
+                                  <p className="text-xs text-slate-400">Score: {record.score}%</p>
+                                )}
+                              </div>
+                            ) : record.status === 'in_progress' ? (
+                              <p className="text-sm text-blue-600">In Progress</p>
+                            ) : (
+                              <p className="text-sm text-slate-400">Not Started</p>
+                            )}
+                          </TableCell>
+                          {canEdit && (
+                            <TableCell>
+                              <div className="flex gap-1">
+                                {record.status === 'not_started' && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-blue-600"
+                                    onClick={() => handleStartTraining(record.id)}
+                                    title="Start Training"
+                                  >
+                                    <PlayCircle className="w-4 h-4" />
+                                  </Button>
+                                )}
+                                {record.status === 'in_progress' && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-green-600"
+                                    onClick={() => handleCompleteTraining(record.id)}
+                                    title="Mark Complete"
+                                  >
+                                    <CheckCircle className="w-4 h-4" />
+                                  </Button>
+                                )}
+                              </div>
+                            </TableCell>
+                          )}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
       </Tabs>
 
       {/* Edit Organization Dialog */}
