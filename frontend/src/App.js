@@ -39,6 +39,7 @@ import OrganizationDetail from "./pages/OrganizationDetail";
 import BloodRequests from "./pages/BloodRequests";
 import NetworkDashboard from "./pages/NetworkDashboard";
 import AuditLogs from "./pages/AuditLogs";
+import SecuritySettings from "./pages/SecuritySettings";
 import "./App.css";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
