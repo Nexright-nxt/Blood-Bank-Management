@@ -185,6 +185,97 @@ export default function OrganizationDetail() {
     }
   };
 
+  const fetchDocuments = async () => {
+    try {
+      const [docsRes, statsRes] = await Promise.all([
+        documentAPI.getAll(orgId),
+        documentAPI.getStats(orgId)
+      ]);
+      setDocuments(docsRes.data || []);
+      setDocStats(statsRes.data);
+    } catch (error) {
+      console.error('Failed to fetch documents:', error);
+    }
+  };
+
+  const handleUploadDocument = async () => {
+    if (!docFormData.file || !docFormData.title) {
+      toast.error('Please select a file and provide a title');
+      return;
+    }
+    
+    setUploadingDoc(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', docFormData.file);
+      formData.append('doc_type', docFormData.doc_type);
+      formData.append('title', docFormData.title);
+      formData.append('description', docFormData.description || '');
+      formData.append('issue_date', docFormData.issue_date || '');
+      formData.append('expiry_date', docFormData.expiry_date || '');
+      formData.append('issuing_authority', docFormData.issuing_authority || '');
+      formData.append('reference_number', docFormData.reference_number || '');
+      formData.append('tags', docFormData.tags || '');
+      
+      await documentAPI.upload(orgId, formData);
+      toast.success('Document uploaded successfully');
+      setShowUploadDocDialog(false);
+      resetDocForm();
+      fetchDocuments();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to upload document');
+    } finally {
+      setUploadingDoc(false);
+    }
+  };
+
+  const handleVerifyDocument = async (docId) => {
+    try {
+      await documentAPI.verify(orgId, docId);
+      toast.success('Document verified');
+      fetchDocuments();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to verify document');
+    }
+  };
+
+  const handleDeleteDocument = async (docId) => {
+    if (!window.confirm('Are you sure you want to delete this document?')) return;
+    
+    try {
+      await documentAPI.delete(orgId, docId);
+      toast.success('Document deleted');
+      fetchDocuments();
+    } catch (error) {
+      toast.error(error.response?.data?.detail || 'Failed to delete document');
+    }
+  };
+
+  const handleDownloadDocument = (docId) => {
+    const url = documentAPI.getDownloadUrl(orgId, docId);
+    window.open(url, '_blank');
+  };
+
+  const resetDocForm = () => {
+    setDocFormData({
+      file: null,
+      doc_type: 'other',
+      title: '',
+      description: '',
+      issue_date: '',
+      expiry_date: '',
+      issuing_authority: '',
+      reference_number: '',
+      tags: '',
+    });
+  };
+
+  const formatFileSize = (bytes) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
+
   const handleUpdateOrganization = async () => {
     try {
       await organizationAPI.update(orgId, editFormData);
