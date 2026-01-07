@@ -104,6 +104,24 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
 - [x] Navigation from Organizations list to detail page
 - [x] Back navigation to Organizations list
 
+### Phase F: Document Management (COMPLETE - Jan 7, 2026)
+- [x] **Backend Document API** (`/app/backend/routers/documents.py`):
+  - [x] `POST /api/documents/{org_id}` - Upload document with metadata
+  - [x] `GET /api/documents/{org_id}` - List org documents with filters
+  - [x] `GET /api/documents/{org_id}/{doc_id}` - Get single document metadata
+  - [x] `GET /api/documents/{org_id}/{doc_id}/download` - Download document file
+  - [x] `PUT /api/documents/{org_id}/{doc_id}/verify` - Verify document (admin only)
+  - [x] `DELETE /api/documents/{org_id}/{doc_id}` - Delete document
+  - [x] `GET /api/documents/{org_id}/summary/stats` - Document statistics
+- [x] **Frontend Documents Tab** in OrganizationDetail page:
+  - [x] Document stats cards (Total, Verified, Pending, Expiring Soon, Expired)
+  - [x] Documents table with title, type, expiry, status, actions
+  - [x] Upload Document dialog with full metadata fields
+  - [x] Download, verify, and delete actions
+  - [x] Empty state with upload prompt
+- [x] File validation: extensions (.pdf, .doc, .docx, .xls, .xlsx, etc.), max 10MB
+- [x] RLS enforced via OrgAccessHelper middleware
+
 ---
 
 ## Prioritized Backlog
