@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import {
   Building2, Plus, Edit2, Trash2, Users, Package, ChevronRight,
   ChevronDown, RefreshCw, MapPin, Phone, Mail, FileText, Eye,
-  Building, GitBranch
+  Building, GitBranch, UserPlus, Shield
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -23,12 +23,24 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from '../components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { Checkbox } from '../components/ui/checkbox';
 
 const ORG_TYPES = [
   { value: 'hospital_network', label: 'Hospital Network' },
   { value: 'blood_bank_chain', label: 'Blood Bank Chain' },
   { value: 'standalone', label: 'Standalone' },
   { value: 'branch', label: 'Branch' },
+];
+
+const USER_ROLES = [
+  { value: 'admin', label: 'Administrator' },
+  { value: 'registration', label: 'Registration Staff' },
+  { value: 'phlebotomist', label: 'Phlebotomist' },
+  { value: 'lab_tech', label: 'Lab Technician' },
+  { value: 'processing', label: 'Processing Tech' },
+  { value: 'qc_manager', label: 'QC Manager' },
+  { value: 'inventory', label: 'Inventory Manager' },
+  { value: 'distribution', label: 'Distribution Staff' },
 ];
 
 export default function Organizations() {
