@@ -186,6 +186,9 @@ async def get_current_context(
     is_impersonating = current_user.get("is_impersonating", False)
     actual_user_type = current_user.get("actual_user_type", user_type)
     
+    # Can switch context if actual user type allows it (not the impersonated type)
+    can_switch = actual_user_type in ["system_admin", "super_admin"]
+    
     return {
         "user_id": current_user["id"],
         "user_email": current_user["email"],
@@ -196,7 +199,7 @@ async def get_current_context(
         "org_id": user_org_id,
         "org_info": org_info,
         "is_impersonating": is_impersonating,
-        "can_switch_context": user_type in ["system_admin", "super_admin"]
+        "can_switch_context": can_switch
     }
 
 
