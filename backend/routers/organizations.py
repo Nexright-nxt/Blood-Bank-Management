@@ -574,3 +574,352 @@ async def get_external_org_history(
         "transactions": requests,
         "total_transactions": len(requests)
     }
+
+
+
+# ============== Combined Creation Endpoints ==============
+
+@router.post("/with-admin")
+async def create_organization_with_admin(
+    data: CreateOrgWithAdmin,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Create a new parent organization with its Super Admin in one transaction.
+    Only System Admins can use this endpoint.
+    """
+    user_type = current_user.get("user_type", "staff")
+    
+    if user_type != "system_admin":
+        raise HTTPException(status_code=403, detail="Only System Admin can create organizations with admins")
+    
+    # Check if email already exists
+    existing_user = await db.users.find_one({"email": data.admin_email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="A user with this email already exists")
+    
+    # Create organization
+    org_id = str(uuid.uuid4())
+    org_doc = {
+        "id": org_id,
+        "org_name": data.org_name,
+        "org_type": data.org_type,
+        "is_parent": True,
+        "parent_org_id": None,
+        "address": data.address,
+        "city": data.city,
+        "state": data.state,
+        "country": data.country,
+        "contact_person": data.contact_person or data.admin_full_name,
+        "contact_phone": data.contact_phone or data.admin_phone,
+        "contact_email": data.contact_email or data.admin_email,
+        "license_number": data.license_number,
+        "is_active": True,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": current_user["id"],
+        "updated_by": current_user["id"]
+    }
+    
+    await db.organizations.insert_one(org_doc)
+    
+    # Create Super Admin user for this organization
+    user_id = str(uuid.uuid4())
+    user_doc = {
+        "id": user_id,
+        "email": data.admin_email,
+        "password_hash": hash_password(data.admin_password),
+        "full_name": data.admin_full_name,
+        "phone": data.admin_phone,
+        "role": "admin",
+        "user_type": "super_admin",
+        "org_id": org_id,
+        "is_active": True,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.users.insert_one(user_doc)
+    
+    return {
+        "status": "success",
+        "message": f"Organization '{data.org_name}' created with Super Admin '{data.admin_email}'",
+        "organization": {
+            "id": org_id,
+            "org_name": data.org_name,
+            "org_type": data.org_type
+        },
+        "admin": {
+            "id": user_id,
+            "email": data.admin_email,
+            "full_name": data.admin_full_name,
+            "user_type": "super_admin"
+        }
+    }
+
+
+@router.post("/{parent_org_id}/branches/with-admin")
+async def create_branch_with_admin(
+    parent_org_id: str,
+    data: CreateBranchWithAdmin,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Create a new branch under a parent organization with its Tenant Admin.
+    System Admins can create for any org, Super Admins only for their own org.
+    """
+    user_type = current_user.get("user_type", "staff")
+    user_org_id = current_user.get("org_id")
+    
+    # Permission check
+    if user_type not in ["system_admin", "super_admin"]:
+        raise HTTPException(status_code=403, detail="Only System Admin or Super Admin can create branches")
+    
+    # Super Admin can only create branches for their own org
+    if user_type == "super_admin" and user_org_id != parent_org_id:
+        raise HTTPException(status_code=403, detail="Super Admin can only create branches for their own organization")
+    
+    # Verify parent org exists and is a parent
+    parent_org = await db.organizations.find_one({"id": parent_org_id})
+    if not parent_org:
+        raise HTTPException(status_code=404, detail="Parent organization not found")
+    
+    if not parent_org.get("is_parent", False):
+        raise HTTPException(status_code=400, detail="Can only create branches under parent organizations")
+    
+    # Check if email already exists
+    existing_user = await db.users.find_one({"email": data.admin_email})
+    if existing_user:
+        raise HTTPException(status_code=400, detail="A user with this email already exists")
+    
+    # Create branch organization
+    branch_id = str(uuid.uuid4())
+    branch_doc = {
+        "id": branch_id,
+        "org_name": data.org_name,
+        "org_type": "branch",
+        "is_parent": False,
+        "parent_org_id": parent_org_id,
+        "address": data.address,
+        "city": data.city,
+        "state": data.state,
+        "country": data.country,
+        "contact_person": data.contact_person or data.admin_full_name,
+        "contact_phone": data.contact_phone or data.admin_phone,
+        "contact_email": data.contact_email or data.admin_email,
+        "license_number": data.license_number,
+        "is_active": True,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+        "created_by": current_user["id"],
+        "updated_by": current_user["id"]
+    }
+    
+    await db.organizations.insert_one(branch_doc)
+    
+    # Create Tenant Admin user for this branch
+    user_id = str(uuid.uuid4())
+    user_doc = {
+        "id": user_id,
+        "email": data.admin_email,
+        "password_hash": hash_password(data.admin_password),
+        "full_name": data.admin_full_name,
+        "phone": data.admin_phone,
+        "role": "admin",
+        "user_type": "tenant_admin",
+        "org_id": branch_id,
+        "is_active": True,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.users.insert_one(user_doc)
+    
+    return {
+        "status": "success",
+        "message": f"Branch '{data.org_name}' created with Tenant Admin '{data.admin_email}'",
+        "branch": {
+            "id": branch_id,
+            "org_name": data.org_name,
+            "parent_org_id": parent_org_id,
+            "parent_org_name": parent_org.get("org_name")
+        },
+        "admin": {
+            "id": user_id,
+            "email": data.admin_email,
+            "full_name": data.admin_full_name,
+            "user_type": "tenant_admin"
+        }
+    }
+
+
+# ============== User Management for Organizations ==============
+
+@router.get("/{org_id}/users")
+async def get_organization_users(
+    org_id: str,
+    include_children: bool = Query(False),
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get all users for an organization.
+    Super Admins can include_children=True to see users in all branches.
+    """
+    if not await check_org_access(current_user, org_id):
+        raise HTTPException(status_code=403, detail="Access denied to this organization")
+    
+    org_ids = [org_id]
+    
+    if include_children:
+        children = await db.organizations.find(
+            {"parent_org_id": org_id, "is_active": True},
+            {"id": 1, "_id": 0}
+        ).to_list(100)
+        org_ids.extend([c["id"] for c in children])
+    
+    users = await db.users.find(
+        {"org_id": {"$in": org_ids}, "is_active": True},
+        {"_id": 0, "password_hash": 0}
+    ).to_list(500)
+    
+    # Enrich with org names
+    org_map = {}
+    orgs = await db.organizations.find({"id": {"$in": org_ids}}, {"_id": 0, "id": 1, "org_name": 1}).to_list(100)
+    for org in orgs:
+        org_map[org["id"]] = org["org_name"]
+    
+    for user in users:
+        user["org_name"] = org_map.get(user.get("org_id"), "Unknown")
+    
+    return users
+
+
+@router.post("/{org_id}/users")
+async def create_organization_user(
+    org_id: str,
+    email: str,
+    password: str,
+    full_name: str,
+    role: str = "registration",
+    user_type: str = "staff",
+    phone: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Create a new user for an organization.
+    """
+    current_user_type = current_user.get("user_type", "staff")
+    
+    # Permission checks
+    if current_user_type not in ["system_admin", "super_admin", "tenant_admin"]:
+        raise HTTPException(status_code=403, detail="Insufficient permissions to create users")
+    
+    if not await check_org_access(current_user, org_id, write_access=True):
+        raise HTTPException(status_code=403, detail="No write access to this organization")
+    
+    # Validate user_type based on creator's type
+    if current_user_type == "tenant_admin" and user_type not in ["staff"]:
+        raise HTTPException(status_code=403, detail="Tenant Admin can only create Staff users")
+    
+    if current_user_type == "super_admin" and user_type not in ["tenant_admin", "staff"]:
+        raise HTTPException(status_code=403, detail="Super Admin can only create Tenant Admin or Staff users")
+    
+    # Check if email already exists
+    existing = await db.users.find_one({"email": email})
+    if existing:
+        raise HTTPException(status_code=400, detail="A user with this email already exists")
+    
+    user_id = str(uuid.uuid4())
+    user_doc = {
+        "id": user_id,
+        "email": email,
+        "password_hash": hash_password(password),
+        "full_name": full_name,
+        "phone": phone,
+        "role": role,
+        "user_type": user_type,
+        "org_id": org_id,
+        "is_active": True,
+        "created_at": datetime.now(timezone.utc).isoformat(),
+        "updated_at": datetime.now(timezone.utc).isoformat()
+    }
+    
+    await db.users.insert_one(user_doc)
+    
+    return {
+        "status": "success",
+        "user": {
+            "id": user_id,
+            "email": email,
+            "full_name": full_name,
+            "role": role,
+            "user_type": user_type,
+            "org_id": org_id
+        }
+    }
+
+
+@router.put("/{org_id}/users/{user_id}")
+async def update_organization_user(
+    org_id: str,
+    user_id: str,
+    updates: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Update a user in an organization.
+    """
+    if not await check_org_access(current_user, org_id, write_access=True):
+        raise HTTPException(status_code=403, detail="No write access to this organization")
+    
+    # Verify user belongs to this org
+    user = await db.users.find_one({"id": user_id, "org_id": org_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found in this organization")
+    
+    # Don't allow changing certain fields
+    protected_fields = ["id", "org_id", "created_at"]
+    for field in protected_fields:
+        updates.pop(field, None)
+    
+    # Handle password separately
+    if "password" in updates:
+        updates["password_hash"] = hash_password(updates.pop("password"))
+    
+    updates["updated_at"] = datetime.now(timezone.utc).isoformat()
+    
+    await db.users.update_one({"id": user_id}, {"$set": updates})
+    
+    return {"status": "success", "message": "User updated successfully"}
+
+
+@router.delete("/{org_id}/users/{user_id}")
+async def deactivate_organization_user(
+    org_id: str,
+    user_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Deactivate a user in an organization (soft delete).
+    """
+    if not await check_org_access(current_user, org_id, write_access=True):
+        raise HTTPException(status_code=403, detail="No write access to this organization")
+    
+    # Verify user belongs to this org
+    user = await db.users.find_one({"id": user_id, "org_id": org_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found in this organization")
+    
+    # Don't allow deactivating yourself
+    if user_id == current_user["id"]:
+        raise HTTPException(status_code=400, detail="Cannot deactivate your own account")
+    
+    await db.users.update_one(
+        {"id": user_id},
+        {"$set": {
+            "is_active": False,
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }}
+    )
+    
+    return {"status": "success", "message": "User deactivated successfully"}
