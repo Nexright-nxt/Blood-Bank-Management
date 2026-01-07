@@ -88,14 +88,33 @@ async def get_user_writable_org_ids(user: dict) -> List[str]:
     """
     Get list of organization IDs the user can WRITE to (create/update/delete).
     
+    When impersonating (context switched), only return the target org and its children.
+    
     Write Rules:
-    - System Admin: All organizations
+    - System Admin: All organizations (when not impersonating)
     - Super Admin: Own org + child branches
     - Tenant Admin: Own org only
     - Staff: Own org only
     """
     user_type = user.get("user_type", "staff")
     user_org_id = user.get("org_id")
+    is_impersonating = user.get("is_impersonating", False)
+    
+    # When impersonating, restrict to the impersonated context only
+    if is_impersonating and user_org_id:
+        org_ids = [user_org_id]
+        
+        # If acting as super_admin, also include child branches
+        if user_type == "super_admin":
+            children = await db.organizations.find(
+                {"parent_org_id": user_org_id, "is_active": True},
+                {"id": 1, "_id": 0}
+            ).to_list(100)
+            org_ids.extend([c["id"] for c in children])
+        
+        return org_ids
+    
+    # Not impersonating - use normal access rules
     
     # System admin can write to everything
     if user_type == "system_admin":
