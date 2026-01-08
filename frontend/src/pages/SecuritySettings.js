@@ -25,6 +25,7 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue
 } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
+import SensitiveActionModal from '../components/SensitiveActionModal';
 
 export default function SecuritySettings() {
   const { user, isSystemAdmin, isSuperAdmin } = useAuth();
