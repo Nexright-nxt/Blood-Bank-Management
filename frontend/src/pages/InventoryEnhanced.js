@@ -2448,88 +2448,208 @@ function ExpiryView({ data, selectedItems, onToggleSelect, onPrintLabel, onViewA
 }
 
 function StatusView({ data, selectedItems, onToggleSelect, onPrintLabel, onViewAudit }) {
+  const [selectedStatus, setSelectedStatus] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+
   if (!data || !Array.isArray(data)) return null;
 
+  const statusColors = {
+    'ready_to_use': { gradient: 'from-emerald-400 to-emerald-500', bg: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-600' },
+    'reserved': { gradient: 'from-blue-400 to-blue-500', bg: 'bg-blue-50 border-blue-200', text: 'text-blue-600' },
+    'quarantine': { gradient: 'from-amber-400 to-amber-500', bg: 'bg-amber-50 border-amber-200', text: 'text-amber-600' },
+    'testing': { gradient: 'from-purple-400 to-purple-500', bg: 'bg-purple-50 border-purple-200', text: 'text-purple-600' },
+    'expired': { gradient: 'from-red-400 to-red-500', bg: 'bg-red-50 border-red-200', text: 'text-red-600' },
+    'discarded': { gradient: 'from-slate-400 to-slate-500', bg: 'bg-slate-50 border-slate-200', text: 'text-slate-600' },
+  };
+
+  const handleStatusClick = (status) => {
+    const units = Array.isArray(status.units) ? status.units : [];
+    const components = Array.isArray(status.components) ? status.components : [];
+    setSelectedStatus({ ...status, allItems: [...units, ...components] });
+    setShowDetailModal(true);
+  };
+
   return (
-    <Tabs defaultValue="ready_to_use">
-      <TabsList>
-        {data.map((status) => (
-          <TabsTrigger key={status.status} value={status.status}>
-            {status.display_name} ({status.total_count || 0})
-          </TabsTrigger>
-        ))}
-      </TabsList>
-      
-      {data.map((status) => {
-        const units = Array.isArray(status.units) ? status.units : [];
-        const components = Array.isArray(status.components) ? status.components : [];
-        const allItems = [...units, ...components];
-        
-        return (
-          <TabsContent key={status.status} value={status.status}>
-            <Card>
-              <Table className="table-dense">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10"></TableHead>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Type</TableHead>
-                    <TableHead>Blood Group</TableHead>
-                    <TableHead>Volume</TableHead>
-                    <TableHead>Location</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {allItems.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-slate-500">
-                        No items with status &ldquo;{status.display_name}&rdquo;
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    allItems.slice(0, 50).map((item) => {
-                      const itemId = item.id || item.unit_id || item.component_id;
-                      const isSelected = selectedItems?.some(i => (i.id || i.unit_id || i.component_id) === itemId);
-                      const isUnit = !!item.unit_id;
-                      
-                      return (
-                        <TableRow key={itemId} className={isSelected ? 'bg-teal-50' : ''}>
-                          <TableCell>
-                            <Checkbox 
-                              checked={isSelected}
-                              onCheckedChange={() => onToggleSelect({ ...item, item_type: isUnit ? 'unit' : 'component' })}
-                              disabled={item.status !== 'ready_to_use'}
-                            />
-                          </TableCell>
-                          <TableCell className="font-mono text-xs">{item.unit_id || item.component_id}</TableCell>
-                          <TableCell className="capitalize">{isUnit ? 'Whole Blood' : item.component_type?.replace('_', ' ')}</TableCell>
-                          <TableCell>
-                            <span className="blood-group-badge">{item.blood_group || item.confirmed_blood_group || '-'}</span>
-                          </TableCell>
-                          <TableCell>{item.volume} mL</TableCell>
-                          <TableCell className="text-xs">{item.storage_location || item.current_location || '-'}</TableCell>
-                          <TableCell className="text-right">
-                            <div className="flex justify-end gap-1">
-                              <Button size="sm" variant="ghost" onClick={() => onPrintLabel({ ...item, item_type: isUnit ? 'unit' : 'component' })}>
-                                <Printer className="w-4 h-4" />
-                              </Button>
-                              <Button size="sm" variant="ghost" onClick={() => onViewAudit(item.id)}>
-                                <History className="w-4 h-4" />
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
+    <>
+      {/* Interactive Status Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+        {data.map((status) => {
+          const colors = statusColors[status.status] || statusColors['ready_to_use'];
+          return (
+            <Card 
+              key={status.status}
+              className={`p-4 cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${colors.bg}`}
+              onClick={() => handleStatusClick(status)}
+            >
+              <div className="flex flex-col items-center text-center">
+                <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${colors.gradient} flex items-center justify-center mb-2 shadow-md`}>
+                  <Activity className="w-5 h-5 text-white" />
+                </div>
+                <div className={`text-2xl font-bold ${colors.text}`}>{status.total_count || 0}</div>
+                <div className="text-xs text-slate-600 capitalize">{status.display_name}</div>
+              </div>
             </Card>
-          </TabsContent>
-        );
-      })}
-    </Tabs>
+          );
+        })}
+      </div>
+
+      {/* Tabbed View */}
+      <Tabs defaultValue="ready_to_use">
+        <TabsList>
+          {data.map((status) => (
+            <TabsTrigger key={status.status} value={status.status}>
+              {status.display_name} ({status.total_count || 0})
+            </TabsTrigger>
+          ))}
+        </TabsList>
+        
+        {data.map((status) => {
+          const units = Array.isArray(status.units) ? status.units : [];
+          const components = Array.isArray(status.components) ? status.components : [];
+          const allItems = [...units, ...components];
+          
+          return (
+            <TabsContent key={status.status} value={status.status}>
+              <Card>
+                <Table className="table-dense">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-10"></TableHead>
+                      <TableHead>ID</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Blood Group</TableHead>
+                      <TableHead>Volume</TableHead>
+                      <TableHead>Location</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {allItems.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={7} className="text-center py-8 text-slate-500">
+                          No items with status &ldquo;{status.display_name}&rdquo;
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      allItems.slice(0, 50).map((item) => {
+                        const itemId = item.id || item.unit_id || item.component_id;
+                        const isSelected = selectedItems?.some(i => (i.id || i.unit_id || i.component_id) === itemId);
+                        const isUnit = !!item.unit_id;
+                        
+                        return (
+                          <TableRow key={itemId} className={isSelected ? 'bg-teal-50' : ''}>
+                            <TableCell>
+                              <Checkbox 
+                                checked={isSelected}
+                                onCheckedChange={() => onToggleSelect({ ...item, item_type: isUnit ? 'unit' : 'component' })}
+                                disabled={item.status !== 'ready_to_use'}
+                              />
+                            </TableCell>
+                            <TableCell className="font-mono text-xs">{item.unit_id || item.component_id}</TableCell>
+                            <TableCell className="capitalize">{isUnit ? 'Whole Blood' : item.component_type?.replace('_', ' ')}</TableCell>
+                            <TableCell>
+                              <span className="blood-group-badge">{item.blood_group || item.confirmed_blood_group || '-'}</span>
+                            </TableCell>
+                            <TableCell>{item.volume} mL</TableCell>
+                            <TableCell className="text-xs">{item.storage_location || item.current_location || '-'}</TableCell>
+                            <TableCell className="text-right">
+                              <div className="flex justify-end gap-1">
+                                <Button size="sm" variant="ghost" onClick={() => onPrintLabel({ ...item, item_type: isUnit ? 'unit' : 'component' })}>
+                                  <Printer className="w-4 h-4" />
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => onViewAudit(item.id)}>
+                                  <History className="w-4 h-4" />
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </Card>
+            </TabsContent>
+          );
+        })}
+      </Tabs>
+
+      {/* Status Detail Modal */}
+      <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${statusColors[selectedStatus?.status]?.gradient || 'from-slate-400 to-slate-500'} flex items-center justify-center shadow-md`}>
+                <Activity className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <span className="text-xl capitalize">{selectedStatus?.display_name}</span>
+                <p className="text-sm font-normal text-slate-500">{selectedStatus?.total_count} items with this status</p>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="grid grid-cols-3 gap-3 py-3">
+            <Card className="p-3 text-center">
+              <div className="text-xl font-bold text-red-600">{selectedStatus?.units_count || 0}</div>
+              <div className="text-xs text-slate-500">Whole Blood</div>
+            </Card>
+            <Card className="p-3 text-center">
+              <div className="text-xl font-bold text-blue-600">{selectedStatus?.components_count || 0}</div>
+              <div className="text-xs text-slate-500">Components</div>
+            </Card>
+            <Card className="p-3 text-center">
+              <div className="text-xl font-bold text-teal-600">{selectedStatus?.total_count || 0}</div>
+              <div className="text-xs text-slate-500">Total Items</div>
+            </Card>
+          </div>
+
+          <ScrollArea className="flex-1">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-8"><Checkbox /></TableHead>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Blood Group</TableHead>
+                  <TableHead>Volume</TableHead>
+                  <TableHead>Location</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {selectedStatus?.allItems?.map((item) => {
+                  const itemId = item.id || item.unit_id || item.component_id;
+                  const isSelected = selectedItems?.some(i => (i.id || i.unit_id || i.component_id) === itemId);
+                  const isUnit = !!item.unit_id;
+                  return (
+                    <TableRow key={itemId} className={isSelected ? 'bg-teal-50' : ''}>
+                      <TableCell>
+                        <Checkbox 
+                          checked={isSelected}
+                          onCheckedChange={() => onToggleSelect({ ...item, item_type: isUnit ? 'unit' : 'component' })}
+                          disabled={item.status !== 'ready_to_use'}
+                        />
+                      </TableCell>
+                      <TableCell className="font-mono text-xs">{item.unit_id || item.component_id}</TableCell>
+                      <TableCell className="capitalize">{isUnit ? 'Whole Blood' : item.component_type?.replace('_', ' ')}</TableCell>
+                      <TableCell>
+                        <span className="blood-group-badge">{item.blood_group || item.confirmed_blood_group || '-'}</span>
+                      </TableCell>
+                      <TableCell>{item.volume} mL</TableCell>
+                      <TableCell className="text-sm">{item.storage_location || item.current_location || '-'}</TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+
+          <DialogFooter className="border-t pt-4">
+            <Button variant="outline" onClick={() => setShowDetailModal(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
