@@ -191,7 +191,21 @@ export default function UserManagement() {
   };
 
   const handleDeleteUser = async (userId) => {
+    const user = users.find(u => u.id === userId);
+    // Check if the target is an admin - require verification
+    if (['system_admin', 'super_admin', 'tenant_admin'].includes(user?.user_type)) {
+      setSensitiveAction('delete_user');
+      setPendingActionUser(user);
+      setShowSensitiveModal(true);
+      return;
+    }
+    
+    // For staff, use simple confirmation
     if (!window.confirm('Are you sure you want to delete this user?')) return;
+    await executeDeleteUser(userId);
+  };
+
+  const executeDeleteUser = async (userId) => {
     try {
       await userAPI.delete(userId);
       toast.success('User deleted');
@@ -202,6 +216,18 @@ export default function UserManagement() {
   };
 
   const handleToggleActive = async (user) => {
+    // Check if the target is an admin - require verification
+    if (['system_admin', 'super_admin', 'tenant_admin'].includes(user?.user_type)) {
+      setSensitiveAction('toggle_user_status');
+      setPendingActionUser(user);
+      setShowSensitiveModal(true);
+      return;
+    }
+    
+    await executeToggleActive(user);
+  };
+
+  const executeToggleActive = async (user) => {
     try {
       await userAPI.update(user.id, { is_active: !user.is_active });
       toast.success(`User ${user.is_active ? 'deactivated' : 'activated'}`);
@@ -209,6 +235,18 @@ export default function UserManagement() {
     } catch (error) {
       toast.error('Failed to update user status');
     }
+  };
+
+  const handleSensitiveActionVerified = async (verificationToken) => {
+    if (sensitiveAction === 'delete_user' && pendingActionUser) {
+      await executeDeleteUser(pendingActionUser.id);
+    } else if (sensitiveAction === 'toggle_user_status' && pendingActionUser) {
+      await executeToggleActive(pendingActionUser);
+    }
+    
+    // Reset sensitive action state
+    setSensitiveAction(null);
+    setPendingActionUser(null);
   };
 
   const resetForm = () => {
