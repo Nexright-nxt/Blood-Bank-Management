@@ -2274,96 +2274,176 @@ function ComponentTypeView({ data, displayMode, selectedItems, onToggleSelect, o
 }
 
 function ExpiryView({ data, selectedItems, onToggleSelect, onPrintLabel, onViewAudit }) {
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+
   if (!data) return null;
 
-  const { summary, categories } = data;
+  const { summary, categories, items } = data;
+
+  const categoryConfig = [
+    { key: 'expired', label: 'Expired', color: 'from-red-500 to-red-600', bgColor: 'bg-red-100 border-red-300', textColor: 'text-red-600' },
+    { key: 'critical', label: '<3 Days', color: 'from-red-400 to-red-500', bgColor: 'bg-red-50 border-red-200', textColor: 'text-red-600' },
+    { key: 'warning', label: '3-7 Days', color: 'from-orange-400 to-orange-500', bgColor: 'bg-orange-50 border-orange-200', textColor: 'text-orange-600' },
+    { key: 'caution', label: '7-14 Days', color: 'from-amber-400 to-amber-500', bgColor: 'bg-amber-50 border-amber-200', textColor: 'text-amber-600' },
+    { key: 'normal', label: '>14 Days', color: 'from-emerald-400 to-emerald-500', bgColor: 'bg-emerald-50 border-emerald-200', textColor: 'text-emerald-600' },
+  ];
+
+  const handleCategoryClick = (category) => {
+    const categoryItems = items?.filter(item => item.expiry_category === category.key) || [];
+    setSelectedCategory({ ...category, items: categoryItems, count: summary?.[category.key] || 0 });
+    setShowDetailModal(true);
+  };
 
   return (
-    <div className="space-y-4">
-      {/* Summary Cards */}
-      <div className="grid grid-cols-5 gap-3">
-        <Card className={`p-3 ${summary?.expired > 0 ? 'bg-red-100 border-red-300' : ''}`}>
-          <div className={`text-2xl font-bold ${summary?.expired > 0 ? 'text-red-600' : ''}`}>{summary?.expired || 0}</div>
-          <div className="text-xs text-slate-600">Expired</div>
-        </Card>
-        <Card className={`p-3 ${summary?.critical > 0 ? 'bg-red-50 border-red-200' : ''}`}>
-          <div className={`text-2xl font-bold ${summary?.critical > 0 ? 'text-red-600' : ''}`}>{summary?.critical || 0}</div>
-          <div className="text-xs text-slate-600">&lt;3 Days</div>
-        </Card>
-        <Card className="p-3 bg-orange-50 border-orange-200">
-          <div className="text-2xl font-bold text-orange-600">{summary?.warning || 0}</div>
-          <div className="text-xs text-slate-600">3-7 Days</div>
-        </Card>
-        <Card className="p-3 bg-amber-50 border-amber-200">
-          <div className="text-2xl font-bold text-amber-600">{summary?.caution || 0}</div>
-          <div className="text-xs text-slate-600">7-14 Days</div>
-        </Card>
-        <Card className="p-3">
-          <div className="text-2xl font-bold text-emerald-600">{summary?.normal || 0}</div>
-          <div className="text-xs text-slate-600">&gt;14 Days</div>
+    <>
+      <div className="space-y-4">
+        {/* Interactive Summary Cards */}
+        <div className="grid grid-cols-5 gap-3">
+          {categoryConfig.map((cat) => (
+            <Card 
+              key={cat.key}
+              className={`p-3 cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02] ${cat.bgColor}`}
+              onClick={() => handleCategoryClick(cat)}
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className={`text-2xl font-bold ${cat.textColor}`}>{summary?.[cat.key] || 0}</div>
+                  <div className="text-xs text-slate-600">{cat.label}</div>
+                </div>
+                <Clock className={`w-6 h-6 ${cat.textColor} opacity-50`} />
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {/* Items Table */}
+        <Card>
+          <Table className="table-dense">
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-10"></TableHead>
+                <TableHead>ID</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Blood Group</TableHead>
+                <TableHead>Volume</TableHead>
+                <TableHead>Expiry Date</TableHead>
+                <TableHead>Days Left</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items?.slice(0, 50).map((item) => {
+                const itemId = item.id || item.unit_id || item.component_id;
+                const isSelected = selectedItems?.some(i => (i.id || i.unit_id || i.component_id) === itemId);
+                
+                return (
+                  <TableRow key={itemId} className={`${isSelected ? 'bg-teal-50' : ''} ${item.expiry_category === 'expired' ? 'bg-red-50' : item.expiry_category === 'critical' ? 'bg-red-50/50' : ''}`}>
+                    <TableCell>
+                      <Checkbox 
+                        checked={isSelected}
+                        onCheckedChange={() => onToggleSelect(item)}
+                        disabled={item.status !== 'ready_to_use'}
+                      />
+                    </TableCell>
+                    <TableCell className="font-mono text-xs">{item.item_id}</TableCell>
+                    <TableCell className="capitalize">{item.component_type?.replace('_', ' ')}</TableCell>
+                    <TableCell>
+                      <span className="blood-group-badge">{item.blood_group || item.confirmed_blood_group || '-'}</span>
+                    </TableCell>
+                    <TableCell>{item.volume} mL</TableCell>
+                    <TableCell>{item.expiry_date}</TableCell>
+                    <TableCell>
+                      <span className={`px-2 py-0.5 rounded text-xs font-medium ${getExpiryColor(item.days_remaining)}`}>
+                        {item.days_remaining < 0 ? 'EXPIRED' : `${item.days_remaining}d`}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-xs">{item.storage_location || '-'}</TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-1">
+                        <Button size="sm" variant="ghost" onClick={() => onPrintLabel(item)}>
+                          <Printer className="w-4 h-4" />
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => onViewAudit(item.id)}>
+                          <History className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
+            </TableBody>
+          </Table>
         </Card>
       </div>
 
-      {/* Items Table */}
-      <Card>
-        <Table className="table-dense">
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-10"></TableHead>
-              <TableHead>ID</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Blood Group</TableHead>
-              <TableHead>Volume</TableHead>
-              <TableHead>Expiry Date</TableHead>
-              <TableHead>Days Left</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.items?.slice(0, 50).map((item) => {
-              const itemId = item.id || item.unit_id || item.component_id;
-              const isSelected = selectedItems?.some(i => (i.id || i.unit_id || i.component_id) === itemId);
-              
-              return (
-                <TableRow key={itemId} className={`${isSelected ? 'bg-teal-50' : ''} ${item.expiry_category === 'expired' ? 'bg-red-50' : item.expiry_category === 'critical' ? 'bg-red-50/50' : ''}`}>
-                  <TableCell>
-                    <Checkbox 
-                      checked={isSelected}
-                      onCheckedChange={() => onToggleSelect(item)}
-                      disabled={item.status !== 'ready_to_use'}
-                    />
-                  </TableCell>
-                  <TableCell className="font-mono text-xs">{item.item_id}</TableCell>
-                  <TableCell className="capitalize">{item.component_type?.replace('_', ' ')}</TableCell>
-                  <TableCell>
-                    <span className="blood-group-badge">{item.blood_group || item.confirmed_blood_group || '-'}</span>
-                  </TableCell>
-                  <TableCell>{item.volume} mL</TableCell>
-                  <TableCell>{item.expiry_date}</TableCell>
-                  <TableCell>
-                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${getExpiryColor(item.days_remaining)}`}>
-                      {item.days_remaining < 0 ? 'EXPIRED' : `${item.days_remaining}d`}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-xs">{item.storage_location || '-'}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-1">
-                      <Button size="sm" variant="ghost" onClick={() => onPrintLabel(item)}>
-                        <Printer className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="ghost" onClick={() => onViewAudit(item.id)}>
-                        <History className="w-4 h-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+      {/* Expiry Category Detail Modal */}
+      <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
+        <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${selectedCategory?.color || 'from-slate-400 to-slate-500'} flex items-center justify-center shadow-md`}>
+                <Clock className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <span className="text-xl">{selectedCategory?.label} Items</span>
+                <p className="text-sm font-normal text-slate-500">{selectedCategory?.count} items in this category</p>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+
+          <ScrollArea className="flex-1">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-8"><Checkbox /></TableHead>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Blood Group</TableHead>
+                  <TableHead>Volume</TableHead>
+                  <TableHead>Expiry</TableHead>
+                  <TableHead>Days Left</TableHead>
                 </TableRow>
-              );
-            })}
-          </TableBody>
-        </Table>
-      </Card>
-    </div>
+              </TableHeader>
+              <TableBody>
+                {selectedCategory?.items?.map((item) => {
+                  const itemId = item.id || item.unit_id || item.component_id;
+                  const isSelected = selectedItems?.some(i => (i.id || i.unit_id || i.component_id) === itemId);
+                  return (
+                    <TableRow key={itemId} className={isSelected ? 'bg-teal-50' : ''}>
+                      <TableCell>
+                        <Checkbox 
+                          checked={isSelected}
+                          onCheckedChange={() => onToggleSelect(item)}
+                          disabled={item.status !== 'ready_to_use'}
+                        />
+                      </TableCell>
+                      <TableCell className="font-mono text-xs">{item.item_id || itemId}</TableCell>
+                      <TableCell className="capitalize">{item.component_type?.replace('_', ' ')}</TableCell>
+                      <TableCell>
+                        <span className="blood-group-badge">{item.blood_group || '-'}</span>
+                      </TableCell>
+                      <TableCell>{item.volume} mL</TableCell>
+                      <TableCell>{item.expiry_date}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-0.5 rounded text-xs font-medium ${getExpiryColor(item.days_remaining)}`}>
+                          {item.days_remaining < 0 ? 'EXPIRED' : `${item.days_remaining}d`}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </ScrollArea>
+
+          <DialogFooter className="border-t pt-4">
+            <Button variant="outline" onClick={() => setShowDetailModal(false)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
