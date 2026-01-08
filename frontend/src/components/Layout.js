@@ -81,6 +81,7 @@ export default function Layout() {
   const [switchableContexts, setSwitchableContexts] = useState([]);
   const [loadingContexts, setLoadingContexts] = useState(false);
   const [switching, setSwitching] = useState(false);
+  const [showContextModal, setShowContextModal] = useState(false);
 
   // Determine if user is in global context (no org selected)
   const isGlobalContext = useMemo(() => {
