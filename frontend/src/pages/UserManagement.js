@@ -63,6 +63,11 @@ export default function UserManagement() {
     org_id: '',
     is_active: true,
   });
+  
+  // Sensitive action state
+  const [showSensitiveModal, setShowSensitiveModal] = useState(false);
+  const [sensitiveAction, setSensitiveAction] = useState(null);
+  const [pendingActionUser, setPendingActionUser] = useState(null);
 
   useEffect(() => {
     fetchData();
