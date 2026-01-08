@@ -16,6 +16,7 @@ import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '../components/ui/dialog';
 import { Switch } from '../components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import SensitiveActionModal from '../components/SensitiveActionModal';
 
 const USER_TYPE_CONFIG = {
   system_admin: { label: 'System Admin', color: 'bg-red-100 text-red-700', icon: Shield },
