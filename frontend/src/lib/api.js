@@ -72,6 +72,17 @@ export const organizationAPI = {
   getExternalOrgHistory: (id) => api.get(`/organizations/external/${id}/history`),
 };
 
+// Session/Context APIs
+export const sessionAPI = {
+  getContextTree: (search) => api.get('/sessions/context-tree', { params: { search } }),
+  switchContext: (targetOrgId, targetUserType) => api.post('/sessions/switch-context', {
+    target_org_id: targetOrgId,
+    target_user_type: targetUserType
+  }),
+  exitContext: () => api.post('/sessions/exit-context'),
+  getSwitchableContexts: () => api.get('/sessions/switchable-contexts'),
+};
+
 // Document APIs
 export const documentAPI = {
   getAll: (orgId, params) => api.get(`/documents/${orgId}`, { params }),
