@@ -44,8 +44,14 @@ export default function NetworkDashboard() {
   const [loading, setLoading] = useState(true);
   const [networkData, setNetworkData] = useState(null);
   const [selectedOrg, setSelectedOrg] = useState('all');
+  const [selectedOrgName, setSelectedOrgName] = useState('All Organizations');
   const [viewMode, setViewMode] = useState('overview');
   const [recentActivity, setRecentActivity] = useState([]);
+  
+  // Filter modal state
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [filterSearch, setFilterSearch] = useState('');
+  const [expandedOrgs, setExpandedOrgs] = useState(new Set());
 
   useEffect(() => {
     fetchNetworkData();
