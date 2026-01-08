@@ -1189,6 +1189,18 @@ export default function Organizations() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Sensitive Action Verification Modal */}
+      <SensitiveActionModal
+        open={showSensitiveModal}
+        onOpenChange={setShowSensitiveModal}
+        actionType="deactivate_organization"
+        actionTitle={`Deactivate ${pendingDeactivateOrg?.is_parent ? 'Organization' : 'Branch'}`}
+        actionDescription={`You are about to deactivate "${pendingDeactivateOrg?.org_name}". ${pendingDeactivateOrg?.is_parent ? 'This will also affect all branches under this organization.' : 'This branch will no longer be operational.'}`}
+        targetId={pendingDeactivateOrg?.id}
+        onVerified={handleSensitiveActionVerified}
+        onCancel={() => setPendingDeactivateOrg(null)}
+      />
     </div>
   );
 }
