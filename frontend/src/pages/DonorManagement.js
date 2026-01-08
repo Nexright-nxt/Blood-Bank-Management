@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { donorAPI, donationSessionAPI } from '../lib/api';
+import { donorAPI, donationSessionAPI, organizationAPI } from '../lib/api';
+import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import { 
   Plus, Search, Filter, Eye, UserCheck, UserX, Clipboard, Droplet, 
-  RefreshCw, Users, CheckCircle, XCircle, Clock, Ban, Activity
+  RefreshCw, Users, CheckCircle, XCircle, Clock, Ban, Activity,
+  Building2, MapPin
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
