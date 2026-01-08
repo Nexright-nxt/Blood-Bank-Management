@@ -194,6 +194,12 @@ export default function SecuritySettings() {
 
   // Password Policy Handlers
   const handleUpdatePolicy = async () => {
+    // Require verification for security settings changes
+    setSensitiveAction('update_password_policy');
+    setShowSensitiveModal(true);
+  };
+
+  const executeUpdatePolicy = async () => {
     setLoading(true);
     try {
       await securityAPI.updatePasswordPolicy(policyForm, isSystemAdmin() ? null : user?.org_id);
@@ -205,6 +211,13 @@ export default function SecuritySettings() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSensitiveActionVerified = async (verificationToken) => {
+    if (sensitiveAction === 'update_password_policy') {
+      await executeUpdatePolicy();
+    }
+    setSensitiveAction(null);
   };
 
   // Session Handlers
