@@ -116,25 +116,35 @@ export default function Layout() {
           ),
           // Add some platform modules for admin visibility
           { path: '/organizations', icon: Building2, label: 'Organizations', category: 'admin' },
+          { path: '/users', icon: Settings, label: 'User Management', category: 'admin' },
           { path: '/audit-logs', icon: History, label: 'Audit Logs', category: 'admin' },
         ];
       }
     }
-    // Super Admin logic
+    // Super Admin logic - manages their organization and its branches
     else if (userType === 'super_admin') {
-      // Super admins see org-related platform modules + operational modules
       items = [
+        // Organization Dashboard first
+        { path: '/org-dashboard', icon: Home, label: 'Org Dashboard', category: 'platform' },
+        { path: '/organizations', icon: Building2, label: 'Branches', category: 'platform' },
+        { path: '/users', icon: Settings, label: 'User Management', category: 'platform' },
+        // Separator - operational modules
         ...operationalModules.filter(item => 
           !item.roles || item.roles.includes('admin')
         ),
         { path: '/audit-logs', icon: History, label: 'Audit Logs', category: 'admin' },
       ];
     }
-    // Tenant Admin logic
+    // Tenant Admin logic - manages their branch
     else if (userType === 'tenant_admin') {
-      items = operationalModules.filter(item => 
-        !item.roles || item.roles.includes('admin')
-      );
+      items = [
+        // Branch management
+        { path: '/users', icon: Settings, label: 'User Management', category: 'platform' },
+        // Operational modules
+        ...operationalModules.filter(item => 
+          !item.roles || item.roles.includes('admin')
+        ),
+      ];
     }
     // Staff users
     else {
