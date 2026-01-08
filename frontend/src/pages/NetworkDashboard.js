@@ -117,6 +117,65 @@ export default function NetworkDashboard() {
     return [selected];
   }, [selectedOrg, networkData?.organizations]);
 
+  // Build hierarchical tree structure for filter
+  const orgTree = useMemo(() => {
+    if (!networkData?.organizations) return [];
+    
+    const orgs = networkData.organizations;
+    const parentOrgs = orgs.filter(o => o.is_parent || !o.parent_org_id);
+    
+    return parentOrgs.map(parent => ({
+      ...parent,
+      branches: orgs.filter(o => o.parent_org_id === parent.id)
+    }));
+  }, [networkData?.organizations]);
+
+  // Filter tree by search
+  const filteredTree = useMemo(() => {
+    if (!filterSearch) return orgTree;
+    
+    const searchLower = filterSearch.toLowerCase();
+    return orgTree.filter(org => {
+      const matchesOrg = org.org_name?.toLowerCase().includes(searchLower) ||
+                         org.city?.toLowerCase().includes(searchLower);
+      const matchingBranches = org.branches?.filter(b => 
+        b.org_name?.toLowerCase().includes(searchLower) ||
+        b.city?.toLowerCase().includes(searchLower)
+      );
+      return matchesOrg || matchingBranches?.length > 0;
+    }).map(org => ({
+      ...org,
+      branches: filterSearch ? org.branches?.filter(b =>
+        b.org_name?.toLowerCase().includes(searchLower) ||
+        b.city?.toLowerCase().includes(searchLower) ||
+        org.org_name?.toLowerCase().includes(searchLower)
+      ) : org.branches
+    }));
+  }, [orgTree, filterSearch]);
+
+  const toggleExpand = (orgId) => {
+    setExpandedOrgs(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(orgId)) {
+        newSet.delete(orgId);
+      } else {
+        newSet.add(orgId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectOrg = (org, isAllOrgs = false) => {
+    if (isAllOrgs) {
+      setSelectedOrg('all');
+      setSelectedOrgName('All Organizations');
+    } else {
+      setSelectedOrg(org.id);
+      setSelectedOrgName(org.org_name);
+    }
+    setShowFilterModal(false);
+  };
+
   const formatTimeAgo = (timestamp) => {
     const now = new Date();
     const date = new Date(timestamp);
