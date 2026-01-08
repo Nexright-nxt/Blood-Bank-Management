@@ -132,7 +132,7 @@ export default function ContextSwitcherModal({ open, onOpenChange, onSwitch, cur
         )}
 
         {/* Tree View - Scrollable with fixed height */}
-        <div className="flex-1 overflow-y-auto max-h-[50vh] min-h-[200px]" style={{ overflowY: 'auto' }}>
+        <div className="flex-1 overflow-y-auto max-h-[55vh] min-h-[250px] scrollbar-thin scrollbar-thumb-slate-300 scrollbar-track-slate-100" style={{ overscrollBehavior: 'contain' }}>
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin text-teal-600" />
