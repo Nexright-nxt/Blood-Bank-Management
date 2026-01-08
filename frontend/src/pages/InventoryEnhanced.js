@@ -1723,11 +1723,30 @@ function BloodGroupView({ data, displayMode, selectedItems, onToggleSelect, onPr
     setActiveTab('components');
     
     try {
-      // Use the items from the group data
-      const allItems = [
-        ...(group.items || []),
-        ...Object.values(group.components_by_type || {}).flat()
-      ];
+      // Collect all items from the group data
+      // Units (whole blood) are in group.units array
+      const wholeBloodItems = (group.units || []).map(unit => ({
+        ...unit,
+        id: unit.unit_id,
+        item_id: unit.unit_id,
+        component_type: 'whole_blood',
+        current_location: unit.storage_location,
+        volume: unit.volume || unit.current_volume
+      }));
+      
+      // Components are in group.components_by_type object
+      const componentItems = Object.entries(group.components_by_type || {}).flatMap(([type, items]) =>
+        items.map(item => ({
+          ...item,
+          id: item.component_id,
+          item_id: item.component_id,
+          component_type: type,
+          current_location: item.storage_location,
+          volume: item.volume || item.current_volume
+        }))
+      );
+      
+      const allItems = [...wholeBloodItems, ...componentItems];
       setGroupItems(allItems);
     } catch (error) {
       console.error('Failed to load items', error);
