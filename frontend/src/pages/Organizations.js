@@ -63,6 +63,10 @@ export default function Organizations() {
   const [showAddUserDialog, setShowAddUserDialog] = useState(false);
   const [expandedOrgs, setExpandedOrgs] = useState({});
   
+  // Sensitive action state
+  const [showSensitiveModal, setShowSensitiveModal] = useState(false);
+  const [pendingDeactivateOrg, setPendingDeactivateOrg] = useState(null);
+  
   // Form data for org
   const [formData, setFormData] = useState({
     org_name: '',
