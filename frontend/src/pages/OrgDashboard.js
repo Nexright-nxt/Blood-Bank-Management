@@ -38,7 +38,7 @@ export default function OrgDashboard() {
       }
 
       // Fetch org details first
-      const orgRes = await organizationAPI.getById(user.org_id);
+      const orgRes = await organizationAPI.getOne(user.org_id);
       setOrgData(orgRes.data);
       
       // Fetch hierarchy - may fail for non-system admins
