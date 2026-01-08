@@ -226,26 +226,223 @@ export default function NetworkDashboard() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Select value={selectedOrg} onValueChange={setSelectedOrg}>
-            <SelectTrigger className="w-48" data-testid="org-filter">
-              <SelectValue placeholder="All Branches" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Branches</SelectItem>
-              {networkData?.organizations?.map(org => (
-                <SelectItem key={org.id} value={org.id}>
-                  {org.org_name}
-                  {org.is_own_org && ' (You)'}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Button 
+            variant="outline" 
+            onClick={() => setShowFilterModal(true)}
+            className="min-w-[200px] justify-between"
+            data-testid="org-filter"
+          >
+            <div className="flex items-center gap-2">
+              <Building2 className="w-4 h-4 text-slate-500" />
+              <span className="truncate">{selectedOrgName}</span>
+            </div>
+            <ChevronDown className="w-4 h-4 text-slate-400" />
+          </Button>
           <Button variant="outline" onClick={fetchNetworkData} data-testid="refresh-network">
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
         </div>
       </div>
+
+      {/* Organization Filter Modal */}
+      <Dialog open={showFilterModal} onOpenChange={setShowFilterModal}>
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0">
+            <DialogTitle className="flex items-center gap-2">
+              <Building2 className="w-5 h-5 text-teal-600" />
+              Filter by Organization
+            </DialogTitle>
+            <DialogDescription>
+              Select an organization to filter the dashboard data
+            </DialogDescription>
+          </DialogHeader>
+
+          {/* Search Bar */}
+          <div className="relative flex-shrink-0">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input
+              placeholder="Search organizations..."
+              value={filterSearch}
+              onChange={(e) => setFilterSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          {/* Stats */}
+          <div className="flex items-center gap-4 text-sm text-slate-500 py-1 flex-shrink-0">
+            <span className="flex items-center gap-1">
+              <Building2 className="w-4 h-4" />
+              {orgTree.length} organizations
+            </span>
+            <span className="flex items-center gap-1">
+              <GitBranch className="w-4 h-4" />
+              {orgTree.reduce((acc, o) => acc + (o.branches?.length || 0), 0)} branches
+            </span>
+          </div>
+
+          {/* Tree View - Scrollable */}
+          <div className="flex-1 overflow-y-auto max-h-[50vh] min-h-[200px]">
+            <div className="space-y-1 pr-2 pb-4">
+              {/* All Organizations Option */}
+              <div
+                className={`flex items-center gap-2 p-3 rounded-lg cursor-pointer hover:bg-slate-50 border ${
+                  selectedOrg === 'all' ? 'bg-teal-50 border-teal-200' : 'border-slate-200'
+                }`}
+                onClick={() => handleSelectOrg(null, true)}
+              >
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-slate-500 to-slate-600 flex items-center justify-center">
+                  <Globe className="w-4 h-4 text-white" />
+                </div>
+                <div className="flex-1">
+                  <span className="font-medium text-slate-900">All Organizations</span>
+                  <p className="text-xs text-slate-500">View entire network</p>
+                </div>
+                {selectedOrg === 'all' && (
+                  <Badge className="bg-teal-100 text-teal-700">Selected</Badge>
+                )}
+              </div>
+
+              {/* Organization Tree */}
+              {filteredTree.map((org) => (
+                <div key={org.id} className="rounded-lg border border-slate-200 overflow-hidden">
+                  {/* Parent Organization Row */}
+                  <div 
+                    className={`flex items-center gap-2 p-3 bg-white hover:bg-slate-50 ${
+                      selectedOrg === org.id ? 'bg-teal-50' : ''
+                    }`}
+                  >
+                    {/* Expand/Collapse Button */}
+                    {org.branches && org.branches.length > 0 ? (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); toggleExpand(org.id); }}
+                        className="p-1 hover:bg-slate-100 rounded"
+                      >
+                        {expandedOrgs.has(org.id) ? (
+                          <ChevronDown className="w-4 h-4 text-slate-500" />
+                        ) : (
+                          <ChevronRight className="w-4 h-4 text-slate-500" />
+                        )}
+                      </button>
+                    ) : (
+                      <div className="w-6" />
+                    )}
+
+                    {/* Org Icon */}
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center flex-shrink-0">
+                      <Building2 className="w-4 h-4 text-white" />
+                    </div>
+
+                    {/* Org Info */}
+                    <div 
+                      className="flex-1 min-w-0 cursor-pointer"
+                      onClick={() => handleSelectOrg(org)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="font-medium text-slate-900 truncate">{org.org_name}</span>
+                        {org.is_own_org && (
+                          <Badge className="bg-teal-100 text-teal-700 text-xs">You</Badge>
+                        )}
+                        {selectedOrg === org.id && (
+                          <Badge className="bg-teal-100 text-teal-700 text-xs">Selected</Badge>
+                        )}
+                      </div>
+                      {org.city && (
+                        <div className="flex items-center gap-1 text-xs text-slate-500">
+                          <MapPin className="w-3 h-3" />
+                          {org.city}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Branch Count */}
+                    {org.branches && org.branches.length > 0 && (
+                      <Badge variant="outline" className="text-xs">
+                        {org.branches.length} branches
+                      </Badge>
+                    )}
+
+                    {/* Stats */}
+                    <div className="flex items-center gap-3 text-xs text-slate-500">
+                      <span className="flex items-center gap-1">
+                        <Users className="w-3 h-3" />
+                        {org.donor_count}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Package className="w-3 h-3" />
+                        {org.inventory_count}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Branches (Expanded) */}
+                  {expandedOrgs.has(org.id) && org.branches && org.branches.length > 0 && (
+                    <div className="border-t border-slate-100 bg-slate-50">
+                      {org.branches.map((branch) => (
+                        <div
+                          key={branch.id}
+                          className={`flex items-center gap-2 p-3 pl-12 hover:bg-slate-100 border-b border-slate-100 last:border-b-0 cursor-pointer ${
+                            selectedOrg === branch.id ? 'bg-teal-50' : ''
+                          }`}
+                          onClick={() => handleSelectOrg(branch)}
+                        >
+                          {/* Branch Icon */}
+                          <div className="w-6 h-6 rounded bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
+                            <GitBranch className="w-3 h-3 text-white" />
+                          </div>
+
+                          {/* Branch Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-sm text-slate-800 truncate">
+                                {branch.org_name}
+                              </span>
+                              {selectedOrg === branch.id && (
+                                <Badge className="bg-teal-100 text-teal-700 text-xs">Selected</Badge>
+                              )}
+                            </div>
+                            {branch.city && (
+                              <div className="flex items-center gap-1 text-xs text-slate-500">
+                                <MapPin className="w-3 h-3" />
+                                {branch.city}
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Stats */}
+                          <div className="flex items-center gap-3 text-xs text-slate-500">
+                            <span className="flex items-center gap-1">
+                              <Users className="w-3 h-3" />
+                              {branch.donor_count}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Package className="w-3 h-3" />
+                              {branch.inventory_count}
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Current Selection Footer */}
+          <div className="pt-3 border-t border-slate-200 flex-shrink-0">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-sm text-slate-600">
+                <span>Currently viewing:</span>
+                <Badge variant="outline">{selectedOrgName}</Badge>
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => setShowFilterModal(false)}>
+                Close
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Quick Actions - System Admin Only */}
       {isSystemAdmin() && (
