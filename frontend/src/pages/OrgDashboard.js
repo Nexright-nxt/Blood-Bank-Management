@@ -83,7 +83,10 @@ export default function OrgDashboard() {
       }
     } catch (error) {
       console.error('Failed to fetch org data:', error);
-      toast.error('Failed to load organization data');
+      // Only show error if we couldn't get basic org data
+      if (!orgData) {
+        toast.error('Failed to load organization data');
+      }
     } finally {
       setLoading(false);
     }
@@ -96,11 +99,11 @@ export default function OrgDashboard() {
       icon: GitBranch,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
-      change: '+2 this month'
+      change: branches.length > 0 ? `${branches.length} active` : 'No branches yet'
     },
     {
       title: 'Total Staff',
-      value: stats?.total_users || branches.length * 8,
+      value: stats?.total_users || orgData?.staff_count || 0,
       icon: Users,
       color: 'text-emerald-600',
       bgColor: 'bg-emerald-50',
@@ -108,7 +111,7 @@ export default function OrgDashboard() {
     },
     {
       title: 'Total Donors',
-      value: stats?.total_donors || branches.length * 150,
+      value: stats?.total_donors || 0,
       icon: Droplet,
       color: 'text-red-600',
       bgColor: 'bg-red-50',
@@ -116,7 +119,7 @@ export default function OrgDashboard() {
     },
     {
       title: 'Inventory Units',
-      value: stats?.inventory?.total || branches.length * 80,
+      value: stats?.available_units || orgData?.inventory_count || 0,
       icon: Package,
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
