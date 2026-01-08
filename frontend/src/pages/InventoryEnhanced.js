@@ -1709,49 +1709,421 @@ function StorageView({ data, displayMode, onOpenStorage }) {
 }
 
 function BloodGroupView({ data, displayMode, selectedItems, onToggleSelect, onPrintLabel, onViewAudit }) {
+  const [selectedGroup, setSelectedGroup] = useState(null);
+  const [showDetailModal, setShowDetailModal] = useState(false);
+  const [activeTab, setActiveTab] = useState('components');
+  const [groupItems, setGroupItems] = useState([]);
+  const [loadingItems, setLoadingItems] = useState(false);
+
+  // Fetch items for a blood group when modal opens
+  const handleCardClick = async (group) => {
+    setSelectedGroup(group);
+    setShowDetailModal(true);
+    setLoadingItems(true);
+    setActiveTab('components');
+    
+    try {
+      // Use the items from the group data
+      const allItems = [
+        ...(group.items || []),
+        ...Object.values(group.components_by_type || {}).flat()
+      ];
+      setGroupItems(allItems);
+    } catch (error) {
+      console.error('Failed to load items', error);
+    } finally {
+      setLoadingItems(false);
+    }
+  };
+
+  // Get items grouped by various criteria
+  const getItemsByComponent = () => {
+    const grouped = {};
+    groupItems.forEach(item => {
+      const type = item.component_type || 'whole_blood';
+      if (!grouped[type]) grouped[type] = [];
+      grouped[type].push(item);
+    });
+    return grouped;
+  };
+
+  const getItemsByExpiry = () => {
+    const now = new Date();
+    const categories = {
+      expired: [],
+      critical: [],
+      warning: [],
+      normal: []
+    };
+    
+    groupItems.forEach(item => {
+      if (!item.expiry_date) {
+        categories.normal.push(item);
+        return;
+      }
+      const expiry = new Date(item.expiry_date);
+      const daysLeft = Math.ceil((expiry - now) / (1000 * 60 * 60 * 24));
+      
+      if (daysLeft < 0) categories.expired.push(item);
+      else if (daysLeft < 3) categories.critical.push(item);
+      else if (daysLeft < 7) categories.warning.push(item);
+      else categories.normal.push(item);
+    });
+    
+    return categories;
+  };
+
+  const getItemsByStorage = () => {
+    const grouped = {};
+    groupItems.forEach(item => {
+      const location = item.current_location || item.storage_location || 'Unknown';
+      if (!grouped[location]) grouped[location] = [];
+      grouped[location].push(item);
+    });
+    return grouped;
+  };
+
+  const getItemsByBranch = () => {
+    const grouped = {};
+    groupItems.forEach(item => {
+      const branch = item.org_name || item.branch_name || 'Main Branch';
+      if (!grouped[branch]) grouped[branch] = [];
+      grouped[branch].push(item);
+    });
+    return grouped;
+  };
+
   if (!data) return null;
 
+  const bloodGroupColors = {
+    'A+': 'from-red-400 to-red-600',
+    'A-': 'from-red-300 to-red-500',
+    'B+': 'from-blue-400 to-blue-600',
+    'B-': 'from-blue-300 to-blue-500',
+    'AB+': 'from-purple-400 to-purple-600',
+    'AB-': 'from-purple-300 to-purple-500',
+    'O+': 'from-emerald-400 to-emerald-600',
+    'O-': 'from-emerald-300 to-emerald-500',
+  };
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {data.map((group) => (
-        <Card key={group.blood_group}>
-          <CardHeader className="pb-2">
-            <div className="flex items-center justify-between">
-              <span className="blood-group-badge text-lg">{group.blood_group}</span>
-              <span className="text-2xl font-bold text-teal-600">{group.total_items}</span>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span className="text-slate-500">Whole Blood Units:</span>
-                <span className="font-medium">{group.units_count}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Components:</span>
-                <span className="font-medium">{group.components_count}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-slate-500">Total Volume:</span>
-                <span className="font-medium">{group.total_volume?.toLocaleString()} mL</span>
+    <>
+      {/* Interactive Blood Group Cards Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {data.map((group) => (
+          <Card 
+            key={group.blood_group}
+            className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] hover:border-teal-400 group"
+            onClick={() => handleCardClick(group)}
+          >
+            <CardContent className="pt-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className={`w-14 h-14 rounded-full bg-gradient-to-br ${bloodGroupColors[group.blood_group] || 'from-slate-400 to-slate-600'} flex items-center justify-center text-white font-bold text-lg shadow-md group-hover:scale-110 transition-transform`}>
+                  {group.blood_group}
+                </div>
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-slate-700">{group.total_items}</div>
+                  <div className="text-xs text-slate-500">Total Units</div>
+                </div>
               </div>
               
-              {/* Component breakdown */}
+              <div className="space-y-2 text-sm border-t pt-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 flex items-center gap-1">
+                    <Droplet className="w-3 h-3" /> Whole Blood
+                  </span>
+                  <Badge variant="outline" className="bg-red-50">{group.units_count}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 flex items-center gap-1">
+                    <Layers className="w-3 h-3" /> Components
+                  </span>
+                  <Badge variant="outline" className="bg-blue-50">{group.components_count}</Badge>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500 flex items-center gap-1">
+                    <Activity className="w-3 h-3" /> Volume
+                  </span>
+                  <span className="font-medium text-teal-600">{group.total_volume?.toLocaleString()} mL</span>
+                </div>
+              </div>
+              
+              {/* Quick component breakdown */}
               {Object.entries(group.components_by_type || {}).length > 0 && (
-                <div className="pt-2 border-t">
+                <div className="mt-3 pt-2 border-t flex flex-wrap gap-1">
                   {Object.entries(group.components_by_type).map(([type, items]) => (
-                    <div key={type} className="flex justify-between text-xs">
-                      <span className="capitalize text-slate-500">{type.replace('_', ' ')}:</span>
-                      <span>{items.length}</span>
-                    </div>
+                    <Badge key={type} variant="secondary" className="text-xs capitalize">
+                      {type.replace('_', ' ')}: {items.length}
+                    </Badge>
                   ))}
                 </div>
               )}
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      {/* Blood Group Detail Modal */}
+      <Dialog open={showDetailModal} onOpenChange={setShowDetailModal}>
+        <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-3">
+              <div className={`w-10 h-10 rounded-full bg-gradient-to-br ${bloodGroupColors[selectedGroup?.blood_group] || 'from-slate-400 to-slate-600'} flex items-center justify-center text-white font-bold shadow-md`}>
+                {selectedGroup?.blood_group}
+              </div>
+              <div>
+                <span className="text-xl">Blood Group {selectedGroup?.blood_group} Inventory</span>
+                <p className="text-sm font-normal text-slate-500">{selectedGroup?.total_items} total items</p>
+              </div>
+            </DialogTitle>
+          </DialogHeader>
+
+          {loadingItems ? (
+            <div className="flex items-center justify-center py-12">
+              <RefreshCw className="w-8 h-8 animate-spin text-teal-500" />
             </div>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+          ) : (
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col overflow-hidden">
+              <TabsList className="grid w-full grid-cols-4">
+                <TabsTrigger value="components" className="gap-1">
+                  <Layers className="w-4 h-4" />
+                  Components
+                </TabsTrigger>
+                <TabsTrigger value="expiry" className="gap-1">
+                  <Clock className="w-4 h-4" />
+                  Expiry
+                </TabsTrigger>
+                <TabsTrigger value="storage" className="gap-1">
+                  <Package className="w-4 h-4" />
+                  Storage
+                </TabsTrigger>
+                <TabsTrigger value="branch" className="gap-1">
+                  <MapPin className="w-4 h-4" />
+                  Branch
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Components Tab */}
+              <TabsContent value="components" className="flex-1 overflow-auto mt-4">
+                <div className="space-y-4">
+                  {Object.entries(getItemsByComponent()).map(([type, items]) => (
+                    <Card key={type}>
+                      <CardHeader className="py-3">
+                        <CardTitle className="text-base capitalize flex items-center justify-between">
+                          <span>{type.replace('_', ' ')}</span>
+                          <Badge>{items.length}</Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <ScrollArea className="h-[150px]">
+                          <Table>
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead className="w-8">
+                                  <Checkbox 
+                                    onCheckedChange={(checked) => {
+                                      items.forEach(item => {
+                                        if (item.status === 'ready_to_use') onToggleSelect(item);
+                                      });
+                                    }}
+                                  />
+                                </TableHead>
+                                <TableHead>ID</TableHead>
+                                <TableHead>Volume</TableHead>
+                                <TableHead>Status</TableHead>
+                                <TableHead>Location</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {items.map((item) => {
+                                const itemId = item.id || item.unit_id || item.component_id;
+                                const isSelected = selectedItems?.some(i => (i.id || i.unit_id || i.component_id) === itemId);
+                                return (
+                                  <TableRow key={itemId} className={isSelected ? 'bg-teal-50' : ''}>
+                                    <TableCell>
+                                      <Checkbox 
+                                        checked={isSelected}
+                                        onCheckedChange={() => onToggleSelect(item)}
+                                        disabled={item.status !== 'ready_to_use'}
+                                      />
+                                    </TableCell>
+                                    <TableCell className="font-mono text-xs">{item.item_id || item.unit_id || item.component_id}</TableCell>
+                                    <TableCell>{item.volume || item.current_volume} mL</TableCell>
+                                    <TableCell>
+                                      <Badge className={STATUS_COLORS[item.status] || 'bg-slate-100'}>
+                                        {item.status?.replace('_', ' ')}
+                                      </Badge>
+                                    </TableCell>
+                                    <TableCell className="text-sm">{item.current_location || '-'}</TableCell>
+                                  </TableRow>
+                                );
+                              })}
+                            </TableBody>
+                          </Table>
+                        </ScrollArea>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+
+              {/* Expiry Tab */}
+              <TabsContent value="expiry" className="flex-1 overflow-auto mt-4">
+                <div className="grid grid-cols-4 gap-3 mb-4">
+                  {[
+                    { key: 'expired', label: 'Expired', color: 'bg-red-100 text-red-700 border-red-300' },
+                    { key: 'critical', label: '<3 Days', color: 'bg-red-50 text-red-600 border-red-200' },
+                    { key: 'warning', label: '3-7 Days', color: 'bg-orange-50 text-orange-600 border-orange-200' },
+                    { key: 'normal', label: '>7 Days', color: 'bg-emerald-50 text-emerald-600 border-emerald-200' },
+                  ].map(({ key, label, color }) => (
+                    <Card key={key} className={`p-3 ${color}`}>
+                      <div className="text-2xl font-bold">{getItemsByExpiry()[key]?.length || 0}</div>
+                      <div className="text-xs">{label}</div>
+                    </Card>
+                  ))}
+                </div>
+                <ScrollArea className="h-[300px]">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-8"><Checkbox /></TableHead>
+                        <TableHead>ID</TableHead>
+                        <TableHead>Type</TableHead>
+                        <TableHead>Expiry Date</TableHead>
+                        <TableHead>Days Left</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {groupItems.filter(i => i.expiry_date).sort((a, b) => new Date(a.expiry_date) - new Date(b.expiry_date)).slice(0, 50).map((item) => {
+                        const itemId = item.id || item.unit_id || item.component_id;
+                        const isSelected = selectedItems?.some(i => (i.id || i.unit_id || i.component_id) === itemId);
+                        const daysLeft = Math.ceil((new Date(item.expiry_date) - new Date()) / (1000 * 60 * 60 * 24));
+                        return (
+                          <TableRow key={itemId} className={`${isSelected ? 'bg-teal-50' : ''} ${daysLeft < 0 ? 'bg-red-50' : daysLeft < 3 ? 'bg-red-50/50' : ''}`}>
+                            <TableCell>
+                              <Checkbox 
+                                checked={isSelected}
+                                onCheckedChange={() => onToggleSelect(item)}
+                                disabled={item.status !== 'ready_to_use'}
+                              />
+                            </TableCell>
+                            <TableCell className="font-mono text-xs">{item.item_id || itemId}</TableCell>
+                            <TableCell className="capitalize">{(item.component_type || 'whole_blood').replace('_', ' ')}</TableCell>
+                            <TableCell>{new Date(item.expiry_date).toLocaleDateString()}</TableCell>
+                            <TableCell className={daysLeft < 0 ? 'text-red-600 font-bold' : daysLeft < 3 ? 'text-red-600' : daysLeft < 7 ? 'text-orange-600' : ''}>
+                              {daysLeft < 0 ? `Expired ${Math.abs(daysLeft)}d ago` : `${daysLeft} days`}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={STATUS_COLORS[item.status] || 'bg-slate-100'}>
+                                {item.status?.replace('_', ' ')}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </ScrollArea>
+              </TabsContent>
+
+              {/* Storage Tab */}
+              <TabsContent value="storage" className="flex-1 overflow-auto mt-4">
+                <div className="grid grid-cols-2 gap-4">
+                  {Object.entries(getItemsByStorage()).map(([location, items]) => (
+                    <Card key={location}>
+                      <CardHeader className="py-3">
+                        <CardTitle className="text-base flex items-center justify-between">
+                          <span className="flex items-center gap-2">
+                            <Package className="w-4 h-4 text-slate-400" />
+                            {location}
+                          </span>
+                          <Badge variant="outline">{items.length}</Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="flex flex-wrap gap-1">
+                          {items.slice(0, 10).map((item) => (
+                            <Badge key={item.id || item.unit_id || item.component_id} variant="secondary" className="text-xs">
+                              {item.item_id || item.unit_id || item.component_id}
+                            </Badge>
+                          ))}
+                          {items.length > 10 && (
+                            <Badge variant="outline" className="text-xs">+{items.length - 10} more</Badge>
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+
+              {/* Branch Tab */}
+              <TabsContent value="branch" className="flex-1 overflow-auto mt-4">
+                <div className="space-y-4">
+                  {Object.entries(getItemsByBranch()).map(([branch, items]) => (
+                    <Card key={branch}>
+                      <CardHeader className="py-3">
+                        <CardTitle className="text-base flex items-center justify-between">
+                          <span className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-slate-400" />
+                            {branch}
+                          </span>
+                          <Badge>{items.length} items</Badge>
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="pt-0">
+                        <div className="grid grid-cols-4 gap-2 text-sm">
+                          <div className="text-center p-2 bg-slate-50 rounded">
+                            <div className="font-bold">{items.filter(i => i.component_type === 'whole_blood' || !i.component_type).length}</div>
+                            <div className="text-xs text-slate-500">Whole Blood</div>
+                          </div>
+                          <div className="text-center p-2 bg-red-50 rounded">
+                            <div className="font-bold">{items.filter(i => i.component_type === 'prc').length}</div>
+                            <div className="text-xs text-slate-500">PRC</div>
+                          </div>
+                          <div className="text-center p-2 bg-amber-50 rounded">
+                            <div className="font-bold">{items.filter(i => i.component_type === 'plasma' || i.component_type === 'ffp').length}</div>
+                            <div className="text-xs text-slate-500">Plasma/FFP</div>
+                          </div>
+                          <div className="text-center p-2 bg-purple-50 rounded">
+                            <div className="font-bold">{items.filter(i => i.component_type === 'platelets').length}</div>
+                            <div className="text-xs text-slate-500">Platelets</div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
+          )}
+
+          <DialogFooter className="border-t pt-4 mt-4">
+            <div className="flex items-center justify-between w-full">
+              <div className="text-sm text-slate-500">
+                {selectedItems?.length > 0 && (
+                  <span className="font-medium text-teal-600">{selectedItems.length} items selected</span>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={() => setShowDetailModal(false)}>
+                  Close
+                </Button>
+                {selectedItems?.length > 0 && (
+                  <>
+                    <Button variant="outline" onClick={() => onPrintLabel && onPrintLabel()}>
+                      <Printer className="w-4 h-4 mr-1" />
+                      Print Labels
+                    </Button>
+                  </>
+                )}
+              </div>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
