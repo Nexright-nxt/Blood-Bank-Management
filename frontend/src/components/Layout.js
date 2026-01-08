@@ -23,6 +23,7 @@ import {
 } from './ui/dropdown-menu';
 import { Badge } from './ui/badge';
 import NotificationBell from './NotificationBell';
+import ContextSwitcherModal from './ContextSwitcherModal';
 
 const roleLabels = {
   admin: 'Administrator',
