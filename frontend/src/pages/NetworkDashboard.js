@@ -87,9 +87,28 @@ export default function NetworkDashboard() {
     return networkData.organizations.reduce((sum, org) => sum + (org.expiring_count || 0), 0);
   };
 
-  const filteredOrgs = selectedOrg === 'all' 
-    ? networkData?.organizations || []
-    : networkData?.organizations?.filter(o => o.id === selectedOrg) || [];
+  const filteredOrgs = React.useMemo(() => {
+    if (!networkData?.organizations) return [];
+    
+    if (selectedOrg === 'all') {
+      return networkData.organizations;
+    }
+    
+    // Find the selected org
+    const selected = networkData.organizations.find(o => o.id === selectedOrg);
+    
+    if (!selected) return [];
+    
+    // If it's a parent org, also include its branches
+    if (selected.is_parent) {
+      return networkData.organizations.filter(o => 
+        o.id === selectedOrg || o.parent_org_id === selectedOrg
+      );
+    }
+    
+    // Otherwise just return the selected org
+    return [selected];
+  }, [selectedOrg, networkData?.organizations]);
 
   const formatTimeAgo = (timestamp) => {
     const now = new Date();
