@@ -62,6 +62,10 @@ export default function SecuritySettings() {
   });
   const [createdKey, setCreatedKey] = useState(null);
   const [showKeySecret, setShowKeySecret] = useState(false);
+  
+  // Sensitive Action State
+  const [showSensitiveModal, setShowSensitiveModal] = useState(false);
+  const [sensitiveAction, setSensitiveAction] = useState(null);
 
   useEffect(() => {
     fetchMfaStatus();
