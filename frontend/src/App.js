@@ -88,6 +88,7 @@ function AppRoutes() {
       }>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
+        <Route path="org-dashboard" element={<OrgDashboard />} />
         
         {/* Donor Management */}
         <Route path="donors" element={<DonorManagement />} />
