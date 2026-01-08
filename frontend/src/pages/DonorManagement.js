@@ -30,17 +30,40 @@ const STATUS_CONFIG = {
 
 export default function DonorManagement() {
   const navigate = useNavigate();
+  const { isSystemAdmin } = useAuth();
   const [donors, setDonors] = useState([]);
+  const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState('active'); // active, deactivated, all
   const [eligibilityFilter, setEligibilityFilter] = useState('all'); // all, eligible, not_eligible
   const [bloodGroupFilter, setBloodGroupFilter] = useState('all');
+  const [orgFilter, setOrgFilter] = useState('all');
+  const [branchFilter, setBranchFilter] = useState('all');
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   useEffect(() => {
     fetchDonors();
-  }, [activeFilter, eligibilityFilter, bloodGroupFilter]);
+  }, [activeFilter, eligibilityFilter, bloodGroupFilter, orgFilter, branchFilter]);
+
+  const fetchData = async () => {
+    try {
+      const [donorsRes, orgsRes] = await Promise.all([
+        donorAPI.getDonorsWithStatus({ is_active: activeFilter }),
+        organizationAPI.getAll()
+      ]);
+      setDonors(donorsRes.data || []);
+      setOrganizations(orgsRes.data || []);
+    } catch (error) {
+      toast.error('Failed to fetch data');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchDonors = async () => {
     setLoading(true);
@@ -53,12 +76,34 @@ export default function DonorManagement() {
       };
       
       const response = await donorAPI.getDonorsWithStatus(params);
-      setDonors(response.data);
+      setDonors(response.data || []);
     } catch (error) {
       toast.error('Failed to fetch donors');
     } finally {
       setLoading(false);
     }
+  };
+
+  // Separate parent orgs and branches
+  const parentOrgs = useMemo(() => {
+    return organizations.filter(o => o.is_parent);
+  }, [organizations]);
+
+  const branches = useMemo(() => {
+    if (orgFilter === 'all') return [];
+    return organizations.filter(o => o.parent_org_id === orgFilter);
+  }, [organizations, orgFilter]);
+
+  // Get org/branch name by ID
+  const getOrgName = (orgId) => {
+    const org = organizations.find(o => o.id === orgId);
+    return org?.org_name || '-';
+  };
+
+  // Check if org is a branch
+  const getOrgType = (orgId) => {
+    const org = organizations.find(o => o.id === orgId);
+    return org?.is_parent ? 'org' : 'branch';
   };
 
   const handleSearch = () => {
