@@ -94,8 +94,8 @@ export default function ContextSwitcherModal({ open, onOpenChange, onSwitch, cur
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[85vh] flex flex-col">
-        <DialogHeader>
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle className="flex items-center gap-2">
             <ArrowRightLeft className="w-5 h-5 text-teal-600" />
             Switch Context
@@ -106,7 +106,7 @@ export default function ContextSwitcherModal({ open, onOpenChange, onSwitch, cur
         </DialogHeader>
 
         {/* Search Bar */}
-        <div className="relative">
+        <div className="relative flex-shrink-0">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
           <Input
             placeholder="Search organizations or branches..."
@@ -119,7 +119,7 @@ export default function ContextSwitcherModal({ open, onOpenChange, onSwitch, cur
 
         {/* Stats */}
         {treeData && (
-          <div className="flex items-center gap-4 text-sm text-slate-500 py-1">
+          <div className="flex items-center gap-4 text-sm text-slate-500 py-1 flex-shrink-0">
             <span className="flex items-center gap-1">
               <Building2 className="w-4 h-4" />
               {treeData.total_orgs} organizations
@@ -131,8 +131,8 @@ export default function ContextSwitcherModal({ open, onOpenChange, onSwitch, cur
           </div>
         )}
 
-        {/* Tree View */}
-        <ScrollArea className="flex-1 min-h-0 max-h-[400px]">
+        {/* Tree View - Scrollable */}
+        <div className="flex-1 min-h-0 overflow-y-auto">
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin text-teal-600" />
@@ -143,7 +143,7 @@ export default function ContextSwitcherModal({ open, onOpenChange, onSwitch, cur
               <p>No organizations found</p>
             </div>
           ) : (
-            <div className="space-y-1 pr-4">
+            <div className="space-y-1 pr-2">
               {filteredOrgs.map((org) => (
                 <div key={org.id} className="rounded-lg border border-slate-200 overflow-hidden">
                   {/* Organization Row */}
@@ -264,7 +264,7 @@ export default function ContextSwitcherModal({ open, onOpenChange, onSwitch, cur
               ))}
             </div>
           )}
-        </ScrollArea>
+        </div>
 
         {/* Current Context Info */}
         {currentContext && (
