@@ -753,6 +753,29 @@ export default function UserManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Sensitive Action Verification Modal */}
+      <SensitiveActionModal
+        open={showSensitiveModal}
+        onOpenChange={setShowSensitiveModal}
+        actionType={sensitiveAction}
+        actionTitle={
+          sensitiveAction === 'delete_user' 
+            ? 'Delete Administrator' 
+            : 'Change Administrator Status'
+        }
+        actionDescription={
+          sensitiveAction === 'delete_user'
+            ? `You are about to delete ${pendingActionUser?.full_name || 'an administrator'}. This action cannot be undone and will remove all access for this user.`
+            : `You are about to ${pendingActionUser?.is_active ? 'deactivate' : 'activate'} ${pendingActionUser?.full_name || 'an administrator'}. This will ${pendingActionUser?.is_active ? 'revoke' : 'restore'} their system access.`
+        }
+        targetId={pendingActionUser?.id}
+        onVerified={handleSensitiveActionVerified}
+        onCancel={() => {
+          setSensitiveAction(null);
+          setPendingActionUser(null);
+        }}
+      />
     </div>
   );
 }
