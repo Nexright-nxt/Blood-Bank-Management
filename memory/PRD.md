@@ -264,6 +264,9 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
 - `/app/backend/routers/compliance.py` - Compliance management API
 - `/app/backend/routers/training.py` - Training management API
 - `/app/backend/routers/security.py` - Security Suite API (MFA, Password Policy, Sessions, API Keys)
+- `/app/backend/routers/backups.py` - Data Backup & Recovery API
+- `/app/backend/routers/users.py` - User management with role-based scoping
+- `/app/backend/routers/auth.py` - Auth with session creation on login
 - `/app/backend/models/security.py` - Security models
 - `/app/backend/services/helpers.py` - JWT token creation with impersonation
 
@@ -273,6 +276,10 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
 - `/app/frontend/src/pages/AuditLogs.js` - Audit trail viewer
 - `/app/frontend/src/pages/OrganizationDetail.js` - Org detail with Documents, Compliance, Training tabs
 - `/app/frontend/src/pages/SecuritySettings.js` - Security Settings page (MFA, Sessions, Password Policy, API Keys)
+- `/app/frontend/src/pages/BackupManagement.js` - Data Backup & Recovery page
+- `/app/frontend/src/pages/InventoryEnhanced.js` - Inventory with stable test IDs
+- `/app/frontend/src/pages/UserManagement.js` - Role-scoped user management
+- `/app/frontend/src/pages/Login.js` - Hierarchical org selector
 
 ---
 
