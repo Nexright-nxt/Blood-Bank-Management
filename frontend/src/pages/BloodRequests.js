@@ -593,7 +593,7 @@ export default function BloodRequests() {
 
       {/* Create Request Dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Request Blood</DialogTitle>
             <DialogDescription>Create a new blood request from another organization</DialogDescription>
