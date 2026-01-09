@@ -1829,7 +1829,7 @@ function BloodGroupView({ data, displayMode, selectedItems, onToggleSelect, onPr
     <>
       {/* Interactive Blood Group Cards Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        {data.map((group) => (
+        {(data || []).map((group) => (
           <Card 
             key={group.blood_group}
             className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] hover:border-teal-400 group"
