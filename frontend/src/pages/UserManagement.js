@@ -541,17 +541,20 @@ export default function UserManagement() {
                   </SelectContent>
                 </Select>
 
-                <Select value={filterOrg} onValueChange={setFilterOrg}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Organization" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Organizations</SelectItem>
-                    {parentOrgs.map(org => (
-                      <SelectItem key={org.id} value={org.id}>{org.org_name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {/* Organization Filter - only for System Admin */}
+                {canSeeAllOrgs && (
+                  <Select value={filterOrg} onValueChange={setFilterOrg}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue placeholder="Organization" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Organizations</SelectItem>
+                      {parentOrgs.map(org => (
+                        <SelectItem key={org.id} value={org.id}>{org.org_name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
 
                 <Select value={filterStatus} onValueChange={setFilterStatus}>
                   <SelectTrigger className="w-32">
