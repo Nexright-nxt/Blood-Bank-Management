@@ -14,7 +14,62 @@ import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
 
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const genders = ['Male', 'Female', 'Other'];
-const identityTypes = ['Aadhar', 'Passport', 'Driving License', 'Voter ID', 'PAN Card'];
+
+// Malaysian Identity Document Types
+const identityTypes = [
+  { value: 'MyKad', label: 'MyKad (IC)', placeholder: 'e.g., 901231-14-5678', pattern: /^\d{6}-\d{2}-\d{4}$/ },
+  { value: 'MyKAS', label: 'MyKAS (Temporary IC)', placeholder: 'e.g., 901231-14-5678', pattern: /^\d{6}-\d{2}-\d{4}$/ },
+  { value: 'MyPR', label: 'MyPR (Permanent Resident)', placeholder: 'e.g., 901231-14-5678', pattern: /^\d{6}-\d{2}-\d{4}$/ },
+  { value: 'MyTentera', label: 'MyTentera (Military)', placeholder: 'e.g., T1234567', pattern: /^T\d{7}$/i },
+  { value: 'MyPolis', label: 'MyPolis (Police)', placeholder: 'e.g., P1234567', pattern: /^P\d{7}$/i },
+  { value: 'Passport', label: 'Passport', placeholder: 'e.g., A12345678', pattern: /^[A-Z]\d{8}$/i },
+];
+
+// Helper function to format MyKad number with dashes
+const formatMyKadNumber = (value) => {
+  // Remove all non-digits
+  const digits = value.replace(/\D/g, '');
+  
+  // Format as YYMMDD-PB-####
+  if (digits.length <= 6) {
+    return digits;
+  } else if (digits.length <= 8) {
+    return `${digits.slice(0, 6)}-${digits.slice(6)}`;
+  } else {
+    return `${digits.slice(0, 6)}-${digits.slice(6, 8)}-${digits.slice(8, 12)}`;
+  }
+};
+
+// Validate Malaysian ID number based on type
+const validateMalaysianId = (type, number) => {
+  const idType = identityTypes.find(t => t.value === type);
+  if (!idType) return { valid: false, message: 'Invalid ID type' };
+  
+  if (!idType.pattern.test(number)) {
+    if (['MyKad', 'MyKAS', 'MyPR'].includes(type)) {
+      return { valid: false, message: 'Format: YYMMDD-PB-#### (e.g., 901231-14-5678)' };
+    }
+    return { valid: false, message: `Invalid ${idType.label} format` };
+  }
+  
+  // Additional validation for MyKad/MyKAS/MyPR - validate date portion
+  if (['MyKad', 'MyKAS', 'MyPR'].includes(type)) {
+    const datePart = number.slice(0, 6);
+    const year = parseInt(datePart.slice(0, 2));
+    const month = parseInt(datePart.slice(2, 4));
+    const day = parseInt(datePart.slice(4, 6));
+    
+    // Basic date validation
+    if (month < 1 || month > 12) {
+      return { valid: false, message: 'Invalid month in IC number' };
+    }
+    if (day < 1 || day > 31) {
+      return { valid: false, message: 'Invalid day in IC number' };
+    }
+  }
+  
+  return { valid: true, message: '' };
+};
 
 export default function DonorRegistration() {
   const navigate = useNavigate();
