@@ -249,7 +249,7 @@ export default function DonorRegisterForm({ onSuccess }) {
             )}
           </div>
         </div>
-      )}}
+      )}
 
       {/* Step 2: Demographics */}
       {step === 2 && (
