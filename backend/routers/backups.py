@@ -617,15 +617,13 @@ async def delete_backup(backup_id: str, current_user: dict = Depends(get_current
 @router.get("/{backup_id}/preview")
 async def preview_backup(backup_id: str, current_user: dict = Depends(get_current_user)):
     """Preview backup contents before restoring"""
-    if current_user.get("user_type") != "system_admin":
-        raise HTTPException(status_code=403, detail="Only System Admins can access backups")
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
     
-    backup_path = os.path.join(BACKUP_DIR, backup_id)
+    access_info = await validate_backup_access(backup_id, current_user)
+    backup_path = access_info["backup_path"]
+    metadata = access_info["metadata"]
     
-    if not os.path.exists(backup_path):
-        raise HTTPException(status_code=404, detail="Backup not found")
-    
-    metadata = get_backup_metadata(backup_id)
     if not metadata:
         raise HTTPException(status_code=400, detail="Backup metadata not found")
     
@@ -636,8 +634,8 @@ async def preview_backup(backup_id: str, current_user: dict = Depends(get_curren
     collection_details = []
     if os.path.exists(dump_path):
         for file in os.listdir(dump_path):
-            if file.endswith(".bson"):
-                coll_name = file.replace(".bson", "")
+            if file.endswith(".bson") or file.endswith(".json"):
+                coll_name = file.replace(".bson", "").replace(".json", "")
                 file_path = os.path.join(dump_path, file)
                 size_kb = round(os.path.getsize(file_path) / 1024, 2)
                 collection_details.append({
@@ -661,6 +659,8 @@ async def preview_backup(backup_id: str, current_user: dict = Depends(get_curren
         "created_at": metadata.get("created_at"),
         "created_by": metadata.get("created_by"),
         "total_size_mb": metadata.get("size_mb"),
+        "backup_scope": metadata.get("backup_scope", "system"),
+        "org_name": metadata.get("org_name"),
         "collections": collection_details,
         "files": files_info
     }
