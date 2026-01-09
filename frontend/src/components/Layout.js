@@ -140,11 +140,12 @@ export default function Layout() {
       items = [
         // Branch management
         { path: '/users', icon: Settings, label: 'User Management', category: 'platform' },
+        { path: '/audit-logs', icon: History, label: 'Audit Logs', category: 'platform' },
+        { path: '/security', icon: Lock, label: 'Security Settings', category: 'platform' },
         // Operational modules
         ...operationalModules.filter(item => 
           !item.roles || item.roles.includes('admin')
         ),
-        { path: '/audit-logs', icon: History, label: 'Audit Logs', category: 'admin' },
       ];
     }
     // Staff users
