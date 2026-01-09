@@ -65,6 +65,9 @@ export default function DonorRegisterForm({ onSuccess }) {
     consent_given: false,
   });
 
+  // ID validation state
+  const [idValidationError, setIdValidationError] = useState('');
+
   // Health questionnaire - same as staff portal
   const [questionnaire, setQuestionnaire] = useState({
     feeling_well_today: true,
@@ -97,6 +100,28 @@ export default function DonorRegisterForm({ onSuccess }) {
   });
 
   const handleChange = (field, value) => {
+    // Handle identity number formatting for Malaysian ICs
+    if (field === 'identity_number' && formData.identity_type) {
+      if (['MyKad', 'MyKAS', 'MyPR'].includes(formData.identity_type)) {
+        value = formatMyKadNumber(value);
+      }
+      
+      // Validate the ID
+      if (value) {
+        const validation = validateMalaysianId(formData.identity_type, value);
+        setIdValidationError(validation.valid ? '' : validation.message);
+      } else {
+        setIdValidationError('');
+      }
+    }
+    
+    // Clear ID number when type changes
+    if (field === 'identity_type') {
+      setFormData(prev => ({ ...prev, [field]: value, identity_number: '' }));
+      setIdValidationError('');
+      return;
+    }
+    
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
@@ -107,7 +132,9 @@ export default function DonorRegisterForm({ onSuccess }) {
   const validateStep = (stepNum) => {
     switch (stepNum) {
       case 1:
-        return formData.identity_type && formData.identity_number;
+        if (!formData.identity_type || !formData.identity_number) return false;
+        const validation = validateMalaysianId(formData.identity_type, formData.identity_number);
+        return validation.valid;
       case 2:
         return formData.full_name && formData.date_of_birth && formData.gender;
       case 3:
