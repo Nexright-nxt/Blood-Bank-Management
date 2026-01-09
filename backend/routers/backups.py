@@ -290,52 +290,6 @@ async def create_backup(
             message=f"Backup created successfully ({size_mb} MB)",
             backup_id=backup_id
         )
-        collections = await db.list_collection_names()
-        
-        # Copy uploaded files if requested
-        files_copied = False
-        if include_files and os.path.exists(UPLOADS_DIR):
-            files_backup_path = os.path.join(backup_path, "files")
-            if os.path.exists(UPLOADS_DIR) and os.listdir(UPLOADS_DIR):
-                shutil.copytree(UPLOADS_DIR, files_backup_path)
-                files_copied = True
-        
-        # Calculate backup size
-        size_mb = get_directory_size(backup_path)
-        
-        # Save metadata
-        metadata = {
-            "id": backup_id,
-            "filename": backup_id,
-            "created_at": datetime.now(timezone.utc).isoformat(),
-            "size_mb": size_mb,
-            "type": "full" if include_files else "database_only",
-            "status": "completed",
-            "collections": collections,
-            "includes_files": files_copied,
-            "created_by": current_user.get("email", "unknown"),
-            "db_name": db_name
-        }
-        
-        with open(os.path.join(backup_path, "metadata.json"), 'w') as f:
-            json.dump(metadata, f, indent=2)
-        
-        # Log to audit
-        await db.audit_logs.insert_one({
-            "action": "backup_created",
-            "module": "backups",
-            "user_id": current_user.get("id"),
-            "user_email": current_user.get("email"),
-            "details": f"Created backup {backup_id}",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "metadata": {"backup_id": backup_id, "size_mb": size_mb}
-        })
-        
-        return BackupResponse(
-            success=True,
-            message=f"Backup created successfully ({size_mb} MB)",
-            backup_id=backup_id
-        )
         
     except Exception as e:
         # Clean up failed backup
@@ -346,8 +300,11 @@ async def create_backup(
 
 @router.get("/list", response_model=List[BackupInfo])
 async def list_backups(current_user: dict = Depends(get_current_user)):
-    """List all available backups"""
-    if current_user.get("user_type") != "system_admin":
+    """List backups based on user's access level"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
+    
+    access_level, org_id = get_user_access_level(current_user)
         raise HTTPException(status_code=403, detail="Only System Admins can access backups")
     
     backups = []
