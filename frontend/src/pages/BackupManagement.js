@@ -280,7 +280,7 @@ export default function BackupManagement() {
             Create New Backup
           </CardTitle>
           <CardDescription>
-            Create a snapshot of your database and uploaded files
+            {getScopeDescription()}
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -296,6 +296,11 @@ export default function BackupManagement() {
                   Include uploaded files (photos, documents)
                 </Label>
               </div>
+              {!isSystemAdmin && (
+                <Badge variant="outline" className="ml-4">
+                  {isSuperAdmin ? 'Organization Backup' : 'Branch Backup'}
+                </Badge>
+              )}
             </div>
             <Button 
               onClick={handleCreateBackup} 
