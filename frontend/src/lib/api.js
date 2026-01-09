@@ -174,6 +174,18 @@ export const securityAPI = {
   unlockAccount: (userId) => api.post(`/security/lockout/unlock/${userId}`),
 };
 
+// Backup API
+export const backupAPI = {
+  getCollections: () => api.get('/backups/collections'),
+  create: (includeFiles = true) => api.post('/backups/create', null, { params: { include_files: includeFiles } }),
+  list: () => api.get('/backups/list'),
+  download: (backupId) => api.get(`/backups/download/${backupId}`, { responseType: 'blob' }),
+  preview: (backupId) => api.get(`/backups/${backupId}/preview`),
+  restore: (backupId, collections = null, restoreFiles = true) => 
+    api.post('/backups/restore', { backup_id: backupId, collections, restore_files: restoreFiles }),
+  delete: (backupId) => api.delete(`/backups/${backupId}`),
+};
+
 // Public Donor APIs (no auth required)
 export const publicDonorAPI = {
   register: (data) => api.post('/public/donor-register', data),
