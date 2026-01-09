@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { inventoryEnhancedAPI, labelAPI, requestAPI, relationshipAPI } from '../lib/api';
 import { toast } from 'sonner';
 import { 
@@ -63,9 +64,20 @@ const getOccupancyColor = (percent) => {
 };
 
 export default function InventoryEnhanced() {
+  const [searchParams] = useSearchParams();
+  
+  // Get initial view mode from URL params or default to blood_group
+  const getInitialViewMode = () => {
+    const viewParam = searchParams.get('view');
+    if (viewParam && Object.values(VIEW_MODES).includes(viewParam)) {
+      return viewParam;
+    }
+    return VIEW_MODES.BLOOD_GROUP;
+  };
+  
   // State
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState(VIEW_MODES.BLOOD_GROUP); // Default to Blood Group view
+  const [viewMode, setViewMode] = useState(getInitialViewMode); // Read from URL or default
   const [displayMode, setDisplayMode] = useState('grid'); // 'grid' or 'list'
   const [data, setData] = useState(null);
   

@@ -544,7 +544,7 @@ export default function NetworkDashboard() {
 
         <Card 
           className="bg-gradient-to-br from-amber-50 to-white border-amber-200 cursor-pointer hover:shadow-lg transition-shadow"
-          onClick={() => navigate('/inventory')}
+          onClick={() => navigate('/inventory?view=expiry')}
           data-testid="card-expiring"
         >
           <CardContent className="pt-6">
