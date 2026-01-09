@@ -221,7 +221,7 @@ export default function Dashboard() {
         <Card 
           className="border-l-4 border-l-amber-500 cursor-pointer hover:shadow-lg transition-shadow" 
           data-testid="alert-expiring"
-          onClick={() => navigate('/inventory')}
+          onClick={() => navigate('/inventory?view=expiry')}
         >
           <CardContent className="pt-6">
             <div className="flex items-center gap-4">
