@@ -95,6 +95,9 @@ export default function DonorRegistration() {
     registration_channel: 'on_site',
   });
 
+  // ID validation state
+  const [idValidationError, setIdValidationError] = useState('');
+
   // File uploads
   const [photoPreview, setPhotoPreview] = useState(null);
   const [idProofPreview, setIdProofPreview] = useState(null);
