@@ -361,16 +361,50 @@ async def list_backups(current_user: dict = Depends(get_current_user)):
     return backups
 
 
+async def validate_backup_access(backup_id: str, current_user: dict) -> dict:
+    """Validate user has access to a specific backup and return metadata"""
+    access_level, org_id = get_user_access_level(current_user)
+    
+    if access_level == "none":
+        raise HTTPException(status_code=403, detail="Access denied")
+    
+    backup_path = os.path.join(BACKUP_DIR, backup_id)
+    if not os.path.exists(backup_path):
+        raise HTTPException(status_code=404, detail="Backup not found")
+    
+    metadata = get_backup_metadata(backup_id)
+    if not metadata:
+        if access_level != "system":
+            raise HTTPException(status_code=403, detail="Access denied to this backup")
+        return {"backup_path": backup_path, "metadata": None, "access_level": access_level}
+    
+    backup_org_id = metadata.get("org_id")
+    backup_scope = metadata.get("backup_scope", "system")
+    
+    # Check access
+    if access_level == "system":
+        pass  # Full access
+    elif access_level == "org":
+        # Get org + branches
+        branches = await db.organizations.find({"parent_org_id": org_id}, {"id": 1}).to_list(100)
+        org_ids = [org_id] + [b["id"] for b in branches]
+        if backup_scope != "system" and backup_org_id not in org_ids:
+            raise HTTPException(status_code=403, detail="Access denied to this backup")
+    elif access_level == "branch":
+        if backup_scope != "system" and backup_org_id != org_id:
+            raise HTTPException(status_code=403, detail="Access denied to this backup")
+    
+    return {"backup_path": backup_path, "metadata": metadata, "access_level": access_level}
+
+
 @router.get("/download/{backup_id}")
 async def download_backup(backup_id: str, current_user: dict = Depends(get_current_user)):
     """Download a backup as a ZIP file"""
-    if current_user.get("user_type") != "system_admin":
-        raise HTTPException(status_code=403, detail="Only System Admins can download backups")
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
     
-    backup_path = os.path.join(BACKUP_DIR, backup_id)
-    
-    if not os.path.exists(backup_path):
-        raise HTTPException(status_code=404, detail="Backup not found")
+    access_info = await validate_backup_access(backup_id, current_user)
+    backup_path = access_info["backup_path"]
     
     # Create ZIP file
     zip_path = os.path.join(BACKUP_DIR, f"{backup_id}.zip")
@@ -389,6 +423,7 @@ async def download_backup(backup_id: str, current_user: dict = Depends(get_curre
             "module": "backups",
             "user_id": current_user.get("id"),
             "user_email": current_user.get("email"),
+            "org_id": current_user.get("org_id"),
             "details": f"Downloaded backup {backup_id}",
             "timestamp": datetime.now(timezone.utc).isoformat()
         })
