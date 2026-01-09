@@ -10,7 +10,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from './ui/input-otp';
 
-const identityTypes = ['Aadhar', 'Passport', 'Driving License', 'Voter ID', 'PAN Card'];
+// Malaysian Identity Document Types
+const identityTypes = [
+  { value: 'MyKad', label: 'MyKad (IC)', placeholder: 'e.g., 901231-14-5678' },
+  { value: 'MyKAS', label: 'MyKAS (Temporary IC)', placeholder: 'e.g., 901231-14-5678' },
+  { value: 'MyPR', label: 'MyPR (Permanent Resident)', placeholder: 'e.g., 901231-14-5678' },
+  { value: 'MyTentera', label: 'MyTentera (Military)', placeholder: 'e.g., T1234567' },
+  { value: 'MyPolis', label: 'MyPolis (Police)', placeholder: 'e.g., P1234567' },
+  { value: 'Passport', label: 'Passport', placeholder: 'e.g., A12345678' },
+];
+
+// Helper function to format MyKad number with dashes
+const formatMyKadNumber = (value) => {
+  const digits = value.replace(/\D/g, '');
+  if (digits.length <= 6) {
+    return digits;
+  } else if (digits.length <= 8) {
+    return `${digits.slice(0, 6)}-${digits.slice(6)}`;
+  } else {
+    return `${digits.slice(0, 6)}-${digits.slice(6, 8)}-${digits.slice(8, 12)}`;
+  }
+};
 
 export default function DonorLoginForm({ onSuccess }) {
   const navigate = useNavigate();
