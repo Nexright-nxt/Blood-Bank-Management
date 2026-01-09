@@ -210,14 +210,14 @@ export default function DonorLoginForm({ onSuccess }) {
             <Label>ID Type</Label>
             <Select 
               value={identityForm.identity_type} 
-              onValueChange={(v) => setIdentityForm({ ...identityForm, identity_type: v })}
+              onValueChange={handleIdentityTypeChange}
             >
               <SelectTrigger data-testid="login-identity-type">
                 <SelectValue placeholder="Select ID type" />
               </SelectTrigger>
               <SelectContent>
                 {identityTypes.map(it => (
-                  <SelectItem key={it} value={it}>{it}</SelectItem>
+                  <SelectItem key={it.value} value={it.value}>{it.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -228,10 +228,14 @@ export default function DonorLoginForm({ onSuccess }) {
             <Input
               id="identity_number"
               value={identityForm.identity_number}
-              onChange={(e) => setIdentityForm({ ...identityForm, identity_number: e.target.value })}
-              placeholder="Enter your ID number"
+              onChange={(e) => handleIdentityNumberChange(e.target.value)}
+              placeholder={identityTypes.find(t => t.value === identityForm.identity_type)?.placeholder || "Select ID type first"}
               data-testid="login-identity-number"
+              maxLength={identityForm.identity_type && ['MyKad', 'MyKAS', 'MyPR'].includes(identityForm.identity_type) ? 14 : 20}
             />
+            {identityForm.identity_type && ['MyKad', 'MyKAS', 'MyPR'].includes(identityForm.identity_type) && (
+              <p className="text-xs text-slate-500">Format: YYMMDD-PB-####</p>
+            )}
           </div>
           
           <div className="space-y-2">
