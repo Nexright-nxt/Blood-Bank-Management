@@ -193,6 +193,13 @@ function AppRoutes() {
         
         {/* Security Settings */}
         <Route path="security" element={<SecuritySettings />} />
+        
+        {/* Backup Management - System Admin only */}
+        <Route path="backups" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <BackupManagement />
+          </ProtectedRoute>
+        } />
       </Route>
       
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
