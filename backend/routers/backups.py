@@ -559,15 +559,31 @@ async def restore_backup(
 
 @router.delete("/{backup_id}", response_model=BackupResponse)
 async def delete_backup(backup_id: str, current_user: dict = Depends(get_current_user)):
-    """Delete a backup"""
-    if current_user.get("user_type") != "system_admin":
-        raise HTTPException(status_code=403, detail="Only System Admins can delete backups")
+    """Delete a backup (users can only delete their own org's backups)"""
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
     
-    backup_path = os.path.join(BACKUP_DIR, backup_id)
+    access_info = await validate_backup_access(backup_id, current_user)
+    backup_path = access_info["backup_path"]
+    metadata = access_info["metadata"]
+    access_level = access_info["access_level"]
+    
+    # Only allow deletion of own backups (system admin can delete all)
+    if access_level != "system" and metadata:
+        backup_scope = metadata.get("backup_scope", "system")
+        if backup_scope == "system":
+            raise HTTPException(
+                status_code=403, 
+                detail="You cannot delete system-wide backups. Only System Admins can do that."
+            )
+        backup_created_by = metadata.get("created_by")
+        if backup_created_by != current_user.get("email"):
+            raise HTTPException(
+                status_code=403,
+                detail="You can only delete backups that you created"
+            )
+    
     zip_path = os.path.join(BACKUP_DIR, f"{backup_id}.zip")
-    
-    if not os.path.exists(backup_path):
-        raise HTTPException(status_code=404, detail="Backup not found")
     
     try:
         # Delete backup directory
@@ -583,6 +599,7 @@ async def delete_backup(backup_id: str, current_user: dict = Depends(get_current
             "module": "backups",
             "user_id": current_user.get("id"),
             "user_email": current_user.get("email"),
+            "org_id": current_user.get("org_id"),
             "details": f"Deleted backup {backup_id}",
             "timestamp": datetime.now(timezone.utc).isoformat()
         })
