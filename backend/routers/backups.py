@@ -443,61 +443,91 @@ async def restore_backup(
     current_user: dict = Depends(get_current_user)
 ):
     """Restore database from a backup (full or selective)"""
-    if current_user.get("user_type") != "system_admin":
-        raise HTTPException(status_code=403, detail="Only System Admins can restore backups")
+    if current_user["role"] != "admin":
+        raise HTTPException(status_code=403, detail="Admin access required")
     
-    backup_path = os.path.join(BACKUP_DIR, request.backup_id)
+    access_info = await validate_backup_access(request.backup_id, current_user)
+    backup_path = access_info["backup_path"]
+    metadata = access_info["metadata"]
+    access_level = access_info["access_level"]
     
-    if not os.path.exists(backup_path):
-        raise HTTPException(status_code=404, detail="Backup not found")
-    
-    metadata = get_backup_metadata(request.backup_id)
     if not metadata:
         raise HTTPException(status_code=400, detail="Backup metadata not found")
+    
+    backup_scope = metadata.get("backup_scope", "system")
+    
+    # Only system admin can restore system-wide backups
+    if backup_scope == "system" and access_level != "system":
+        raise HTTPException(
+            status_code=403, 
+            detail="Only System Admins can restore system-wide backups. You can only restore backups created for your organization."
+        )
     
     try:
         mongo_url = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
         db_name = os.environ.get("DB_NAME", "test_database")
         dump_path = os.path.join(backup_path, "database", db_name)
         
-        if not os.path.exists(dump_path):
-            raise HTTPException(status_code=400, detail="Database backup files not found")
-        
         # Determine which collections to restore
         collections_to_restore = request.collections if request.collections else metadata.get("collections", [])
+        
+        # For non-system admins, filter to only org-scoped collections
+        if access_level != "system":
+            collections_to_restore = [c for c in collections_to_restore if c in ORG_SCOPED_COLLECTIONS]
         
         restored_collections = []
         
         for collection in collections_to_restore:
-            collection_file = os.path.join(dump_path, f"{collection}.bson")
-            if os.path.exists(collection_file):
-                # Drop existing collection before restore
-                await db[collection].drop()
+            # Check for BSON file (mongodump format)
+            bson_file = os.path.join(dump_path, f"{collection}.bson")
+            # Check for JSON file (org/branch backup format)
+            json_file = os.path.join(dump_path, f"{collection}.json")
+            
+            if os.path.exists(bson_file):
+                # Restore from BSON using mongorestore
+                if access_level == "system":
+                    # Full restore - drop and restore entire collection
+                    await db[collection].drop()
+                    
+                    restore_cmd = [
+                        "mongorestore",
+                        f"--uri={mongo_url}",
+                        f"--db={db_name}",
+                        f"--collection={collection}",
+                        bson_file
+                    ]
+                    
+                    result = subprocess.run(restore_cmd, capture_output=True, text=True)
+                    if result.returncode == 0:
+                        restored_collections.append(collection)
+                    else:
+                        print(f"Warning: Failed to restore {collection}: {result.stderr}")
+                        
+            elif os.path.exists(json_file):
+                # Restore from JSON (org/branch backups)
+                with open(json_file, 'r') as f:
+                    docs = json.load(f)
                 
-                # Restore collection
-                restore_cmd = [
-                    "mongorestore",
-                    f"--uri={mongo_url}",
-                    f"--db={db_name}",
-                    f"--collection={collection}",
-                    collection_file
-                ]
-                
-                result = subprocess.run(restore_cmd, capture_output=True, text=True)
-                if result.returncode == 0:
+                if docs:
+                    # For org/branch restore, delete existing docs for this org then insert
+                    org_id = metadata.get("org_id")
+                    if org_id:
+                        await db[collection].delete_many({"org_id": org_id})
+                    
+                    await db[collection].insert_many(docs)
                     restored_collections.append(collection)
-                else:
-                    print(f"Warning: Failed to restore {collection}: {result.stderr}")
         
         # Restore files if requested
         files_restored = False
         if request.restore_files and metadata.get("includes_files"):
             files_backup_path = os.path.join(backup_path, "files")
             if os.path.exists(files_backup_path):
-                if os.path.exists(UPLOADS_DIR):
-                    shutil.rmtree(UPLOADS_DIR)
-                shutil.copytree(files_backup_path, UPLOADS_DIR)
-                files_restored = True
+                if access_level == "system":
+                    if os.path.exists(UPLOADS_DIR):
+                        shutil.rmtree(UPLOADS_DIR)
+                    shutil.copytree(files_backup_path, UPLOADS_DIR)
+                    files_restored = True
+                # For org/branch, we'd need to selectively restore files (future enhancement)
         
         # Log restore
         await db.audit_logs.insert_one({
@@ -505,6 +535,7 @@ async def restore_backup(
             "module": "backups",
             "user_id": current_user.get("id"),
             "user_email": current_user.get("email"),
+            "org_id": current_user.get("org_id"),
             "details": f"Restored from backup {request.backup_id}",
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "metadata": {
