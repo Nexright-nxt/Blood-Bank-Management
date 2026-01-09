@@ -2473,7 +2473,7 @@ function StatusView({ data, selectedItems, onToggleSelect, onPrintLabel, onViewA
     <>
       {/* Interactive Status Cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
-        {data.map((status) => {
+        {(data || []).map((status) => {
           const colors = statusColors[status.status] || statusColors['ready_to_use'];
           return (
             <Card 
@@ -2496,14 +2496,14 @@ function StatusView({ data, selectedItems, onToggleSelect, onPrintLabel, onViewA
       {/* Tabbed View */}
       <Tabs defaultValue="ready_to_use">
         <TabsList>
-          {data.map((status) => (
+          {(data || []).map((status) => (
             <TabsTrigger key={status.status} value={status.status}>
               {status.display_name} ({status.total_count || 0})
             </TabsTrigger>
           ))}
         </TabsList>
         
-        {data.map((status) => {
+        {(data || []).map((status) => {
           const units = Array.isArray(status.units) ? status.units : [];
           const components = Array.isArray(status.components) ? status.components : [];
           const allItems = [...units, ...components];
