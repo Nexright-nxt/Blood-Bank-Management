@@ -332,13 +332,13 @@ async def list_backups(current_user: dict = Depends(get_current_user)):
                     # System admin sees all
                     if access_level == "system":
                         backups.append(BackupInfo(**metadata))
-                    # Super admin sees system backups + their org backups
+                    # Super admin sees only their org and branch backups (NOT system backups)
                     elif access_level == "org":
-                        if backup_scope == "system" or backup_org_id in org_ids:
+                        if backup_scope != "system" and backup_org_id in org_ids:
                             backups.append(BackupInfo(**metadata))
-                    # Tenant admin sees system backups + their branch backups
+                    # Tenant admin sees only their branch backups (NOT system or org backups)
                     elif access_level == "branch":
-                        if backup_scope == "system" or backup_org_id == org_id:
+                        if backup_scope == "branch" and backup_org_id == org_id:
                             backups.append(BackupInfo(**metadata))
                 else:
                     # Create basic info for backups without metadata (only visible to system admin)
