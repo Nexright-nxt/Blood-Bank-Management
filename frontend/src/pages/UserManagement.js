@@ -37,7 +37,7 @@ const STAFF_ROLES = {
 };
 
 export default function UserManagement() {
-  const { user: currentUser, isSystemAdmin, isSuperAdmin, register } = useAuth();
+  const { user: currentUser, isSystemAdmin, isSuperAdmin, isTenantAdmin, register } = useAuth();
   const [users, setUsers] = useState([]);
   const [organizations, setOrganizations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -68,6 +68,12 @@ export default function UserManagement() {
   const [showSensitiveModal, setShowSensitiveModal] = useState(false);
   const [sensitiveAction, setSensitiveAction] = useState(null);
   const [pendingActionUser, setPendingActionUser] = useState(null);
+
+  // Determine current user type for access control
+  const currentUserType = currentUser?.user_type;
+  const canSeeAllOrgs = currentUserType === 'system_admin';
+  const canSeeOrgAndBranches = currentUserType === 'super_admin';
+  const canOnlySeeOwnBranch = currentUserType === 'tenant_admin';
 
   useEffect(() => {
     fetchData();
