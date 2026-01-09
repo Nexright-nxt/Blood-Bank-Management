@@ -1647,7 +1647,7 @@ function StorageView({ data, displayMode, onOpenStorage }) {
   if (displayMode === 'grid') {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {data.map((storage) => (
+        {(data || []).map((storage) => (
           <DroppableStorageCard 
             key={storage.id}
             storage={storage}
@@ -1675,7 +1675,7 @@ function StorageView({ data, displayMode, onOpenStorage }) {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {data.map((storage) => (
+          {(data || []).map((storage) => (
             <TableRow key={storage.id} className="cursor-pointer hover:bg-slate-50" onClick={() => onOpenStorage(storage)}>
               <TableCell className="font-medium">{storage.storage_name}</TableCell>
               <TableCell className="capitalize">{storage.storage_type}</TableCell>
