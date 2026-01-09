@@ -495,7 +495,7 @@ export default function DonorRegistration() {
                     </SelectTrigger>
                     <SelectContent>
                       {identityTypes.map(it => (
-                        <SelectItem key={it} value={it}>{it}</SelectItem>
+                        <SelectItem key={it.value} value={it.value}>{it.label}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -506,10 +506,18 @@ export default function DonorRegistration() {
                     id="identity_number"
                     value={formData.identity_number}
                     onChange={(e) => handleChange('identity_number', e.target.value)}
-                    placeholder="Enter ID number"
+                    placeholder={identityTypes.find(t => t.value === formData.identity_type)?.placeholder || "Select ID type first"}
                     required
                     data-testid="input-identity-number"
+                    className={idValidationError ? 'border-red-500' : ''}
+                    maxLength={formData.identity_type && ['MyKad', 'MyKAS', 'MyPR'].includes(formData.identity_type) ? 14 : 20}
                   />
+                  {idValidationError && (
+                    <p className="text-xs text-red-500">{idValidationError}</p>
+                  )}
+                  {formData.identity_type && ['MyKad', 'MyKAS', 'MyPR'].includes(formData.identity_type) && !idValidationError && (
+                    <p className="text-xs text-slate-500">Format: YYMMDD-PB-#### (Year, Month, Day, Place of Birth, Unique ID)</p>
+                  )}
                 </div>
               </div>
 
