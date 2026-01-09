@@ -144,6 +144,7 @@ export default function Layout() {
         ...operationalModules.filter(item => 
           !item.roles || item.roles.includes('admin')
         ),
+        { path: '/audit-logs', icon: History, label: 'Audit Logs', category: 'admin' },
       ];
     }
     // Staff users
