@@ -328,29 +328,33 @@ export default function UserManagement() {
         {/* Admin Users Tab */}
         <TabsContent value="admins" className="mt-4 space-y-4">
           {/* Breakdown Cards */}
-          <div className="grid grid-cols-3 gap-4">
-            <Card className="cursor-pointer hover:border-red-300 transition-colors" onClick={() => setFilterUserType('system_admin')}>
-              <CardContent className="pt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-slate-500">System Admins</p>
-                    <p className="text-2xl font-bold text-red-600">{adminCounts.system_admin}</p>
+          <div className={`grid gap-4 ${canSeeAllOrgs ? 'grid-cols-3' : canSeeOrgAndBranches ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            {canSeeAllOrgs && (
+              <Card className="cursor-pointer hover:border-red-300 transition-colors" onClick={() => setFilterUserType('system_admin')}>
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-slate-500">System Admins</p>
+                      <p className="text-2xl font-bold text-red-600">{adminCounts.system_admin}</p>
+                    </div>
+                    <Shield className="w-8 h-8 text-red-200" />
                   </div>
-                  <Shield className="w-8 h-8 text-red-200" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="cursor-pointer hover:border-purple-300 transition-colors" onClick={() => setFilterUserType('super_admin')}>
-              <CardContent className="pt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-slate-500">Super Admins</p>
-                    <p className="text-2xl font-bold text-purple-600">{adminCounts.super_admin}</p>
+                </CardContent>
+              </Card>
+            )}
+            {(canSeeAllOrgs || canSeeOrgAndBranches) && (
+              <Card className="cursor-pointer hover:border-purple-300 transition-colors" onClick={() => setFilterUserType('super_admin')}>
+                <CardContent className="pt-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-slate-500">Super Admins</p>
+                      <p className="text-2xl font-bold text-purple-600">{adminCounts.super_admin}</p>
+                    </div>
+                    <UserCog className="w-8 h-8 text-purple-200" />
                   </div>
-                  <UserCog className="w-8 h-8 text-purple-200" />
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
             <Card className="cursor-pointer hover:border-blue-300 transition-colors" onClick={() => setFilterUserType('tenant_admin')}>
               <CardContent className="pt-4">
                 <div className="flex items-center justify-between">
