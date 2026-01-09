@@ -2282,7 +2282,8 @@ function ExpiryView({ data, selectedItems, onToggleSelect, onPrintLabel, onViewA
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
 
-  if (!data) return null;
+  // ExpiryView expects data to be an object with summary, categories, items
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return null;
 
   const { summary, categories, items } = data;
 
