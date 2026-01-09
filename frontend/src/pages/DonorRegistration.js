@@ -135,6 +135,29 @@ export default function DonorRegistration() {
   });
 
   const handleChange = (field, value) => {
+    // Handle identity number formatting for Malaysian ICs
+    if (field === 'identity_number' && formData.identity_type) {
+      const idType = identityTypes.find(t => t.value === formData.identity_type);
+      if (idType && ['MyKad', 'MyKAS', 'MyPR'].includes(formData.identity_type)) {
+        value = formatMyKadNumber(value);
+      }
+      
+      // Validate the ID
+      if (value) {
+        const validation = validateMalaysianId(formData.identity_type, value);
+        setIdValidationError(validation.valid ? '' : validation.message);
+      } else {
+        setIdValidationError('');
+      }
+    }
+    
+    // Clear ID number when type changes
+    if (field === 'identity_type') {
+      setFormData(prev => ({ ...prev, [field]: value, identity_number: '' }));
+      setIdValidationError('');
+      return;
+    }
+    
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
