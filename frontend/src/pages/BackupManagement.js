@@ -351,8 +351,8 @@ export default function BackupManagement() {
                 <TableRow>
                   <TableHead>Backup ID</TableHead>
                   <TableHead>Created</TableHead>
+                  <TableHead>Scope</TableHead>
                   <TableHead>Size</TableHead>
-                  <TableHead>Type</TableHead>
                   <TableHead>Collections</TableHead>
                   <TableHead>Files</TableHead>
                   <TableHead>Created By</TableHead>
@@ -362,7 +362,7 @@ export default function BackupManagement() {
               <TableBody>
                 {backups.map((backup) => (
                   <TableRow key={backup.id}>
-                    <TableCell className="font-mono text-sm">{backup.id}</TableCell>
+                    <TableCell className="font-mono text-sm max-w-[200px] truncate">{backup.id}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1 text-sm">
                         <Clock className="w-3 h-3 text-slate-400" />
@@ -370,12 +370,15 @@ export default function BackupManagement() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline">{backup.size_mb} MB</Badge>
+                      <div className="flex flex-col gap-1">
+                        {getScopeBadge(backup)}
+                        {backup.org_name && (
+                          <span className="text-xs text-slate-500">{backup.org_name}</span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={backup.type === 'full' ? 'default' : 'secondary'}>
-                        {backup.type === 'full' ? 'Full' : 'DB Only'}
-                      </Badge>
+                      <Badge variant="outline">{backup.size_mb} MB</Badge>
                     </TableCell>
                     <TableCell>{backup.collections?.length || 0}</TableCell>
                     <TableCell>
@@ -388,7 +391,7 @@ export default function BackupManagement() {
                     <TableCell>
                       <div className="flex items-center gap-1 text-sm">
                         <User className="w-3 h-3 text-slate-400" />
-                        {backup.created_by}
+                        <span className="max-w-[120px] truncate">{backup.created_by}</span>
                       </div>
                     </TableCell>
                     <TableCell className="text-right">
