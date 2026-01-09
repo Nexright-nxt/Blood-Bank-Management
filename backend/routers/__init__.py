@@ -33,3 +33,4 @@ from .compliance import router as compliance_router
 from .training import router as training_router
 from .security import router as security_router
 from .sensitive_actions import router as sensitive_actions_router
+from .backups import router as backups_router
