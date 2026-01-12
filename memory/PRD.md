@@ -1,4 +1,5 @@
-# Blood Bank Management System (BBMS) - Product Requirements Document
+# BBMS - Blood Bank Management System
+## Product Requirements Document
 
 ## Original Problem Statement
 Build a comprehensive Blood Bank Management System with multi-tenancy support, featuring:
