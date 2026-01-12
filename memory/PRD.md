@@ -166,6 +166,15 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
   - [x] 10 backup recovery codes
   - [x] MFA enable/disable/status
   - [x] Admin can enforce MFA for users
+  - [x] **MFA Enforcement at Login (COMPLETE - Jan 12, 2026)**:
+    - [x] Login flow detects if user has MFA enabled
+    - [x] Returns `mfa_required: true` with temporary token
+    - [x] MFA verification endpoint `/api/auth/login/mfa-verify`
+    - [x] Supports TOTP codes from authenticator apps
+    - [x] Supports backup codes as fallback
+    - [x] 5-minute expiry on MFA verification session
+    - [x] Frontend MFA verification UI with OTP input
+    - [x] Toggle between authenticator and backup code modes
 - [x] **Session Management**:
   - [x] Active session tracking
   - [x] Revoke single session or all sessions
