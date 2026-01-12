@@ -35,6 +35,7 @@ api.interceptors.response.use(
 // Auth APIs
 export const authAPI = {
   login: (data) => api.post('/auth/login', data),
+  verifyMfaLogin: (data) => api.post('/auth/login/mfa-verify', data),
   register: (data) => api.post('/auth/register', data),
   me: () => api.get('/auth/me'),
 };
