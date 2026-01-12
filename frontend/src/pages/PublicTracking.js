@@ -90,7 +90,7 @@ export default function PublicTracking() {
             </div>
             <div>
               <h1 className="text-xl font-bold text-slate-900">BloodLink</h1>
-              <p className="text-xs text-slate-500">Blood Bank Management System</p>
+              <p className="text-xs text-slate-500">BBMS - Blood Bank Management System</p>
             </div>
           </div>
         </div>
@@ -359,7 +359,7 @@ export default function PublicTracking() {
       <footer className="border-t border-slate-200 bg-white mt-12">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <p className="text-center text-sm text-slate-500">
-            © {new Date().getFullYear()} BloodLink Blood Bank Management System. All rights reserved.
+            © {new Date().getFullYear()} BBMS - Blood Bank Management System. All rights reserved.
           </p>
         </div>
       </footer>

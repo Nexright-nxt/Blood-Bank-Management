@@ -243,7 +243,7 @@ export default function DonorLanding() {
             <Droplet className="w-6 h-6 text-teal-500" />
             <span className="text-white font-bold">BloodLink</span>
           </div>
-          <p className="text-sm">Blood Bank Management System</p>
+          <p className="text-sm">BBMS - Blood Bank Management System</p>
           <p className="text-xs mt-2">© 2024 BloodLink. All rights reserved.</p>
         </div>
       </footer>

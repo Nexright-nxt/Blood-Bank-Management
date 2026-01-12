@@ -224,7 +224,7 @@ export default function Login() {
             <span className="text-3xl font-bold">BloodLink</span>
           </div>
           <h1 className="text-4xl font-bold mb-4">
-            Blood Bank Management System
+            BBMS
           </h1>
           <p className="text-lg text-slate-300 max-w-md">
             Comprehensive solution for managing blood bank operations from donor registration to blood unit distribution.
@@ -354,7 +354,7 @@ export default function Login() {
               </div>
               <CardTitle className="text-2xl">Staff Portal</CardTitle>
               <CardDescription>
-                Sign in to access the Blood Bank Management System
+                Sign in to access the BBMS portal
               </CardDescription>
             </CardHeader>
             <CardContent>

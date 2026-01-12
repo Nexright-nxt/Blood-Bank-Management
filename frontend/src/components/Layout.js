@@ -405,7 +405,7 @@ export default function Layout() {
               </button>
               <div className="hidden sm:flex items-center gap-3">
                 <span className="text-[11px] uppercase tracking-wider font-bold text-slate-400">
-                  Blood Bank Management System
+                  BBMS
                 </span>
                 {user?.org_name && (
                   <Badge variant="outline" className="text-xs bg-slate-100 text-slate-600">
