@@ -221,7 +221,7 @@ export default function Login() {
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
               <Droplet className="w-7 h-7 text-white" />
             </div>
-            <span className="text-3xl font-bold">BloodLink</span>
+            <span className="text-3xl font-bold">BBMS</span>
           </div>
           <h1 className="text-4xl font-bold mb-4">
             BBMS
