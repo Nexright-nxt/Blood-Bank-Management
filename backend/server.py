@@ -58,6 +58,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Health check endpoint
+@app.get("/api/health")
+async def health_check():
+    """Health check endpoint for monitoring and load balancers."""
+    return {
+        "status": "healthy",
+        "service": "BBMS API",
+        "version": "1.0.0",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    }
+
 # Include all routers with /api prefix
 app.include_router(auth_router, prefix="/api")
 app.include_router(users_router, prefix="/api")
