@@ -1,0 +1,79 @@
+# BBMS Docker Deployment
+# docker-compose.yml
+
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:6.0
+    container_name: bbms-mongodb
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASS:-changeme}
+      MONGO_INITDB_DATABASE: bbms_production
+    volumes:
+      - mongodb_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
+    networks:
+      - bbms-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: bbms-backend
+    restart: unless-stopped
+    environment:
+      MONGO_URL: mongodb://${MONGO_USER:-bbms_user}:${MONGO_PASS:-bbms_password}@mongodb:27017/bbms_production?authSource=bbms_production
+      DB_NAME: bbms_production
+      JWT_SECRET: ${JWT_SECRET:-change-this-to-a-secure-secret}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - bbms-network
+    healthcheck:
+      test: curl -f http://localhost:8001/api/health || exit 1
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        REACT_APP_BACKEND_URL: ${BACKEND_URL:-http://localhost/api}
+    container_name: bbms-frontend
+    restart: unless-stopped
+    networks:
+      - bbms-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: bbms-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - bbms-network
+
+networks:
+  bbms-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
