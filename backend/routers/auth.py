@@ -158,8 +158,8 @@ async def register(user_data: UserCreate, request: Request, current_user: dict =
 async def login(credentials: UserLogin, request: Request):
     """
     Login with email, password, and optionally org_id.
-    System admins don't need org_id.
-    Other users must select an org they belong to.
+    If MFA is enabled, returns mfa_required=True with a temporary token.
+    User must then call /auth/login/mfa-verify to complete login.
     """
     user = await db.users.find_one({"email": credentials.email}, {"_id": 0})
     if not user:
@@ -222,6 +222,57 @@ async def login(credentials: UserLogin, request: Request):
             if not org.get("is_active", True):
                 raise HTTPException(status_code=403, detail="Organization is deactivated")
     
+    # Check if user has MFA enabled
+    mfa_record = await db.user_mfa.find_one({"user_id": user["id"]}, {"_id": 0})
+    mfa_enabled = mfa_record and mfa_record.get("status") == "enabled" and mfa_record.get("totp_verified", False)
+    
+    if mfa_enabled:
+        # MFA is enabled - create a temporary MFA token and require verification
+        mfa_token = str(uuid.uuid4())
+        
+        # Store the pending MFA verification with all login context
+        await db.mfa_pending_logins.delete_many({"user_id": user["id"]})  # Clean old pending
+        await db.mfa_pending_logins.insert_one({
+            "mfa_token": mfa_token,
+            "user_id": user["id"],
+            "user_email": user["email"],
+            "user_full_name": user.get("full_name"),
+            "user_role": user["role"],
+            "user_type": user_type,
+            "selected_org_id": selected_org_id,
+            "org_name": org_name,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "expires_at": (datetime.now(timezone.utc) + timedelta(minutes=5)).isoformat(),
+            "ip_address": request.client.host if request.client else None,
+            "user_agent": request.headers.get("user-agent", "")
+        })
+        
+        # Log MFA challenge
+        await AuditService.log_auth(
+            AuditAction.LOGIN,
+            credentials.email,
+            success=True,
+            request=request,
+            user=user,
+            details="MFA challenge issued - awaiting verification"
+        )
+        
+        return {
+            "mfa_required": True,
+            "mfa_token": mfa_token,
+            "message": "MFA verification required",
+            "user": {
+                "email": user["email"],
+                "full_name": user.get("full_name")
+            }
+        }
+    
+    # No MFA - complete login directly
+    return await complete_login(user, user_type, selected_org_id, org_name, request)
+
+
+async def complete_login(user: dict, user_type: str, selected_org_id: str, org_name: str, request: Request):
+    """Complete the login process and return token"""
     # Create token with org info
     token = create_token(
         user["id"], 
@@ -249,7 +300,7 @@ async def login(credentials: UserLogin, request: Request):
         "last_activity": datetime.now(timezone.utc).isoformat(),
         "expires_at": (datetime.now(timezone.utc) + timedelta(hours=24)).isoformat(),
         "is_active": True,
-        "is_current": True  # Will be used to mark the current session
+        "is_current": True
     }
     
     await db.user_sessions.insert_one(session_data)
@@ -257,7 +308,7 @@ async def login(credentials: UserLogin, request: Request):
     # Log successful login
     await AuditService.log_auth(
         AuditAction.LOGIN,
-        credentials.email,
+        user["email"],
         success=True,
         request=request,
         user=user,
@@ -277,6 +328,94 @@ async def login(credentials: UserLogin, request: Request):
             org_name=org_name
         )
     }
+
+
+@router.post("/login/mfa-verify")
+async def verify_mfa_login(mfa_data: MFAVerifyLogin, request: Request):
+    """
+    Verify MFA code and complete the login process.
+    Called after initial login returns mfa_required=True.
+    """
+    # Find the pending MFA login
+    pending = await db.mfa_pending_logins.find_one({"mfa_token": mfa_data.mfa_token}, {"_id": 0})
+    
+    if not pending:
+        raise HTTPException(status_code=401, detail="Invalid or expired MFA session")
+    
+    # Check if token expired
+    expires_at = datetime.fromisoformat(pending["expires_at"].replace("Z", "+00:00"))
+    if datetime.now(timezone.utc) > expires_at:
+        await db.mfa_pending_logins.delete_one({"mfa_token": mfa_data.mfa_token})
+        raise HTTPException(status_code=401, detail="MFA session expired. Please login again.")
+    
+    user_id = pending["user_id"]
+    
+    # Get user's MFA settings
+    mfa_record = await db.user_mfa.find_one({"user_id": user_id}, {"_id": 0})
+    if not mfa_record:
+        raise HTTPException(status_code=400, detail="MFA not configured for this user")
+    
+    # Verify the code based on method
+    verified = False
+    
+    if mfa_data.mfa_method == "totp":
+        # Verify TOTP code
+        if not mfa_record.get("totp_secret"):
+            raise HTTPException(status_code=400, detail="TOTP not configured")
+        
+        totp = pyotp.TOTP(mfa_record["totp_secret"])
+        verified = totp.verify(mfa_data.mfa_code, valid_window=1)
+        
+    elif mfa_data.mfa_method == "backup_code":
+        # Verify backup code
+        backup_codes = mfa_record.get("backup_codes", [])
+        backup_codes_used = mfa_record.get("backup_codes_used", [])
+        
+        if mfa_data.mfa_code in backup_codes and mfa_data.mfa_code not in backup_codes_used:
+            verified = True
+            # Mark backup code as used
+            await db.user_mfa.update_one(
+                {"user_id": user_id},
+                {"$push": {"backup_codes_used": mfa_data.mfa_code}}
+            )
+    
+    if not verified:
+        # Log failed MFA attempt
+        await AuditService.log_auth(
+            AuditAction.LOGIN_FAILED,
+            pending["user_email"],
+            success=False,
+            request=request,
+            details="Invalid MFA code"
+        )
+        raise HTTPException(status_code=401, detail="Invalid MFA code")
+    
+    # MFA verified - complete login
+    # Clean up pending login
+    await db.mfa_pending_logins.delete_one({"mfa_token": mfa_data.mfa_token})
+    
+    # Get full user data
+    user = await db.users.find_one({"id": user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Log successful MFA verification
+    await AuditService.log_auth(
+        AuditAction.LOGIN,
+        pending["user_email"],
+        success=True,
+        request=request,
+        user=user,
+        details="MFA verification successful"
+    )
+    
+    return await complete_login(
+        user,
+        pending["user_type"],
+        pending["selected_org_id"],
+        pending["org_name"],
+        request
+    )
 
 @router.get("/me", response_model=UserResponse)
 async def get_me(current_user: dict = Depends(get_current_user)):
