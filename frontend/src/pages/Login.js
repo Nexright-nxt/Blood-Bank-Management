@@ -1,25 +1,33 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { organizationAPI } from '../lib/api';
+import { organizationAPI, authAPI } from '../lib/api';
 import { toast } from 'sonner';
 import { 
   Droplet, Eye, EyeOff, LogIn, Shield, Building2, 
-  ChevronRight, ChevronDown, Search, MapPin, Check, X
+  ChevronRight, ChevronDown, Search, MapPin, Check, X, KeyRound
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '../components/ui/input-otp';
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, setAuthData } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [organizations, setOrganizations] = useState([]);
   const [loadingOrgs, setLoadingOrgs] = useState(true);
+  
+  // MFA state
+  const [mfaRequired, setMfaRequired] = useState(false);
+  const [mfaToken, setMfaToken] = useState('');
+  const [mfaCode, setMfaCode] = useState('');
+  const [mfaUser, setMfaUser] = useState(null);
+  const [useBackupCode, setUseBackupCode] = useState(false);
   
   // Organization selector state
   const [showOrgSelector, setShowOrgSelector] = useState(false);
