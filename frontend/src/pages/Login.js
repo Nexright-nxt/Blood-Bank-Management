@@ -242,22 +242,123 @@ export default function Login() {
         </div>
       </div>
 
-      {/* Right Panel - Login Form Only */}
+      {/* Right Panel - Login Form or MFA Verification */}
       <div className="flex-1 flex items-center justify-center p-8 bg-slate-50 dark:bg-slate-900">
-        <Card className="w-full max-w-md shadow-lg">
-          <CardHeader className="text-center">
-            <div className="flex justify-center mb-4 lg:hidden">
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
-                <Droplet className="w-7 h-7 text-white" />
+        {mfaRequired ? (
+          /* MFA Verification Card */
+          <Card className="w-full max-w-md shadow-lg" data-testid="mfa-verification-card">
+            <CardHeader className="text-center">
+              <div className="flex justify-center mb-4">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
+                  <Shield className="w-8 h-8 text-white" />
+                </div>
               </div>
-            </div>
-            <CardTitle className="text-2xl">Staff Portal</CardTitle>
-            <CardDescription>
-              Sign in to access the Blood Bank Management System
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleLogin} className="space-y-4">
+              <CardTitle className="text-2xl">Two-Factor Authentication</CardTitle>
+              <CardDescription>
+                {mfaUser?.full_name ? `Welcome back, ${mfaUser.full_name}` : 'Enter your authentication code'}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleMfaVerify} className="space-y-6">
+                <div className="text-center space-y-4">
+                  {!useBackupCode ? (
+                    <>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        Enter the 6-digit code from your authenticator app
+                      </p>
+                      <div className="flex justify-center">
+                        <InputOTP 
+                          maxLength={6} 
+                          value={mfaCode} 
+                          onChange={setMfaCode}
+                          data-testid="mfa-code-input"
+                        >
+                          <InputOTPGroup>
+                            <InputOTPSlot index={0} />
+                            <InputOTPSlot index={1} />
+                            <InputOTPSlot index={2} />
+                            <InputOTPSlot index={3} />
+                            <InputOTPSlot index={4} />
+                            <InputOTPSlot index={5} />
+                          </InputOTPGroup>
+                        </InputOTP>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">
+                        Enter one of your backup codes
+                      </p>
+                      <Input
+                        type="text"
+                        placeholder="Enter backup code"
+                        value={mfaCode}
+                        onChange={(e) => setMfaCode(e.target.value.toUpperCase())}
+                        className="text-center font-mono tracking-wider"
+                        data-testid="backup-code-input"
+                      />
+                    </>
+                  )}
+                </div>
+
+                <Button 
+                  type="submit" 
+                  className="w-full bg-teal-600 hover:bg-teal-700"
+                  disabled={isLoading || mfaCode.length < 6}
+                  data-testid="mfa-verify-button"
+                >
+                  {isLoading ? (
+                    <span className="flex items-center gap-2">
+                      <span className="animate-spin">⏳</span> Verifying...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <KeyRound className="w-4 h-4" />
+                      Verify & Sign In
+                    </span>
+                  )}
+                </Button>
+
+                <div className="text-center space-y-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUseBackupCode(!useBackupCode);
+                      setMfaCode('');
+                    }}
+                    className="text-sm text-teal-600 hover:text-teal-700 hover:underline"
+                  >
+                    {useBackupCode ? 'Use authenticator app instead' : 'Use a backup code instead'}
+                  </button>
+                  <div>
+                    <button
+                      type="button"
+                      onClick={resetMfaFlow}
+                      className="text-sm text-slate-500 hover:text-slate-700 hover:underline"
+                    >
+                      ← Back to login
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        ) : (
+          /* Regular Login Card */
+          <Card className="w-full max-w-md shadow-lg">
+            <CardHeader className="text-center">
+              <div className="flex justify-center mb-4 lg:hidden">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
+                  <Droplet className="w-7 h-7 text-white" />
+                </div>
+              </div>
+              <CardTitle className="text-2xl">Staff Portal</CardTitle>
+              <CardDescription>
+                Sign in to access the Blood Bank Management System
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleLogin} className="space-y-4">
               {/* Organization Selection - Hierarchical Dropdown */}
               <div className="space-y-2">
                 <Label>
