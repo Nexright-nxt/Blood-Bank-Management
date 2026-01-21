@@ -1022,7 +1022,8 @@ export default function Organizations() {
                   <Input
                     value={orgWithAdminData.admin_full_name}
                     onChange={(e) => setOrgWithAdminData({ ...orgWithAdminData, admin_full_name: e.target.value })}
-                    placeholder="John Smith"
+                    placeholder="Enter full name"
+                    autoComplete="off"
                     data-testid="admin-name-input"
                   />
                 </div>
