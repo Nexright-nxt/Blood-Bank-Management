@@ -135,7 +135,7 @@ async def request_email_otp(
         raise HTTPException(status_code=403, detail="Only administrators can perform sensitive actions")
     
     # Get user email
-    user = await db.users.find_one({"id": current_user["user_id"]}, {"_id": 0})
+    user = await db.users.find_one({"id": current_user.get("id")}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
@@ -149,7 +149,7 @@ async def request_email_otp(
     # Store OTP (hashed)
     await db.email_otps.insert_one({
         "id": verification_id,
-        "user_id": current_user["user_id"],
+        "user_id": current_user.get("id"),
         "otp_hash": hash_otp(otp),
         "action_type": request.action_type,
         "target_id": request.target_id,
@@ -166,7 +166,7 @@ async def request_email_otp(
     # Store in notifications for demo purposes
     await db.notifications.insert_one({
         "id": str(uuid4()),
-        "user_id": current_user["user_id"],
+        "user_id": current_user.get("id"),
         "type": "security_otp",
         "title": "Security Verification Code",
         "message": f"Your verification code is: {otp}. Valid for {OTP_EXPIRY_MINUTES} minutes.",
@@ -204,7 +204,7 @@ async def verify_email_otp(
     # Get OTP record
     otp_record = await db.email_otps.find_one({
         "id": request.verification_id,
-        "user_id": current_user["user_id"]
+        "user_id": current_user.get("id")
     }, {"_id": 0})
     
     if not otp_record:
@@ -234,7 +234,7 @@ async def verify_email_otp(
         # Log failed attempt
         await db.sensitive_action_logs.insert_one({
             "id": str(uuid4()),
-            "user_id": current_user["user_id"],
+            "user_id": current_user.get("id"),
             "action_type": request.action_type,
             "target_id": request.target_id,
             "verification_method": "email_otp",
@@ -257,7 +257,7 @@ async def verify_email_otp(
     # Store verification
     await db.action_verifications.insert_one({
         "id": str(uuid4()),
-        "user_id": current_user["user_id"],
+        "user_id": current_user.get("id"),
         "verification_token": hash_otp(verification_token),
         "action_type": request.action_type,
         "target_id": request.target_id,
@@ -270,7 +270,7 @@ async def verify_email_otp(
     # Log successful verification
     await db.sensitive_action_logs.insert_one({
         "id": str(uuid4()),
-        "user_id": current_user["user_id"],
+        "user_id": current_user.get("id"),
         "action_type": request.action_type,
         "target_id": request.target_id,
         "verification_method": "email_otp",
@@ -299,7 +299,7 @@ async def validate_verification_token(
     """
     # Find the verification record
     verification = await db.action_verifications.find_one({
-        "user_id": current_user["user_id"],
+        "user_id": current_user.get("id"),
         "verification_token": hash_otp(verification_token),
         "action_type": action_type,
         "used": False
@@ -337,7 +337,7 @@ async def get_sensitive_action_logs(
     if user_type != "system_admin":
         # Non-system admins can only see their own logs
         logs = await db.sensitive_action_logs.find(
-            {"user_id": current_user["user_id"]},
+            {"user_id": current_user.get("id")},
             {"_id": 0}
         ).sort("timestamp", -1).limit(limit).to_list(limit)
     else:
