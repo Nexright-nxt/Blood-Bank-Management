@@ -73,7 +73,7 @@ async def verify_password_for_action(
         raise HTTPException(status_code=404, detail="User not found")
     
     # Verify password
-    if not verify_password(request.password, user.get("password", "")):
+    if not verify_password(request.password, user.get("password_hash", "")):
         # Log failed attempt
         await db.sensitive_action_logs.insert_one({
             "id": str(uuid4()),
