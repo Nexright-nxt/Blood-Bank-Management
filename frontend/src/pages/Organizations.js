@@ -1034,6 +1034,7 @@ export default function Organizations() {
                     value={orgWithAdminData.admin_email}
                     onChange={(e) => setOrgWithAdminData({ ...orgWithAdminData, admin_email: e.target.value })}
                     placeholder="admin@example.com"
+                    autoComplete="new-email"
                     data-testid="admin-email-input"
                   />
                 </div>
@@ -1045,6 +1046,7 @@ export default function Organizations() {
                     value={orgWithAdminData.admin_password}
                     onChange={(e) => setOrgWithAdminData({ ...orgWithAdminData, admin_password: e.target.value })}
                     placeholder="••••••••"
+                    autoComplete="new-password"
                     data-testid="admin-password-input"
                   />
                 </div>
