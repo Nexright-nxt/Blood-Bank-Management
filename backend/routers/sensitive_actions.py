@@ -104,7 +104,7 @@ async def verify_password_for_action(
     # Log successful verification
     await db.sensitive_action_logs.insert_one({
         "id": str(uuid4()),
-        "user_id": current_user["user_id"],
+        "user_id": user_id,
         "action_type": request.action_type,
         "target_id": request.target_id,
         "verification_method": "password",
