@@ -62,22 +62,19 @@ async def verify_password_for_action(
     Returns a short-lived verification token if successful.
     """
     user_type = current_user.get("user_type")
+    user_id = current_user.get("id")
     
     # Only admins need re-authentication
     if user_type not in ["system_admin", "super_admin", "tenant_admin"]:
         raise HTTPException(status_code=403, detail="Only administrators can perform sensitive actions")
     
-    # Get user from database to verify password
-    user = await db.users.find_one({"id": current_user["user_id"]}, {"_id": 0})
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-    
-    # Verify password
-    if not verify_password(request.password, user.get("password_hash", "")):
+    # current_user already has the user data including password_hash
+    # Verify password directly
+    if not verify_password(request.password, current_user.get("password_hash", "")):
         # Log failed attempt
         await db.sensitive_action_logs.insert_one({
             "id": str(uuid4()),
-            "user_id": current_user["user_id"],
+            "user_id": user_id,
             "action_type": request.action_type,
             "target_id": request.target_id,
             "verification_method": "password",
@@ -94,7 +91,7 @@ async def verify_password_for_action(
     # Store verification
     await db.action_verifications.insert_one({
         "id": str(uuid4()),
-        "user_id": current_user["user_id"],
+        "user_id": user_id,
         "verification_token": hash_otp(verification_token),
         "action_type": request.action_type,
         "target_id": request.target_id,
