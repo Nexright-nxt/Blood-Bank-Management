@@ -51,7 +51,7 @@ Blood Link is a comprehensive multi-tenant blood bank management system designed
 ```bash
 # 1. Clone repository
 git clone <repository-url>
-cd bbms
+cd bloodlink
 
 # 2. Setup Backend
 cd backend
@@ -62,7 +62,7 @@ pip install -r requirements.txt
 # Create .env file
 cat > .env << EOF
 MONGO_URL=mongodb://localhost:27017
-DB_NAME=bbms_production
+DB_NAME=bloodlink_production
 JWT_SECRET=your-secure-jwt-secret-change-this
 EOF
 

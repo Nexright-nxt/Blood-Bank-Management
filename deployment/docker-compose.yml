@@ -16,7 +16,7 @@ services:
       - mongodb_data:/data/db
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
     networks:
-      - bbms-network
+      - bloodlink-network
     healthcheck:
       test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
       interval: 10s
@@ -27,17 +27,17 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: bbms-backend
+    container_name: bloodlink-backend
     restart: unless-stopped
     environment:
-      MONGO_URL: mongodb://${MONGO_USER:-bbms_user}:${MONGO_PASS:-bbms_password}@mongodb:27017/bbms_production?authSource=bbms_production
-      DB_NAME: bbms_production
+      MONGO_URL: mongodb://${MONGO_USER:-bloodlink_user}:${MONGO_PASS:-bloodlink_password}@mongodb:27017/bloodlink_production?authSource=bloodlink_production
+      DB_NAME: bloodlink_production
       JWT_SECRET: ${JWT_SECRET:-change-this-to-a-secure-secret}
     depends_on:
       mongodb:
         condition: service_healthy
     networks:
-      - bbms-network
+      - bloodlink-network
     healthcheck:
       test: curl -f http://localhost:8001/api/health || exit 1
       interval: 30s
@@ -50,14 +50,14 @@ services:
       dockerfile: Dockerfile
       args:
         REACT_APP_BACKEND_URL: ${BACKEND_URL:-http://localhost/api}
-    container_name: bbms-frontend
+    container_name: bloodlink-frontend
     restart: unless-stopped
     networks:
-      - bbms-network
+      - bloodlink-network
 
   nginx:
     image: nginx:alpine
-    container_name: bbms-nginx
+    container_name: bloodlink-nginx
     restart: unless-stopped
     ports:
       - "80:80"
@@ -69,10 +69,10 @@ services:
       - backend
       - frontend
     networks:
-      - bbms-network
+      - bloodlink-network
 
 networks:
-  bbms-network:
+  bloodlink-network:
     driver: bridge
 
 volumes:
