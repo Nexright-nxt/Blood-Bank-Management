@@ -221,7 +221,7 @@ export default function Login() {
             <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-teal-600 flex items-center justify-center">
               <Droplet className="w-7 h-7 text-white" />
             </div>
-            <span className="text-3xl font-bold">BBMS</span>
+            <span className="text-3xl font-bold">Blood Link</span>
           </div>
           <h1 className="text-4xl font-bold mb-4">
             BBMS
@@ -354,7 +354,7 @@ export default function Login() {
               </div>
               <CardTitle className="text-2xl">Staff Portal</CardTitle>
               <CardDescription>
-                Sign in to access the BBMS portal
+                Sign in to access the Blood Link portal
               </CardDescription>
             </CardHeader>
             <CardContent>

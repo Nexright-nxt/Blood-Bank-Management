@@ -1,5 +1,5 @@
 """
-BBMS - Blood Bank Management System API
+Blood Link - Blood Bank Management System API
 Modular FastAPI application with separate routers for each module.
 """
 import logging
@@ -43,7 +43,7 @@ async def lifespan(app: FastAPI):
 
 # Create FastAPI app
 app = FastAPI(
-    title="BBMS - Blood Bank Management System",
+    title="Blood Link - Blood Bank Management System",
     description="Comprehensive API for blood bank operations management",
     version="1.0.0",
     lifespan=lifespan
@@ -64,7 +64,7 @@ async def health_check():
     """Health check endpoint for monitoring and load balancers."""
     return {
         "status": "healthy",
-        "service": "BBMS API",
+        "service": "Blood Link API",
         "version": "1.0.0",
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
