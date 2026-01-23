@@ -1,13 +1,13 @@
 // MongoDB Initialization Script
-// Creates database user for BBMS
+// Creates database user for Blood Link
 
-db = db.getSiblingDB('bbms_production');
+db = db.getSiblingDB('bloodlink_production');
 
 db.createUser({
-  user: 'bbms_user',
-  pwd: 'bbms_password',  // Change this in production!
+  user: 'bloodlink_user',
+  pwd: 'bloodlink_password',  // Change this in production!
   roles: [
-    { role: 'readWrite', db: 'bbms_production' }
+    { role: 'readWrite', db: 'bloodlink_production' }
   ]
 });
 
@@ -19,4 +19,4 @@ db.blood_units.createIndex({ "unit_id": 1 }, { unique: true, sparse: true });
 db.components.createIndex({ "component_id": 1 }, { unique: true, sparse: true });
 db.audit_logs.createIndex({ "timestamp": -1 });
 
-print('BBMS database initialized successfully');
+print('Blood Link database initialized successfully');

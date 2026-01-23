@@ -1,5 +1,5 @@
 """
-BBMS Database Initialization Script
+Blood Link Database Initialization Script
 Creates the initial system admin and default configurations.
 Run this script after fresh deployment.
 
@@ -34,7 +34,7 @@ async def init_database():
     
     # Connect to MongoDB
     mongo_url = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
-    db_name = os.environ.get("DB_NAME", "bbms_production")
+    db_name = os.environ.get("DB_NAME", "bloodlink_production")
     
     print(f"Connecting to MongoDB: {mongo_url}")
     print(f"Database: {db_name}")
@@ -59,7 +59,7 @@ async def init_database():
     # 1. Create System Admin
     print("\n1. Creating System Admin...")
     admin_id = str(uuid.uuid4())
-    admin_email = "admin@bbms.local"
+    admin_email = "admin@bloodlink.local"
     admin_password = "Admin@123456"  # Change immediately after first login
     
     admin_user = {
@@ -173,7 +173,7 @@ async def clear_sample_data():
     """Remove all sample/seed data from the database."""
     
     mongo_url = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
-    db_name = os.environ.get("DB_NAME", "bbms_production")
+    db_name = os.environ.get("DB_NAME", "bloodlink_production")
     
     client = AsyncIOMotorClient(mongo_url)
     db = client[db_name]
@@ -210,7 +210,7 @@ async def clear_sample_data():
 if __name__ == "__main__":
     import argparse
     
-    parser = argparse.ArgumentParser(description="BBMS Database Initialization")
+    parser = argparse.ArgumentParser(description="Blood Link Database Initialization")
     parser.add_argument("--clear", action="store_true", help="Clear all sample data")
     parser.add_argument("--init", action="store_true", help="Initialize database")
     

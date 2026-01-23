@@ -1,17 +1,17 @@
 """
-BBMS Database Connection
+Blood Link Database Connection
 MongoDB connection using Motor (async driver)
 
 Usage:
     from database import db
     
     # Then use db to access collections:
-    await db.users.find_one({"email": "admin@bbms.local"})
+    await db.users.find_one({"email": "admin@bloodlink.local"})
     await db.organizations.insert_one({...})
 
 Environment Variables Required:
     MONGO_URL - MongoDB connection string (e.g., mongodb://localhost:27017)
-    DB_NAME   - Database name (e.g., bbms_production)
+    DB_NAME   - Database name (e.g., bloodlink_production)
 """
 
 from motor.motor_asyncio import AsyncIOMotorClient
