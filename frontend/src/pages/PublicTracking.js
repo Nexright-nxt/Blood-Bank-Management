@@ -89,8 +89,8 @@ export default function PublicTracking() {
               <Droplet className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-slate-900">BBMS</h1>
-              <p className="text-xs text-slate-500">BBMS - Blood Bank Management System</p>
+              <h1 className="text-xl font-bold text-slate-900">Blood Link</h1>
+              <p className="text-xs text-slate-500">Blood Link - Blood Bank Management System</p>
             </div>
           </div>
         </div>
@@ -359,7 +359,7 @@ export default function PublicTracking() {
       <footer className="border-t border-slate-200 bg-white mt-12">
         <div className="max-w-4xl mx-auto px-4 py-6">
           <p className="text-center text-sm text-slate-500">
-            © {new Date().getFullYear()} BBMS - Blood Bank Management System. All rights reserved.
+            © {new Date().getFullYear()} Blood Link - Blood Bank Management System. All rights reserved.
           </p>
         </div>
       </footer>
