@@ -102,11 +102,11 @@ sudo systemctl enable mongod
 
 # Create database and user
 mongosh << EOF
-use bbms_production
+use bloodlink_production
 db.createUser({
-  user: "bbms_user",
+  user: "bloodlink_user",
   pwd: "your-secure-password",
-  roles: [{ role: "readWrite", db: "bbms_production" }]
+  roles: [{ role: "readWrite", db: "bloodlink_production" }]
 })
 EOF
 ```
@@ -123,8 +123,8 @@ pip install -r requirements.txt
 
 # Configure environment
 cat > .env << EOF
-MONGO_URL=mongodb://bbms_user:your-secure-password@localhost:27017/bbms_production
-DB_NAME=bbms_production
+MONGO_URL=mongodb://bloodlink_user:your-secure-password@localhost:27017/bloodlink_production
+DB_NAME=bloodlink_production
 JWT_SECRET=$(openssl rand -hex 32)
 EOF
 
@@ -155,7 +155,7 @@ yarn build
 #### 4. Nginx Configuration
 
 ```nginx
-# /etc/nginx/sites-available/bbms
+# /etc/nginx/sites-available/bloodlink
 server {
     listen 80;
     server_name your-domain.com;
@@ -173,7 +173,7 @@ server {
     
     # Frontend (React)
     location / {
-        root /var/www/bbms/frontend/build;
+        root /var/www/bloodlink/frontend/build;
         try_files $uri $uri/ /index.html;
     }
     
@@ -194,7 +194,7 @@ server {
 
 #### 5. Systemd Services
 
-**Backend Service** (`/etc/systemd/system/bbms-backend.service`):
+**Backend Service** (`/etc/systemd/system/bloodlink-backend.service`):
 ```ini
 [Unit]
 Description=Blood Link Backend API
@@ -203,10 +203,10 @@ After=network.target mongod.service
 [Service]
 User=www-data
 Group=www-data
-WorkingDirectory=/var/www/bbms/backend
-Environment="PATH=/var/www/bbms/backend/venv/bin"
-EnvironmentFile=/var/www/bbms/backend/.env
-ExecStart=/var/www/bbms/backend/venv/bin/gunicorn server:app -w 4 -k uvicorn.workers.UvicornWorker -b 127.0.0.1:8001
+WorkingDirectory=/var/www/bloodlink/backend
+Environment="PATH=/var/www/bloodlink/backend/venv/bin"
+EnvironmentFile=/var/www/bloodlink/backend/.env
+ExecStart=/var/www/bloodlink/backend/venv/bin/gunicorn server:app -w 4 -k uvicorn.workers.UvicornWorker -b 127.0.0.1:8001
 Restart=always
 
 [Install]
@@ -215,8 +215,8 @@ WantedBy=multi-user.target
 
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable bbms-backend
-sudo systemctl start bbms-backend
+sudo systemctl enable bloodlink-backend
+sudo systemctl start bloodlink-backend
 ```
 
 ---
@@ -271,12 +271,12 @@ This creates:
 
 #### Manual Backup
 ```bash
-mongodump --uri="mongodb://localhost:27017/bbms_production" --out=/backup/$(date +%Y%m%d)
+mongodump --uri="mongodb://localhost:27017/bloodlink_production" --out=/backup/$(date +%Y%m%d)
 ```
 
 #### Restore
 ```bash
-mongorestore --uri="mongodb://localhost:27017/bbms_production" /backup/20260112
+mongorestore --uri="mongodb://localhost:27017/bloodlink_production" /backup/20260112
 ```
 
 ---
