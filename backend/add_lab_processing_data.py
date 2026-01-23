@@ -44,7 +44,7 @@ async def add_lab_processing_data():
     print("Fetching existing data...")
     
     # Get org_id from existing data
-    org = await db.organizations.find_one({"org_code": "TESTORG"}, {"_id": 0})
+    org = await db.organizations.find_one({"org_code": "TEST001"}, {"_id": 0})
     if not org:
         print("ERROR: Test organization not found!")
         return
