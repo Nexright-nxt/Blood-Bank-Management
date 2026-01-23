@@ -1,10 +1,14 @@
-# BBMS - Blood Bank Management System
+# Blood Link - Blood Bank Management System
 ## Product Requirements Document
 
 ## Original Problem Statement
 Build a comprehensive Blood Bank Management System with multi-tenancy support, featuring:
 1. Multi-Tenancy System (Blood Bank Network) - Organizations, branches, hierarchical roles
 2. Security, Audit, Compliance & Admin Enhancements - Audit logs, context switching, user management
+
+## Application Branding
+- **Name**: Blood Link (renamed from BBMS)
+- **Tagline**: Blood Bank Management System
 
 ## Core Architecture
 
