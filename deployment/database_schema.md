@@ -1,7 +1,7 @@
-# BBMS Database Schema
+# Blood Link Database Schema
 ## MongoDB Collections
 
-This document describes the MongoDB collections used by BBMS.
+This document describes the MongoDB collections used by Blood Link.
 
 ---
 

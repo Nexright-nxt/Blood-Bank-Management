@@ -1,8 +1,8 @@
-# BBMS - Blood Bank Management System
+# Blood Link - Blood Bank Management System
 ## Deployment Guide
 
 ### Overview
-BBMS is a comprehensive multi-tenant blood bank management system designed for hospital networks, blood banks, and healthcare organizations.
+Blood Link is a comprehensive multi-tenant blood bank management system designed for hospital networks, blood banks, and healthcare organizations.
 
 ### System Requirements
 
@@ -197,7 +197,7 @@ server {
 **Backend Service** (`/etc/systemd/system/bbms-backend.service`):
 ```ini
 [Unit]
-Description=BBMS Backend API
+Description=Blood Link Backend API
 After=network.target mongod.service
 
 [Service]

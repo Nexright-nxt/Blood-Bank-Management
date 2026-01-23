@@ -1,4 +1,4 @@
-# BBMS Docker Deployment
+# Blood Link Docker Deployment
 # docker-compose.yml
 
 version: '3.8'
@@ -6,12 +6,12 @@ version: '3.8'
 services:
   mongodb:
     image: mongo:6.0
-    container_name: bbms-mongodb
+    container_name: bloodlink-mongodb
     restart: unless-stopped
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:-admin}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASS:-changeme}
-      MONGO_INITDB_DATABASE: bbms_production
+      MONGO_INITDB_DATABASE: bloodlink_production
     volumes:
       - mongodb_data:/data/db
       - ./mongo-init.js:/docker-entrypoint-initdb.d/mongo-init.js:ro
