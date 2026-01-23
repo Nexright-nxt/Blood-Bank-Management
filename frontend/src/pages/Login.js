@@ -224,7 +224,7 @@ export default function Login() {
             <span className="text-3xl font-bold">Blood Link</span>
           </div>
           <h1 className="text-4xl font-bold mb-4">
-            BBMS
+            Blood Link
           </h1>
           <p className="text-lg text-slate-300 max-w-md">
             Comprehensive solution for managing blood bank operations from donor registration to blood unit distribution.
