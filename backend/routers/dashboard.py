@@ -157,12 +157,27 @@ async def get_network_dashboard(
         {"_id": 0}
     ).sort("created_at", -1).limit(10).to_list(10)
     
-    # Enrich recent transfers with org names
+    # Enrich recent transfers with org names (bulk fetch to avoid N+1 query)
+    org_ids = set()
     for transfer in recent_transfers:
-        req_org = await db.organizations.find_one({"id": transfer.get("requesting_org_id")}, {"org_name": 1})
-        ful_org = await db.organizations.find_one({"id": transfer.get("fulfilling_org_id")}, {"org_name": 1})
-        transfer["requesting_org_name"] = req_org.get("org_name") if req_org else "Unknown"
-        transfer["fulfilling_org_name"] = ful_org.get("org_name") if ful_org else transfer.get("external_org_name", "Unknown")
+        if transfer.get("requesting_org_id"):
+            org_ids.add(transfer["requesting_org_id"])
+        if transfer.get("fulfilling_org_id"):
+            org_ids.add(transfer["fulfilling_org_id"])
+    
+    # Bulk fetch all organizations in one query
+    org_map = {}
+    if org_ids:
+        orgs = await db.organizations.find(
+            {"id": {"$in": list(org_ids)}}, 
+            {"_id": 0, "id": 1, "org_name": 1}
+        ).to_list(len(org_ids))
+        org_map = {org["id"]: org.get("org_name", "Unknown") for org in orgs}
+    
+    # Enrich transfers with cached org names
+    for transfer in recent_transfers:
+        transfer["requesting_org_name"] = org_map.get(transfer.get("requesting_org_id"), "Unknown")
+        transfer["fulfilling_org_name"] = org_map.get(transfer.get("fulfilling_org_id"), transfer.get("external_org_name", "Unknown"))
     
     return {
         "organizations": org_stats,
