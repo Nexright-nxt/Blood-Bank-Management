@@ -208,7 +208,7 @@ class TestCollection:
             "screening_id": created_screening["id"],
             "donor_id": created_screening["donor_id"],
             "donation_type": "whole_blood",
-            "bag_type": "single"
+            "collection_start_time": datetime.now().isoformat()
         }
         response = requests.post(f"{BASE_URL}/api/donations",
             json=donation_data,
