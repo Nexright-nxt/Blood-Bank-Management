@@ -105,7 +105,6 @@ class TestDonorManagement:
         assert "donor_id" in data
         assert data["status"] == "success"
         print(f"✓ Donor Created: {data['donor_id']}")
-        return data
     
     def test_get_donors_list(self, org_admin_token):
         """Get list of donors"""
@@ -116,7 +115,6 @@ class TestDonorManagement:
         data = response.json()
         assert isinstance(data, list)
         print(f"✓ Donors List: {len(data)} donors found")
-        return data
     
     def test_get_donor_by_id(self, org_admin_token, created_donor):
         """Get donor by ID"""
@@ -128,7 +126,6 @@ class TestDonorManagement:
         data = response.json()
         assert data["donor_id"] == donor_id
         print(f"✓ Donor Retrieved: {data['full_name']}")
-        return data
     
     def test_check_donor_eligibility(self, org_admin_token, created_donor):
         """Check donor eligibility"""
@@ -140,36 +137,36 @@ class TestDonorManagement:
         data = response.json()
         assert "eligible" in data
         print(f"✓ Donor Eligibility: {data['eligible']}, Issues: {data.get('issues', [])}")
-        return data
 
 
 class TestScreening:
     """Screening module tests"""
     
     def test_create_screening(self, org_admin_token, created_donor):
-        """Create a screening for donor"""
+        """Create a screening for donor - with correct model fields"""
+        today = datetime.now().strftime("%Y-%m-%d")
         screening_data = {
             "donor_id": created_donor["id"],
+            "screening_date": today,
             "hemoglobin": 14.5,
             "blood_pressure_systolic": 120,
             "blood_pressure_diastolic": 80,
             "pulse": 72,
-            "temperature": 98.6,
+            "temperature": 37.0,
             "weight": 75,
+            "height": 175,
             "preliminary_blood_group": "O+",
-            "eligibility_status": "eligible",
-            "screened_by": "Test Screener"
+            "questionnaire_passed": True
         }
         response = requests.post(f"{BASE_URL}/api/screenings",
             json=screening_data,
             headers={"Authorization": f"Bearer {org_admin_token}"}
         )
-        assert response.status_code == 200
+        assert response.status_code == 200, f"Failed: {response.text}"
         data = response.json()
         assert data["status"] == "success"
         assert "screening_id" in data
-        print(f"✓ Screening Created: {data['screening_id']}")
-        return data
+        print(f"✓ Screening Created: {data['screening_id']}, Status: {data['eligibility_status']}")
     
     def test_get_screenings(self, org_admin_token):
         """Get list of screenings"""
@@ -180,7 +177,16 @@ class TestScreening:
         data = response.json()
         assert isinstance(data, list)
         print(f"✓ Screenings List: {len(data)} screenings found")
-        return data
+    
+    def test_get_pending_donors_for_screening(self, org_admin_token):
+        """Get donors pending screening"""
+        response = requests.get(f"{BASE_URL}/api/screenings/pending/donors",
+            headers={"Authorization": f"Bearer {org_admin_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        print(f"✓ Pending Donors for Screening: {len(data)}")
 
 
 class TestCollection:
@@ -195,7 +201,6 @@ class TestCollection:
         data = response.json()
         assert isinstance(data, list)
         print(f"✓ Eligible Donors for Collection: {len(data)}")
-        return data
     
     def test_create_donation(self, org_admin_token, created_screening):
         """Start a blood donation/collection"""
@@ -209,12 +214,11 @@ class TestCollection:
             json=donation_data,
             headers={"Authorization": f"Bearer {org_admin_token}"}
         )
-        assert response.status_code == 200
+        assert response.status_code == 200, f"Failed: {response.text}"
         data = response.json()
         assert data["status"] == "success"
         assert "donation_id" in data
         print(f"✓ Donation Started: {data['donation_id']}")
-        return data
     
     def test_complete_donation(self, org_admin_token, created_donation):
         """Complete a blood donation"""
@@ -224,28 +228,35 @@ class TestCollection:
             params={"volume": 450, "adverse_reaction": False},
             headers={"Authorization": f"Bearer {org_admin_token}"}
         )
-        assert response.status_code == 200
+        assert response.status_code == 200, f"Failed: {response.text}"
         data = response.json()
         assert data["status"] == "success"
         assert "unit_id" in data
         print(f"✓ Donation Completed: Unit {data['unit_id']}")
-        return data
-
-
-class TestLaboratory:
-    """Laboratory testing module"""
     
-    def test_get_blood_units_for_testing(self, org_admin_token):
-        """Get blood units pending lab testing"""
-        response = requests.get(f"{BASE_URL}/api/blood-units",
-            params={"status": "collected"},
+    def test_get_donations(self, org_admin_token):
+        """Get list of donations"""
+        response = requests.get(f"{BASE_URL}/api/donations",
             headers={"Authorization": f"Bearer {org_admin_token}"}
         )
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
-        print(f"✓ Blood Units for Testing: {len(data)}")
-        return data
+        print(f"✓ Donations List: {len(data)}")
+
+
+class TestLaboratory:
+    """Laboratory testing module"""
+    
+    def test_get_blood_units(self, org_admin_token):
+        """Get blood units"""
+        response = requests.get(f"{BASE_URL}/api/blood-units",
+            headers={"Authorization": f"Bearer {org_admin_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        print(f"✓ Blood Units: {len(data)}")
     
     def test_create_lab_test(self, org_admin_token, completed_donation):
         """Create lab test results for blood unit"""
@@ -264,12 +275,11 @@ class TestLaboratory:
             json=lab_test_data,
             headers={"Authorization": f"Bearer {org_admin_token}"}
         )
-        assert response.status_code == 200
+        assert response.status_code == 200, f"Failed: {response.text}"
         data = response.json()
         assert data["status"] == "success"
         assert data["overall_status"] == "non_reactive"
         print(f"✓ Lab Test Created: {data['test_id']}, Status: {data['overall_status']}")
-        return data
     
     def test_get_lab_tests(self, org_admin_token):
         """Get list of lab tests"""
@@ -280,7 +290,6 @@ class TestLaboratory:
         data = response.json()
         assert isinstance(data, list)
         print(f"✓ Lab Tests List: {len(data)}")
-        return data
 
 
 class TestProcessing:
@@ -312,12 +321,11 @@ class TestProcessing:
             json=components_data,
             headers={"Authorization": f"Bearer {org_admin_token}"}
         )
-        assert response.status_code == 200
+        assert response.status_code == 200, f"Failed: {response.text}"
         data = response.json()
         assert data["status"] == "success"
         assert data["components_created"] == 3
         print(f"✓ Components Created: {data['components_created']} components")
-        return data
     
     def test_get_components(self, org_admin_token):
         """Get list of components"""
@@ -328,87 +336,95 @@ class TestProcessing:
         data = response.json()
         assert isinstance(data, list)
         print(f"✓ Components List: {len(data)}")
-        return data
 
 
 class TestQCValidation:
     """QC Validation tests"""
     
     def test_get_qc_validations(self, org_admin_token):
-        """Get QC validations list"""
-        response = requests.get(f"{BASE_URL}/api/qc-validations",
+        """Get QC validations list - correct endpoint is /qc-validation"""
+        response = requests.get(f"{BASE_URL}/api/qc-validation",
             headers={"Authorization": f"Bearer {org_admin_token}"}
         )
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
         print(f"✓ QC Validations: {len(data)}")
-        return data
 
 
 class TestInventory:
     """Inventory management tests"""
     
-    def test_get_inventory(self, org_admin_token):
-        """Get inventory list"""
-        response = requests.get(f"{BASE_URL}/api/inventory",
-            headers={"Authorization": f"Bearer {org_admin_token}"}
-        )
-        assert response.status_code == 200
-        data = response.json()
-        assert isinstance(data, list)
-        print(f"✓ Inventory Items: {len(data)}")
-        return data
-    
     def test_get_inventory_summary(self, org_admin_token):
-        """Get inventory summary"""
-        response = requests.get(f"{BASE_URL}/api/inventory-enhanced/summary",
+        """Get inventory summary - correct endpoint is /inventory/summary"""
+        response = requests.get(f"{BASE_URL}/api/inventory/summary",
             headers={"Authorization": f"Bearer {org_admin_token}"}
         )
         assert response.status_code == 200
         data = response.json()
         print(f"✓ Inventory Summary Retrieved")
-        return data
-
-
-class TestBloodRequests:
-    """Blood request tests"""
     
-    def test_create_blood_request(self, org_admin_token):
-        """Create a blood request"""
-        request_data = {
-            "patient_name": "TEST_Patient",
-            "patient_id": f"PAT{datetime.now().strftime('%H%M%S')}",
-            "blood_group": "O+",
-            "component_type": "prc",
-            "units_required": 2,
-            "priority": "routine",
-            "hospital_name": "Test Hospital",
-            "requesting_doctor": "Dr. Test",
-            "diagnosis": "Anemia",
-            "required_date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
-        }
-        response = requests.post(f"{BASE_URL}/api/blood-requests",
-            json=request_data,
+    def test_get_inventory_by_blood_group(self, org_admin_token):
+        """Get inventory by blood group"""
+        response = requests.get(f"{BASE_URL}/api/inventory/by-blood-group",
             headers={"Authorization": f"Bearer {org_admin_token}"}
         )
         assert response.status_code == 200
         data = response.json()
+        print(f"✓ Inventory by Blood Group Retrieved")
+    
+    def test_get_expiring_inventory(self, org_admin_token):
+        """Get expiring inventory"""
+        response = requests.get(f"{BASE_URL}/api/inventory/expiring",
+            headers={"Authorization": f"Bearer {org_admin_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        print(f"✓ Expiring Inventory Retrieved")
+
+
+class TestBloodRequests:
+    """Blood request tests - correct endpoint is /requests"""
+    
+    def test_create_blood_request(self, org_admin_token):
+        """Create a blood request with correct model fields"""
+        today = datetime.now().strftime("%Y-%m-%d")
+        request_data = {
+            "request_type": "hospital",
+            "requester_name": "Dr. Test",
+            "requester_contact": "9876543210",
+            "hospital_name": "Test Hospital",
+            "hospital_address": "123 Hospital Street",
+            "hospital_contact": "1234567890",
+            "patient_name": "TEST_Patient",
+            "patient_id": f"PAT{datetime.now().strftime('%H%M%S')}",
+            "patient_diagnosis": "Anemia",
+            "blood_group": "O+",
+            "product_type": "prc",
+            "quantity": 2,
+            "urgency": "normal",
+            "requested_date": today,
+            "required_by_date": (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+        }
+        response = requests.post(f"{BASE_URL}/api/requests",
+            json=request_data,
+            headers={"Authorization": f"Bearer {org_admin_token}"}
+        )
+        assert response.status_code == 200, f"Failed: {response.text}"
+        data = response.json()
         assert data["status"] == "success"
         assert "request_id" in data
         print(f"✓ Blood Request Created: {data['request_id']}")
-        return data
     
     def test_get_blood_requests(self, org_admin_token):
         """Get list of blood requests"""
-        response = requests.get(f"{BASE_URL}/api/blood-requests",
+        response = requests.get(f"{BASE_URL}/api/requests",
             headers={"Authorization": f"Bearer {org_admin_token}"}
         )
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
         print(f"✓ Blood Requests: {len(data)}")
-        return data
 
 
 class TestIssuance:
@@ -423,22 +439,29 @@ class TestIssuance:
         data = response.json()
         assert isinstance(data, list)
         print(f"✓ Issuances: {len(data)}")
-        return data
 
 
 class TestLogistics:
-    """Logistics/shipment tests"""
+    """Logistics/shipment tests - correct endpoint is /logistics/shipments"""
     
-    def test_get_logistics(self, org_admin_token):
+    def test_get_shipments(self, org_admin_token):
         """Get logistics/shipments list"""
-        response = requests.get(f"{BASE_URL}/api/logistics",
+        response = requests.get(f"{BASE_URL}/api/logistics/shipments",
             headers={"Authorization": f"Bearer {org_admin_token}"}
         )
         assert response.status_code == 200
         data = response.json()
         assert isinstance(data, list)
         print(f"✓ Logistics/Shipments: {len(data)}")
-        return data
+    
+    def test_get_logistics_dashboard(self, org_admin_token):
+        """Get logistics dashboard"""
+        response = requests.get(f"{BASE_URL}/api/logistics/dashboard",
+            headers={"Authorization": f"Bearer {org_admin_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        print(f"✓ Logistics Dashboard Retrieved")
 
 
 class TestOrganizations:
@@ -453,7 +476,6 @@ class TestOrganizations:
         data = response.json()
         assert isinstance(data, list)
         print(f"✓ Organizations: {len(data)}")
-        return data
     
     def test_get_public_organizations(self):
         """Get public organizations list (no auth)"""
@@ -462,7 +484,6 @@ class TestOrganizations:
         data = response.json()
         assert isinstance(data, list)
         print(f"✓ Public Organizations: {len(data)}")
-        return data
 
 
 class TestUserManagement:
@@ -477,7 +498,6 @@ class TestUserManagement:
         data = response.json()
         assert isinstance(data, list)
         print(f"✓ Users: {len(data)}")
-        return data
 
 
 class TestDashboard:
@@ -491,7 +511,29 @@ class TestDashboard:
         assert response.status_code == 200
         data = response.json()
         print(f"✓ Dashboard Stats Retrieved")
-        return data
+
+
+class TestNotifications:
+    """Notifications tests"""
+    
+    def test_get_notifications(self, org_admin_token):
+        """Get notifications list"""
+        response = requests.get(f"{BASE_URL}/api/notifications",
+            headers={"Authorization": f"Bearer {org_admin_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+        print(f"✓ Notifications: {len(data)}")
+    
+    def test_get_notification_count(self, org_admin_token):
+        """Get unread notification count"""
+        response = requests.get(f"{BASE_URL}/api/notifications/count",
+            headers={"Authorization": f"Bearer {org_admin_token}"}
+        )
+        assert response.status_code == 200
+        data = response.json()
+        print(f"✓ Notification Count: {data}")
 
 
 # ==================== FIXTURES ====================
@@ -550,17 +592,19 @@ def created_donor(org_admin_token):
 @pytest.fixture(scope="class")
 def created_screening(org_admin_token, created_donor):
     """Create a screening for the test donor"""
+    today = datetime.now().strftime("%Y-%m-%d")
     screening_data = {
         "donor_id": created_donor["id"],
+        "screening_date": today,
         "hemoglobin": 14.5,
         "blood_pressure_systolic": 120,
         "blood_pressure_diastolic": 80,
         "pulse": 72,
-        "temperature": 98.6,
+        "temperature": 37.0,
         "weight": 75,
+        "height": 175,
         "preliminary_blood_group": "O+",
-        "eligibility_status": "eligible",
-        "screened_by": "Test Screener"
+        "questionnaire_passed": True
     }
     response = requests.post(f"{BASE_URL}/api/screenings",
         json=screening_data,
@@ -569,8 +613,9 @@ def created_screening(org_admin_token, created_donor):
     if response.status_code == 200:
         data = response.json()
         data["donor_id"] = created_donor["id"]
+        data["id"] = data["screening_id"]
         return data
-    pytest.skip("Failed to create screening")
+    pytest.skip(f"Failed to create screening: {response.text}")
 
 @pytest.fixture(scope="class")
 def created_donation(org_admin_token, created_screening):
@@ -587,7 +632,7 @@ def created_donation(org_admin_token, created_screening):
     )
     if response.status_code == 200:
         return response.json()
-    pytest.skip("Failed to create donation")
+    pytest.skip(f"Failed to create donation: {response.text}")
 
 @pytest.fixture(scope="class")
 def completed_donation(org_admin_token, created_donation):
@@ -600,7 +645,7 @@ def completed_donation(org_admin_token, created_donation):
     )
     if response.status_code == 200:
         return response.json()
-    pytest.skip("Failed to complete donation")
+    pytest.skip(f"Failed to complete donation: {response.text}")
 
 
 # ==================== CLEANUP ====================
