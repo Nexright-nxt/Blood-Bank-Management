@@ -18,6 +18,7 @@ class Donation(BaseModel):
     adverse_reaction_details: Optional[str] = None
     phlebotomist_id: Optional[str] = None
     status: str = "in_progress"
+    org_id: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class DonationCreate(BaseModel):
