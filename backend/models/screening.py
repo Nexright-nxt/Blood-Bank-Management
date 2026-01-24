@@ -21,6 +21,7 @@ class Screening(BaseModel):
     eligibility_status: str = "pending"
     rejection_reason: Optional[str] = None
     screened_by: Optional[str] = None
+    org_id: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class ScreeningCreate(BaseModel):
