@@ -390,7 +390,7 @@ class TestBloodRequests:
         """Create a blood request with correct model fields"""
         today = datetime.now().strftime("%Y-%m-%d")
         request_data = {
-            "request_type": "hospital",
+            "request_type": "external",
             "requester_name": "Dr. Test",
             "requester_contact": "9876543210",
             "hospital_name": "Test Hospital",
