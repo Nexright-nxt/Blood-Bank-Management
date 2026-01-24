@@ -38,6 +38,7 @@ class BloodRequest(BaseModel):
     approval_date: Optional[str] = None
     notes: Optional[str] = None
     priority_score: Optional[int] = None  # Calculated based on urgency and time
+    org_id: Optional[str] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class BloodRequestCreate(BaseModel):
