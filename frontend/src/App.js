@@ -192,6 +192,13 @@ function AppRoutes() {
           </ProtectedRoute>
         } />
         
+        {/* Roles Management */}
+        <Route path="roles" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <RolesManagement />
+          </ProtectedRoute>
+        } />
+        
         {/* Security Settings */}
         <Route path="security" element={<SecuritySettings />} />
         
