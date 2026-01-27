@@ -567,6 +567,114 @@ export default function BloodLinkSearch() {
           </DialogContent>
         </Dialog>
 
+        {/* Broadcast Detail Dialog */}
+        <Dialog open={!!selectedBroadcast} onOpenChange={() => setSelectedBroadcast(null)}>
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                {selectedBroadcast?.broadcast_type === 'urgent_need' ? (
+                  <AlertTriangle className="w-5 h-5 text-red-600" />
+                ) : (
+                  <Package className="w-5 h-5 text-green-600" />
+                )}
+                {selectedBroadcast?.title}
+              </DialogTitle>
+              <DialogDescription>
+                {selectedBroadcast?.broadcast_type === 'urgent_need' ? 'Urgent Blood Need' : 'Surplus Blood Alert'}
+                {' '} from {selectedBroadcast?.org_name}
+              </DialogDescription>
+            </DialogHeader>
+            {selectedBroadcast && (
+              <div className="space-y-4">
+                {/* Priority & Type */}
+                <div className="flex items-center gap-2 flex-wrap">
+                  {getPriorityBadge(selectedBroadcast.priority)}
+                  <Badge className={selectedBroadcast.broadcast_type === 'urgent_need' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}>
+                    {selectedBroadcast.blood_group}
+                  </Badge>
+                  {selectedBroadcast.component_type && (
+                    <Badge variant="outline">{selectedBroadcast.component_type.replace('_', ' ')}</Badge>
+                  )}
+                </div>
+
+                {/* Details */}
+                <div className="bg-slate-50 rounded-lg p-4 space-y-3">
+                  {selectedBroadcast.broadcast_type === 'urgent_need' && selectedBroadcast.units_needed && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-600">Units Needed:</span>
+                      <span className="font-semibold text-red-600">{selectedBroadcast.units_needed}</span>
+                    </div>
+                  )}
+                  {selectedBroadcast.broadcast_type === 'surplus_alert' && selectedBroadcast.units_available && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-600">Units Available:</span>
+                      <span className="font-semibold text-green-600">{selectedBroadcast.units_available}</span>
+                    </div>
+                  )}
+                  {selectedBroadcast.expiry_date && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-600">Expiry Date:</span>
+                      <span className="font-medium">{new Date(selectedBroadcast.expiry_date).toLocaleDateString()}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600">Posted:</span>
+                    <span className="text-sm">{formatTimeAgo(selectedBroadcast.created_at)}</span>
+                  </div>
+                  {selectedBroadcast.response_count > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-slate-600">Responses:</span>
+                      <Badge variant="outline">{selectedBroadcast.response_count}</Badge>
+                    </div>
+                  )}
+                </div>
+
+                {/* Description */}
+                {selectedBroadcast.description && (
+                  <div>
+                    <p className="text-sm text-slate-500 mb-1">Details:</p>
+                    <p className="text-slate-700">{selectedBroadcast.description}</p>
+                  </div>
+                )}
+
+                {/* Contact Info */}
+                <div className="border-t pt-4 space-y-2">
+                  <p className="text-sm font-medium text-slate-700">Contact Information</p>
+                  <div className="flex items-center gap-2 text-slate-600">
+                    <Building2 className="w-4 h-4" />
+                    <span>{selectedBroadcast.org_name}</span>
+                  </div>
+                  {selectedBroadcast.contact_name && (
+                    <div className="flex items-center gap-2 text-slate-600">
+                      <MessageSquare className="w-4 h-4" />
+                      <span>{selectedBroadcast.contact_name}</span>
+                    </div>
+                  )}
+                  {selectedBroadcast.contact_phone && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-slate-500" />
+                      <a href={`tel:${selectedBroadcast.contact_phone}`} className="text-blue-600 hover:underline">
+                        {selectedBroadcast.contact_phone}
+                      </a>
+                    </div>
+                  )}
+                </div>
+
+                {/* Action */}
+                {selectedBroadcast.contact_phone && (
+                  <Button
+                    className="w-full bg-red-600 hover:bg-red-700"
+                    onClick={() => window.location.href = `tel:${selectedBroadcast.contact_phone}`}
+                  >
+                    <Phone className="w-4 h-4 mr-2" />
+                    Contact Blood Bank
+                  </Button>
+                )}
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
         {/* Emergency Info */}
         <Card className="mt-6 border-red-200 bg-red-50">
           <CardContent className="py-4">
