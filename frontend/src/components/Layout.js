@@ -108,6 +108,14 @@ export default function Layout() {
     
     let items = [];
     
+    // Requestor users - limited dashboard
+    if (userType === 'requestor') {
+      items = [
+        { path: '/requestor-dashboard', icon: Home, label: 'Dashboard', category: 'operational' },
+      ];
+      return items;
+    }
+    
     // System Admin logic
     if (userType === 'system_admin') {
       if (!inOrgContext) {
@@ -121,6 +129,7 @@ export default function Layout() {
           ),
           // Add some platform modules for admin visibility
           { path: '/organizations', icon: Building2, label: 'Organizations', category: 'admin' },
+          { path: '/requestor-management', icon: UserCheck, label: 'Requestors', category: 'admin' },
           { path: '/users', icon: Settings, label: 'User Management', category: 'admin' },
           { path: '/audit-logs', icon: History, label: 'Audit Logs', category: 'admin' },
         ];
@@ -132,6 +141,7 @@ export default function Layout() {
         // Organization Dashboard first
         { path: '/org-dashboard', icon: Home, label: 'Org Dashboard', category: 'platform' },
         { path: '/organizations', icon: Building2, label: 'Branches', category: 'platform' },
+        { path: '/requestor-management', icon: UserCheck, label: 'Requestors', category: 'platform' },
         { path: '/users', icon: Settings, label: 'User Management', category: 'platform' },
         { path: '/roles', icon: Shield, label: 'Roles & Permissions', category: 'platform' },
         { path: '/backups', icon: HardDrive, label: 'Backup & Recovery', category: 'platform' },
@@ -146,6 +156,7 @@ export default function Layout() {
     else if (userType === 'tenant_admin') {
       items = [
         // Branch management
+        { path: '/requestor-management', icon: UserCheck, label: 'Requestors', category: 'platform' },
         { path: '/users', icon: Settings, label: 'User Management', category: 'platform' },
         { path: '/roles', icon: Shield, label: 'Roles & Permissions', category: 'platform' },
         { path: '/audit-logs', icon: History, label: 'Audit Logs', category: 'platform' },
