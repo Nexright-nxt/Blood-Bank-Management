@@ -9,6 +9,7 @@ from database import db
 from models import BloodRequest, BloodRequestCreate, Issuance, RequestStatus, UnitStatus
 from services import get_current_user, generate_request_id, generate_issue_id
 from middleware import ReadAccess, WriteAccess, OrgAccessHelper
+from middleware.permissions import require_permission
 
 router = APIRouter(prefix="/requests", tags=["Blood Requests"])
 
@@ -37,7 +38,7 @@ def calculate_priority_score(urgency: str, required_by_date: str = None, require
 @router.post("")
 async def create_blood_request(
     request_data: BloodRequestCreate, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("requests", "create")),
     access: OrgAccessHelper = Depends(WriteAccess)
 ):
     request = BloodRequest(**request_data.model_dump(exclude={'additional_items'}))
