@@ -19,6 +19,7 @@ from services import (
     generate_donor_id, generate_donor_request_id, generate_qr_base64, generate_otp
 )
 from middleware import ReadAccess, WriteAccess, OrgAccessHelper
+from middleware.permissions import require_permission
 
 router = APIRouter(tags=["Donors"])
 
