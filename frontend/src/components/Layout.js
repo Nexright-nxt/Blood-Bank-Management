@@ -43,6 +43,7 @@ const platformModules = [
   { path: '/organizations', icon: Building2, label: 'Organizations', category: 'platform' },
   { path: '/audit-logs', icon: History, label: 'Audit Logs', category: 'platform' },
   { path: '/users', icon: Settings, label: 'User Management', category: 'platform' },
+  { path: '/roles', icon: Shield, label: 'Roles & Permissions', category: 'platform' },
   { path: '/security', icon: Lock, label: 'Security Settings', category: 'platform' },
   { path: '/backups', icon: HardDrive, label: 'Backup & Recovery', category: 'platform' },
   { path: '/configuration', icon: Cog, label: 'Configuration', category: 'platform' },
