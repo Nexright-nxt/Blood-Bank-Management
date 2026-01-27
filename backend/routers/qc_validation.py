@@ -59,7 +59,7 @@ async def create_qc_validation(
 @router.get("")
 async def get_qc_validations(
     status: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_permission("qc_validation", "view"))
 ):
     query = {}
     if status:
@@ -69,10 +69,10 @@ async def get_qc_validations(
     return validations
 
 @router.put("/{validation_id}/approve")
-async def approve_qc_validation(validation_id: str, current_user: dict = Depends(get_current_user)):
-    if current_user["role"] not in ["admin", "qc_manager"]:
-        raise HTTPException(status_code=403, detail="Insufficient permissions")
-    
+async def approve_qc_validation(
+    validation_id: str, 
+    current_user: dict = Depends(require_permission("qc_validation", "approve"))
+):
     validation = await db.qc_validation.find_one({"id": validation_id}, {"_id": 0})
     if not validation:
         raise HTTPException(status_code=404, detail="Validation record not found")
