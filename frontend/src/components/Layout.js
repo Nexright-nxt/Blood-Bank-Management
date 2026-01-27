@@ -238,6 +238,15 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      {/* Mobile Overlay - Must be before sidebar to receive clicks */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+          data-testid="mobile-overlay"
+        />
+      )}
+
       {/* Sidebar */}
       <aside 
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-white dark:bg-slate-950 border-r border-slate-200 dark:border-slate-800 transform transition-transform duration-200 ease-in-out flex flex-col ${
