@@ -42,6 +42,7 @@ import NetworkDashboard from "./pages/NetworkDashboard";
 import AuditLogs from "./pages/AuditLogs";
 import SecuritySettings from "./pages/SecuritySettings";
 import BackupManagement from "./pages/BackupManagement";
+import RolesManagement from "./pages/RolesManagement";
 import "./App.css";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
