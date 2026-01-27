@@ -9,13 +9,14 @@ from database import db
 from models import LabTest, LabTestCreate, Quarantine, UnitStatus, ScreeningResult
 from services import get_current_user
 from middleware import ReadAccess, WriteAccess, OrgAccessHelper
+from middleware.permissions import require_permission
 
 router = APIRouter(prefix="/lab-tests", tags=["Laboratory"])
 
 @router.post("")
 async def create_lab_test(
     test_data: LabTestCreate, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("laboratory", "create")),
     access: OrgAccessHelper = Depends(WriteAccess)
 ):
     unit = await db.blood_units.find_one(
@@ -81,7 +82,7 @@ async def create_lab_test(
 async def get_lab_tests(
     unit_id: Optional[str] = None,
     overall_status: Optional[str] = None,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("laboratory", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     query = {}
@@ -96,7 +97,7 @@ async def get_lab_tests(
 @router.get("/{test_id}")
 async def get_lab_test(
     test_id: str, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("laboratory", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     test = await db.lab_tests.find_one(access.filter({"id": test_id}), {"_id": 0})
