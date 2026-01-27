@@ -37,8 +37,8 @@ export default function BloodLinkSearch() {
   const [searchParams, setSearchParams] = useState({
     latitude: null,
     longitude: null,
-    blood_group: '',
-    component_type: '',
+    blood_group: 'any',
+    component_type: 'all',
     max_distance_km: 50,
     min_units: 1
   });
