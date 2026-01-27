@@ -450,8 +450,10 @@ cd frontend && yarn install && yarn start
 - `/app/test_reports/iteration_8.json` - Phase H Security Suite (100% pass rate, 25 tests)
 - `/app/test_reports/iteration_2.json` - Phase J Custom Roles & Permissions (100% pass rate, 18 tests)
 - `/app/test_reports/iteration_3.json` - Phase J Permission Enforcement (100% pass rate, 35 tests)
+- `/app/test_reports/iteration_4.json` - Phase K Requestor User Role (100% pass rate, 23 tests)
 - `/app/tests/test_phase_f_documents.py` - Document management API tests
 - `/app/tests/test_phase_g_compliance_training.py` - Compliance & Training API tests
 - `/app/tests/test_phase_h_security.py` - Security Suite API tests
 - `/app/backend/tests/test_roles_permissions.py` - Roles & Permissions API tests
 - `/app/backend/tests/test_permission_enforcement.py` - Permission enforcement tests
+- `/app/backend/tests/test_requestors.py` - Requestor feature tests
