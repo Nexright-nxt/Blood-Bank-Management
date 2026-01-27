@@ -163,17 +163,17 @@ export default function Dashboard() {
           data-testid="stat-donors"
           onClick={() => navigate('/donors')}
         >
-          <CardContent className="pt-6">
+          <CardContent className="pt-4 sm:pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Total Donors</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white">{stats?.total_donors || 0}</p>
+                <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">Total Donors</p>
+                <p className="text-xl sm:text-3xl font-bold text-slate-900 dark:text-white">{stats?.total_donors || 0}</p>
               </div>
-              <div className="w-12 h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                <Users className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
               </div>
             </div>
-            <p className="text-xs text-blue-600 mt-2">Click to manage donors →</p>
+            <p className="text-xs text-blue-600 mt-2 hidden sm:block">Click to manage donors →</p>
           </CardContent>
         </Card>
 
@@ -182,17 +182,17 @@ export default function Dashboard() {
           data-testid="stat-available"
           onClick={() => navigate('/inventory')}
         >
-          <CardContent className="pt-6">
+          <CardContent className="pt-4 sm:pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Available Units</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white">{stats?.available_units || 0}</p>
+                <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">Available Units</p>
+                <p className="text-xl sm:text-3xl font-bold text-slate-900 dark:text-white">{stats?.available_units || 0}</p>
               </div>
-              <div className="w-12 h-12 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                <Package className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                <Package className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-600 dark:text-emerald-400" />
               </div>
             </div>
-            <p className="text-xs text-emerald-600 mt-2">Click to view inventory →</p>
+            <p className="text-xs text-emerald-600 mt-2 hidden sm:block">Click to view inventory →</p>
           </CardContent>
         </Card>
 
@@ -201,32 +201,32 @@ export default function Dashboard() {
           data-testid="stat-pending"
           onClick={() => navigate('/requests')}
         >
-          <CardContent className="pt-6">
+          <CardContent className="pt-4 sm:pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Pending Requests</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white">{stats?.pending_requests || 0}</p>
+                <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">Pending Requests</p>
+                <p className="text-xl sm:text-3xl font-bold text-slate-900 dark:text-white">{stats?.pending_requests || 0}</p>
               </div>
-              <div className="w-12 h-12 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                <ClipboardList className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                <ClipboardList className="w-5 h-5 sm:w-6 sm:h-6 text-amber-600 dark:text-amber-400" />
               </div>
             </div>
-            <p className="text-xs text-amber-600 mt-2">Click to view requests →</p>
+            <p className="text-xs text-amber-600 mt-2 hidden sm:block">Click to view requests →</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Alert Cards - Clickable */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
         <Card 
           className="border-l-4 border-l-amber-500 cursor-pointer hover:shadow-lg transition-shadow" 
           data-testid="alert-expiring"
           onClick={() => navigate('/inventory?view=expiry')}
         >
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-amber-600" />
+          <CardContent className="pt-4 sm:pt-6">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
               </div>
               <div className="flex-1">
                 <p className="font-semibold text-slate-900 dark:text-white">Expiring Soon</p>
