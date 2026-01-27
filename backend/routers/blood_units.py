@@ -9,6 +9,7 @@ from database import db
 from models import ChainOfCustody, ChainOfCustodyCreate
 from services import get_current_user
 from middleware import ReadAccess, WriteAccess, OrgAccessHelper
+from middleware.permissions import require_permission
 
 router = APIRouter(prefix="/blood-units", tags=["Blood Units"])
 
@@ -17,7 +18,7 @@ async def get_blood_units(
     status: Optional[str] = None,
     blood_group: Optional[str] = None,
     location: Optional[str] = None,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("inventory", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     query = {}

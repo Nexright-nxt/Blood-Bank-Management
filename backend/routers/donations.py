@@ -11,13 +11,14 @@ from services import (
     get_current_user, generate_donation_id, generate_unit_id, generate_barcode_base64
 )
 from middleware import ReadAccess, WriteAccess, OrgAccessHelper
+from middleware.permissions import require_permission
 
 router = APIRouter(prefix="/donations", tags=["Donations"])
 
 @router.post("")
 async def create_donation(
     donation_data: DonationCreate, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("donations", "create")),
     access: OrgAccessHelper = Depends(WriteAccess)
 ):
     screening = await db.screenings.find_one(

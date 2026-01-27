@@ -10,6 +10,7 @@ from database import db
 from models import Component, ComponentCreate, UnitStatus, ComponentType
 from services import get_current_user, generate_component_id
 from middleware import ReadAccess, WriteAccess, OrgAccessHelper
+from middleware.permissions import require_permission
 
 router = APIRouter(prefix="/components", tags=["Components"])
 
@@ -20,7 +21,7 @@ class MultiComponentCreate(BaseModel):
 @router.post("")
 async def create_component(
     component_data: ComponentCreate, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("processing", "create")),
     access: OrgAccessHelper = Depends(WriteAccess)
 ):
     unit = await db.blood_units.find_one(

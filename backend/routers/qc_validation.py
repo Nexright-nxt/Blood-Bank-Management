@@ -8,11 +8,15 @@ sys.path.append('..')
 from database import db
 from models import QCValidation, QCValidationCreate, UnitStatus
 from services import get_current_user
+from middleware.permissions import require_permission
 
 router = APIRouter(prefix="/qc-validation", tags=["QC Validation"])
 
 @router.post("")
-async def create_qc_validation(validation_data: QCValidationCreate, current_user: dict = Depends(get_current_user)):
+async def create_qc_validation(
+    validation_data: QCValidationCreate, 
+    current_user: dict = Depends(require_permission("qc_validation", "create"))
+):
     validation = QCValidation(**validation_data.model_dump())
     
     if validation.data_complete and validation.screening_complete and validation.custody_complete:
