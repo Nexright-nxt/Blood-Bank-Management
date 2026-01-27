@@ -82,7 +82,7 @@ async def create_shipment(
 @router.get("/shipments")
 async def get_shipments(
     status: Optional[str] = None,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("logistics", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     """Get all shipments"""
@@ -96,7 +96,7 @@ async def get_shipments(
 @router.get("/shipments/{shipment_id}")
 async def get_shipment(
     shipment_id: str, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("logistics", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     """Get shipment details with tracking history"""
@@ -115,7 +115,10 @@ async def get_shipment(
     return shipment
 
 @router.put("/shipments/{shipment_id}/dispatch")
-async def dispatch_shipment(shipment_id: str, current_user: dict = Depends(get_current_user)):
+async def dispatch_shipment(
+    shipment_id: str, 
+    current_user: dict = Depends(require_permission("logistics", "dispatch"))
+):
     """Mark shipment as dispatched/in transit"""
     shipment = await db.shipments.find_one(
         {"$or": [{"id": shipment_id}, {"shipment_id": shipment_id}]},
