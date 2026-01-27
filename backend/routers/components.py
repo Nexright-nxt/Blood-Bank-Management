@@ -219,7 +219,7 @@ async def get_component(
 async def update_component(
     component_id: str, 
     updates: dict, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("processing", "edit")),
     access: OrgAccessHelper = Depends(WriteAccess)
 ):
     result = await db.components.update_one(
