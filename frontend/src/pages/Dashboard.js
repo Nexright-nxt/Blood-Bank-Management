@@ -138,23 +138,23 @@ export default function Dashboard() {
       </div>
 
       {/* Stats Cards - Clickable */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         <Card 
           className="card-stat cursor-pointer hover:shadow-lg transition-shadow" 
           data-testid="stat-donations"
           onClick={() => navigate('/collection')}
         >
-          <CardContent className="pt-6">
+          <CardContent className="pt-4 sm:pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm font-medium text-slate-500 dark:text-slate-400">Today's Donations</p>
-                <p className="text-3xl font-bold text-slate-900 dark:text-white">{stats?.today_donations || 0}</p>
+                <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">Today's Donations</p>
+                <p className="text-xl sm:text-3xl font-bold text-slate-900 dark:text-white">{stats?.today_donations || 0}</p>
               </div>
-              <div className="w-12 h-12 rounded-lg bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
-                <Droplet className="w-6 h-6 text-teal-600 dark:text-teal-400" />
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
+                <Droplet className="w-5 h-5 sm:w-6 sm:h-6 text-teal-600 dark:text-teal-400" />
               </div>
             </div>
-            <p className="text-xs text-teal-600 mt-2">Click to view collections →</p>
+            <p className="text-xs text-teal-600 mt-2 hidden sm:block">Click to view collections →</p>
           </CardContent>
         </Card>
 
