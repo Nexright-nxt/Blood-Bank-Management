@@ -497,14 +497,6 @@ export default function Layout() {
         onSwitch={handleSwitchContext}
         currentContext={contextInfo}
       />
-
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
     </div>
   );
 }
