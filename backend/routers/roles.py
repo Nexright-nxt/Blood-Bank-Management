@@ -12,6 +12,7 @@ from models.role import (
     AVAILABLE_MODULES, SYSTEM_ROLES
 )
 from routers.auth import get_current_user
+from middleware.permissions import check_permission, get_user_permissions
 
 router = APIRouter(prefix="/roles", tags=["Roles"])
 
@@ -75,57 +76,7 @@ async def get_available_modules(current_user: dict = Depends(get_current_user)):
 @router.get("/my-permissions")
 async def get_my_permissions(current_user: dict = Depends(get_current_user)):
     """Get current user's permissions"""
-    # System admin has all permissions
-    if current_user.get("user_type") == "system_admin":
-        return {
-            "role": "system_admin",
-            "role_name": "System Administrator",
-            "permissions": AVAILABLE_MODULES,
-            "is_system_admin": True
-        }
-    
-    role_key = current_user.get("role")
-    custom_role_id = current_user.get("custom_role_id")
-    
-    # Check custom role first
-    if custom_role_id:
-        role = await db.roles.find_one({"id": custom_role_id}, {"_id": 0})
-        if role:
-            return {
-                "role": role.get("role_key"),
-                "role_name": role.get("name"),
-                "permissions": role.get("permissions", {}),
-                "is_system_admin": False,
-                "is_custom_role": True
-            }
-    
-    # Check system role from DB
-    role = await db.roles.find_one({"role_key": role_key, "is_system_role": True}, {"_id": 0})
-    if role:
-        return {
-            "role": role.get("role_key"),
-            "role_name": role.get("name"),
-            "permissions": role.get("permissions", {}),
-            "is_system_admin": False,
-            "is_custom_role": False
-        }
-    
-    # Fall back to built-in system roles
-    if role_key in SYSTEM_ROLES:
-        return {
-            "role": role_key,
-            "role_name": SYSTEM_ROLES[role_key]["name"],
-            "permissions": SYSTEM_ROLES[role_key]["permissions"],
-            "is_system_admin": False,
-            "is_custom_role": False
-        }
-    
-    return {
-        "role": role_key,
-        "role_name": role_key,
-        "permissions": {},
-        "is_system_admin": False
-    }
+    return await get_user_permissions(current_user)
 
 
 @router.get("", response_model=List[RoleResponse])
