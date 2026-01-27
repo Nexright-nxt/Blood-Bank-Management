@@ -48,3 +48,7 @@ from .document import (
     Document, DocumentCreate, DocumentUpdate, DocumentResponse,
     DocumentType, DocumentStatus
 )
+from .requestor import (
+    Requestor, RequestorRegistration, RequestorUpdate, RequestorApproval,
+    RequestorStatus, RequestorType
+)
