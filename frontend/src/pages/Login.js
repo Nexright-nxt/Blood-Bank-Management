@@ -243,7 +243,7 @@ export default function Login() {
       </div>
 
       {/* Right Panel - Login Form or MFA Verification */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-slate-50 dark:bg-slate-900">
+      <div className="flex-1 flex items-center justify-center p-4 sm:p-8 bg-slate-50 dark:bg-slate-900">
         {mfaRequired ? (
           /* MFA Verification Card */
           <Card className="w-full max-w-md shadow-lg" data-testid="mfa-verification-card">
