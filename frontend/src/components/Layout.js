@@ -74,6 +74,7 @@ const operationalModules = [
   { path: '/discards', icon: Trash2, label: 'Discards', roles: ['admin', 'inventory', 'qc_manager'], category: 'operational' },
   { path: '/reports', icon: BarChart3, label: 'Reports', roles: ['admin', 'qc_manager', 'inventory'], category: 'operational' },
   { path: '/leaderboard', icon: Trophy, label: 'Leaderboard', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution'], category: 'operational' },
+  { path: '/broadcasts', icon: Megaphone, label: 'Network Broadcasts', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution'], category: 'operational' },
   { path: '/alerts', icon: Bell, label: 'Alerts', roles: ['admin', 'qc_manager', 'inventory', 'registration'], category: 'operational' },
   { path: '/configuration', icon: Cog, label: 'Configuration', roles: ['admin', 'config_manager'], category: 'operational' },
   { path: '/security', icon: Lock, label: 'Security', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution', 'config_manager'], category: 'operational' },
