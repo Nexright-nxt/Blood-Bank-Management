@@ -25,8 +25,9 @@ from routers import (
     organizations_router, inter_org_requests_router,
     audit_logs_router, sessions_router, documents_router,
     compliance_router, training_router, security_router, sensitive_actions_router,
-    backups_router
+    backups_router, roles_router
 )
+from routers.roles import seed_system_roles
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -37,6 +38,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     # Startup
     await create_default_admin()
+    await seed_system_roles()  # Seed system roles
     yield
     # Shutdown
     client.close()
