@@ -357,6 +357,7 @@ cd frontend && yarn install && yarn start
 
 ### Backend
 - `/app/backend/middleware/org_access.py` - RLS middleware
+- `/app/backend/middleware/permissions.py` - Custom Roles permission checking middleware
 - `/app/backend/services/audit_service.py` - Audit logging service
 - `/app/backend/routers/sessions.py` - Context switching API
 - `/app/backend/routers/documents.py` - Document management API
@@ -365,20 +366,24 @@ cd frontend && yarn install && yarn start
 - `/app/backend/routers/security.py` - Security Suite API (MFA, Password Policy, Sessions, API Keys)
 - `/app/backend/routers/backups.py` - Data Backup & Recovery API
 - `/app/backend/routers/users.py` - User management with role-based scoping
+- `/app/backend/routers/roles.py` - Custom Roles & Permissions CRUD API
 - `/app/backend/routers/auth.py` - Auth with session creation on login
 - `/app/backend/models/security.py` - Security models
+- `/app/backend/models/role.py` - Role model with AVAILABLE_MODULES and SYSTEM_ROLES
 - `/app/backend/services/helpers.py` - JWT token creation with impersonation
 
 ### Frontend
-- `/app/frontend/src/context/AuthContext.js` - Auth state + context switching
-- `/app/frontend/src/components/Layout.js` - Header with context switcher
+- `/app/frontend/src/context/AuthContext.js` - Auth state + context switching + permission helpers
+- `/app/frontend/src/components/Layout.js` - Header with context switcher + roles nav
 - `/app/frontend/src/pages/AuditLogs.js` - Audit trail viewer
 - `/app/frontend/src/pages/OrganizationDetail.js` - Org detail with Documents, Compliance, Training tabs
 - `/app/frontend/src/pages/SecuritySettings.js` - Security Settings page (MFA, Sessions, Password Policy, API Keys)
 - `/app/frontend/src/pages/BackupManagement.js` - Data Backup & Recovery page
 - `/app/frontend/src/pages/InventoryEnhanced.js` - Inventory with stable test IDs
-- `/app/frontend/src/pages/UserManagement.js` - Role-scoped user management
+- `/app/frontend/src/pages/UserManagement.js` - Role-scoped user management + custom role assignment
+- `/app/frontend/src/pages/RolesManagement.js` - Custom Roles & Permissions management UI
 - `/app/frontend/src/pages/Login.js` - Hierarchical org selector
+- `/app/frontend/src/lib/api.js` - API helpers including rolesAPI
 
 ---
 
@@ -387,6 +392,8 @@ cd frontend && yarn install && yarn start
 - `/app/test_reports/iteration_6.json` - Phase F Document Management (100% pass rate, 13 tests)
 - `/app/test_reports/iteration_7.json` - Phase G Compliance & Training (100% pass rate, 18 tests)
 - `/app/test_reports/iteration_8.json` - Phase H Security Suite (100% pass rate, 25 tests)
+- `/app/test_reports/iteration_2.json` - Phase J Custom Roles & Permissions (100% pass rate, 18 tests)
 - `/app/tests/test_phase_f_documents.py` - Document management API tests
 - `/app/tests/test_phase_g_compliance_training.py` - Compliance & Training API tests
 - `/app/tests/test_phase_h_security.py` - Security Suite API tests
+- `/app/backend/tests/test_roles_permissions.py` - Roles & Permissions API tests
