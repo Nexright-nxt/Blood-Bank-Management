@@ -411,6 +411,46 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
 
 ---
 
+### Phase M: Share Availability - Network Broadcasts (COMPLETE - Jan 28, 2026)
+- [x] **Backend Broadcasts API** (`/app/backend/routers/broadcasts.py`):
+  - [x] `GET /api/broadcasts/active` - Public endpoint to get active broadcasts
+  - [x] `GET /api/broadcasts/stats` - Public network-wide broadcast statistics
+  - [x] `POST /api/broadcasts` - Create new broadcast (any authenticated staff)
+  - [x] `GET /api/broadcasts/my-broadcasts` - Get org's broadcasts
+  - [x] `GET /api/broadcasts/{id}` - Get broadcast details with responses
+  - [x] `POST /api/broadcasts/{id}/respond` - Respond to a broadcast (different org only)
+  - [x] `PUT /api/broadcasts/{id}/close` - Close/mark fulfilled (creator or admin)
+  - [x] `DELETE /api/broadcasts/{id}` - Delete broadcast (creator or admin)
+  - [x] `GET /api/broadcasts/{id}/responses` - Get all responses to a broadcast
+- [x] **Broadcast Model** (`/app/backend/models/broadcast.py`):
+  - [x] BroadcastType enum: urgent_need, surplus_alert
+  - [x] BroadcastStatus enum: active, responded, fulfilled, expired, closed
+  - [x] BroadcastVisibility enum: network_wide, nearby_only
+  - [x] Priority levels: normal, high, critical
+  - [x] Auto-expiry after 48 hours
+  - [x] Response count tracking
+- [x] **Frontend Blood Link Integration** (`/app/frontend/src/pages/BloodLinkSearch.js`):
+  - [x] Network Alerts section showing active broadcasts
+  - [x] Broadcast cards with type icon (urgent/surplus)
+  - [x] Priority badges (Critical, High, Normal)
+  - [x] Blood group and type badges
+  - [x] Click to view broadcast details in modal
+- [x] **Frontend Broadcasts Management** (`/app/frontend/src/pages/BroadcastsManagement.js`):
+  - [x] Stats cards: Urgent Needs, Surplus Alerts, Fulfilled, Total Responses
+  - [x] Network Alerts tab (broadcasts from all orgs)
+  - [x] My Broadcasts tab (org's own broadcasts)
+  - [x] Create Broadcast dialog with:
+    - Type selection (Urgent Need / Surplus Alert)
+    - Blood group, component type, units fields
+    - Priority, description, contact info
+    - Visibility (network-wide / nearby only)
+  - [x] Respond to broadcast dialog
+  - [x] Mark Fulfilled and Delete actions for own broadcasts
+- [x] **Navigation Updates** (`/app/frontend/src/components/Layout.js`):
+  - [x] "Network Broadcasts" link in sidebar for all staff roles
+
+---
+
 ## Deployment
 
 ### Deployment Files Location
