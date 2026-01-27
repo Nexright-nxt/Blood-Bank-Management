@@ -86,6 +86,9 @@ function AppRoutes() {
       {/* Requestor Public Routes */}
       <Route path="/requestor/register" element={<RequestorRegistration />} />
       
+      {/* Blood Link - Public nearby blood search */}
+      <Route path="/blood-link" element={<BloodLinkSearch />} />
+      
       {/* Staff Login */}
       <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
       
