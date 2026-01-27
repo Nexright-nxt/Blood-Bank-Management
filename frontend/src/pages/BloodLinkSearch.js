@@ -178,6 +178,63 @@ export default function BloodLinkSearch() {
           <p className="text-slate-600">Find nearby blood banks with available stock</p>
         </div>
 
+        {/* Network Alerts Section */}
+        {broadcasts.length > 0 && (
+          <div className="mb-6">
+            <div className="flex items-center gap-2 mb-3">
+              <Megaphone className="w-5 h-5 text-red-600" />
+              <h2 className="font-semibold text-slate-800">Network Alerts</h2>
+              <Badge variant="outline" className="ml-auto">
+                {broadcasts.length} active
+              </Badge>
+            </div>
+            <div className="space-y-3">
+              {broadcasts.slice(0, 3).map((broadcast) => (
+                <Card 
+                  key={broadcast.id}
+                  className={`border-l-4 cursor-pointer hover:shadow-md transition-shadow ${getPriorityStyles(broadcast.priority)}`}
+                  onClick={() => setSelectedBroadcast(broadcast)}
+                  data-testid={`broadcast-${broadcast.id}`}
+                >
+                  <CardContent className="py-3">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex items-start gap-3">
+                        {broadcast.broadcast_type === 'urgent_need' ? (
+                          <AlertTriangle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
+                        ) : (
+                          <Package className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        )}
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-medium text-slate-800">{broadcast.title}</span>
+                            {getPriorityBadge(broadcast.priority)}
+                            <Badge className={broadcast.broadcast_type === 'urgent_need' ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}>
+                              {broadcast.blood_group}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-slate-600 mt-1">
+                            {broadcast.org_name} • {formatTimeAgo(broadcast.created_at)}
+                            {broadcast.units_needed && ` • ${broadcast.units_needed} units needed`}
+                            {broadcast.units_available && ` • ${broadcast.units_available} units available`}
+                          </p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className="flex-shrink-0">
+                        {broadcast.broadcast_type === 'urgent_need' ? 'Need' : 'Surplus'}
+                      </Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {broadcasts.length > 3 && (
+                <Button variant="ghost" className="w-full text-slate-600" onClick={() => setSelectedBroadcast(broadcasts[0])}>
+                  View all {broadcasts.length} alerts
+                </Button>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Search Card */}
         <Card className="mb-6">
           <CardHeader>
