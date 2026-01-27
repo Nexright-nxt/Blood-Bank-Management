@@ -261,6 +261,42 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
 - [x] Added /api/health endpoint for monitoring
 - [x] Updated server.py with BBMS branding
 
+### Phase J: Custom Roles & Permissions (COMPLETE - Jan 27, 2026)
+- [x] **Backend Roles API** (`/app/backend/routers/roles.py`):
+  - [x] `GET /api/roles` - List all roles (system + custom for user's org)
+  - [x] `GET /api/roles/{id}` - Get single role with user count
+  - [x] `GET /api/roles/available-modules` - Get all modules and actions for role builder
+  - [x] `GET /api/roles/my-permissions` - Get current user's permissions
+  - [x] `POST /api/roles` - Create custom role with granular permissions
+  - [x] `PUT /api/roles/{id}` - Update custom role (blocked for system roles)
+  - [x] `DELETE /api/roles/{id}` - Delete custom role (blocked if users assigned)
+  - [x] `POST /api/roles/{id}/duplicate` - Duplicate any role as custom
+- [x] **Permission Middleware** (`/app/backend/middleware/permissions.py`):
+  - [x] `check_permission(user, module, action)` - Check if user has permission
+  - [x] `require_permission(module, action)` - FastAPI dependency for route protection
+  - [x] `require_any_permission(module, actions)` - Check any of multiple actions
+  - [x] `require_module_access(module)` - Check any access to a module
+  - [x] `get_user_permissions(user)` - Get full permission object for user
+- [x] **Frontend Roles Management** (`/app/frontend/src/pages/RolesManagement.js`):
+  - [x] System Roles section (read-only, 8 seeded roles)
+  - [x] Custom Roles section with full CRUD
+  - [x] Create Role dialog with expandable permission checkboxes
+  - [x] Edit/View/Duplicate/Delete actions
+  - [x] User count per role
+- [x] **User Management Custom Role Assignment** (`/app/frontend/src/pages/UserManagement.js`):
+  - [x] Custom Role column in Staff Users table
+  - [x] Custom Role dropdown in Add/Edit User dialog
+  - [x] Shows "System Default" for users without custom role
+- [x] **Auth Context Permission Helpers** (`/app/frontend/src/context/AuthContext.js`):
+  - [x] `hasPermission(module, action)` - Check specific permission
+  - [x] `canAccessModule(module)` - Check any access to module
+  - [x] `userPermissions` state - Full permissions object
+  - [x] `refreshPermissions()` - Reload permissions after role change
+- [x] **Navigation Updates** (`/app/frontend/src/components/Layout.js`):
+  - [x] Roles & Permissions link in sidebar for super_admin and tenant_admin
+- [x] **API Helper** (`/app/frontend/src/lib/api.js`):
+  - [x] `rolesAPI` with all CRUD operations
+
 ---
 
 ## Prioritized Backlog
@@ -269,10 +305,10 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
 - All P0 tasks complete!
 
 ### P1 (High Priority)
-- All P1 tasks complete!
+- [ ] **Requestor User Role** - Public registration, admin approval workflow, limited dashboard
 
 ### P2 (Medium Priority)
-- All P2 tasks complete!
+- [ ] **Blood Link (Nearby Availability)** - Geolocation to find nearby blood banks with stock
 
 ### P3 (Future)
 - [ ] API Rate Limiting (deferred by user)
