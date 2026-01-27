@@ -786,6 +786,34 @@ export default function UserManagement() {
                 </SelectContent>
               </Select>
             </div>
+            {/* Custom Role Assignment */}
+            {userForm.user_type === 'staff' && (
+              <div>
+                <Label className="flex items-center gap-2">
+                  <Shield className="w-4 h-4 text-teal-600" />
+                  Custom Role (Optional)
+                </Label>
+                <Select
+                  value={userForm.custom_role_id || 'none'}
+                  onValueChange={(v) => setUserForm({ ...userForm, custom_role_id: v === 'none' ? '' : v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Use default role permissions" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Use Default Role Permissions</SelectItem>
+                    {getAvailableRolesForOrg(userForm.org_id).map(role => (
+                      <SelectItem key={role.id} value={role.id}>
+                        {role.name} {role.is_system_role && '(System)'}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-slate-500 mt-1">
+                  Assign a custom role to override default permissions
+                </p>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <Switch
                 checked={userForm.is_active}
