@@ -63,7 +63,7 @@ async def create_component(
 @router.post("/multi")
 async def create_multiple_components(
     data: MultiComponentCreate, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("processing", "create")),
     access: OrgAccessHelper = Depends(WriteAccess)
 ):
     """Create multiple components from a single blood unit (multi-select)"""
