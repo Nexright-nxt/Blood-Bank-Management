@@ -147,7 +147,7 @@ export default function Dashboard() {
           <CardContent className="pt-4 sm:pt-6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">Today's Donations</p>
+                <p className="text-xs sm:text-sm font-medium text-slate-500 dark:text-slate-400">Today&apos;s Donations</p>
                 <p className="text-xl sm:text-3xl font-bold text-slate-900 dark:text-white">{stats?.today_donations || 0}</p>
               </div>
               <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center">
