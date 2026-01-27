@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { userAPI, organizationAPI } from '../lib/api';
+import { userAPI, organizationAPI, rolesAPI } from '../lib/api';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'sonner';
 import { 
@@ -40,6 +40,7 @@ export default function UserManagement() {
   const { user: currentUser, isSystemAdmin, isSuperAdmin, isTenantAdmin, register } = useAuth();
   const [users, setUsers] = useState([]);
   const [organizations, setOrganizations] = useState([]);
+  const [customRoles, setCustomRoles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('admins');
   
@@ -62,6 +63,7 @@ export default function UserManagement() {
     user_type: 'staff',
     org_id: '',
     is_active: true,
+    custom_role_id: '',
   });
   
   // Sensitive action state
@@ -82,12 +84,14 @@ export default function UserManagement() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [usersRes, orgsRes] = await Promise.all([
+      const [usersRes, orgsRes, rolesRes] = await Promise.all([
         userAPI.getAll(),
-        organizationAPI.getAll()
+        organizationAPI.getAll(),
+        rolesAPI.getAll()
       ]);
       setUsers(usersRes.data || []);
       setOrganizations(orgsRes.data || []);
+      setCustomRoles(rolesRes.data || []);
     } catch (error) {
       toast.error('Failed to fetch data');
     } finally {
@@ -264,6 +268,7 @@ export default function UserManagement() {
       user_type: 'staff',
       org_id: '',
       is_active: true,
+      custom_role_id: '',
     });
     setEditingUser(null);
   };
@@ -286,6 +291,7 @@ export default function UserManagement() {
       user_type: user.user_type || 'staff',
       org_id: user.org_id || '',
       is_active: user.is_active ?? true,
+      custom_role_id: user.custom_role_id || '',
     });
     setShowUserDialog(true);
   };
