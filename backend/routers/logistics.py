@@ -153,7 +153,7 @@ async def update_shipment_location(
     location: str,
     temperature: Optional[float] = None,
     notes: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_permission("logistics", "edit"))
 ):
     """Update shipment location and optionally log temperature"""
     shipment = await db.shipments.find_one(
@@ -195,7 +195,7 @@ async def deliver_shipment(
     shipment_id: str,
     received_by: str,
     notes: Optional[str] = None,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_permission("logistics", "deliver"))
 ):
     """Mark shipment as delivered"""
     shipment = await db.shipments.find_one(
