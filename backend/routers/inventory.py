@@ -9,12 +9,13 @@ from database import db
 from models import BloodGroup, ComponentType
 from services import get_current_user
 from middleware import ReadAccess, OrgAccessHelper
+from middleware.permissions import require_permission
 
 router = APIRouter(prefix="/inventory", tags=["Inventory"])
 
 @router.get("/summary")
 async def get_inventory_summary(
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("inventory", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     """Get inventory summary filtered by accessible organizations."""
@@ -52,7 +53,7 @@ async def get_inventory_summary(
 
 @router.get("/by-blood-group")
 async def get_inventory_by_blood_group(
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("inventory", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     """Get inventory breakdown by blood group filtered by accessible organizations."""
@@ -88,7 +89,7 @@ async def get_inventory_by_blood_group(
 @router.get("/expiring")
 async def get_expiring_inventory(
     days: int = 7, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("inventory", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     """Get expiring inventory filtered by accessible organizations."""
@@ -113,7 +114,7 @@ async def get_expiring_inventory(
 async def get_fefo_list(
     blood_group: Optional[str] = None,
     component_type: Optional[str] = None,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("inventory", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     """Get FEFO (First Expiry First Out) list filtered by accessible organizations."""
