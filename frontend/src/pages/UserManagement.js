@@ -185,10 +185,15 @@ export default function UserManagement() {
 
   const handleCreateUser = async () => {
     try {
-      await register({
+      const userData = {
         ...userForm,
-        org_id: userForm.org_id || undefined
-      });
+        org_id: userForm.org_id || undefined,
+        custom_role_id: userForm.custom_role_id || undefined,
+      };
+      // Remove empty custom_role_id
+      if (!userData.custom_role_id) delete userData.custom_role_id;
+      
+      await register(userData);
       toast.success('User created successfully');
       setShowUserDialog(false);
       resetForm();
@@ -203,6 +208,10 @@ export default function UserManagement() {
     try {
       const updates = { ...userForm };
       if (!updates.password) delete updates.password;
+      // Handle custom role - if empty string, set to null to clear it
+      if (updates.custom_role_id === '') {
+        updates.custom_role_id = null;
+      }
       await userAPI.update(editingUser.id, updates);
       toast.success('User updated successfully');
       setShowUserDialog(false);
