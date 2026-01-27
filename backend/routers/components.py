@@ -165,7 +165,7 @@ async def get_components(
     component_type: Optional[str] = None,
     blood_group: Optional[str] = None,
     parent_unit_id: Optional[str] = None,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("processing", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     query = {}
@@ -184,7 +184,7 @@ async def get_components(
 @router.get("/{component_id}")
 async def get_component(
     component_id: str, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("processing", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     component = await db.components.find_one(
