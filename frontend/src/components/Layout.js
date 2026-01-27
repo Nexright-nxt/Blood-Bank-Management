@@ -6,7 +6,7 @@ import {
   Package, ClipboardList, Truck, RotateCcw, Trash2, BarChart3,
   Settings, LogOut, Menu, X, Sun, Moon, Home, Microscope, UserPlus, Bell,
   Warehouse, ClipboardCheck, Navigation, Trophy, Cog, Building2, ArrowLeftRight, Globe, History,
-  RefreshCw, ChevronDown, ArrowLeft, Lock, HardDrive, Shield
+  RefreshCw, ChevronDown, ArrowLeft, Lock, HardDrive, Shield, UserCheck
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { Avatar, AvatarFallback } from './ui/avatar';
@@ -35,12 +35,14 @@ const roleLabels = {
   inventory: 'Inventory Manager',
   distribution: 'Distribution Staff',
   config_manager: 'Config Manager',
+  requestor: 'Requestor',
 };
 
 // Platform/Admin modules - visible to System Admin in global context
 const platformModules = [
   { path: '/network', icon: Globe, label: 'Network Overview', category: 'platform' },
   { path: '/organizations', icon: Building2, label: 'Organizations', category: 'platform' },
+  { path: '/requestor-management', icon: UserCheck, label: 'Requestors', category: 'platform' },
   { path: '/audit-logs', icon: History, label: 'Audit Logs', category: 'platform' },
   { path: '/users', icon: Settings, label: 'User Management', category: 'platform' },
   { path: '/roles', icon: Shield, label: 'Roles & Permissions', category: 'platform' },
