@@ -132,6 +132,40 @@ export default function BloodLinkSearch() {
     return items;
   };
 
+  const getPriorityStyles = (priority) => {
+    switch (priority) {
+      case 'critical':
+        return 'border-red-500 bg-red-50';
+      case 'high':
+        return 'border-orange-400 bg-orange-50';
+      default:
+        return 'border-slate-200 bg-white';
+    }
+  };
+
+  const getPriorityBadge = (priority) => {
+    switch (priority) {
+      case 'critical':
+        return <Badge className="bg-red-600 text-white">Critical</Badge>;
+      case 'high':
+        return <Badge className="bg-orange-500 text-white">High Priority</Badge>;
+      default:
+        return <Badge variant="outline">Normal</Badge>;
+    }
+  };
+
+  const formatTimeAgo = (dateString) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now - date;
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    
+    if (diffMins < 60) return `${diffMins}m ago`;
+    if (diffHours < 24) return `${diffHours}h ago`;
+    return `${Math.floor(diffHours / 24)}d ago`;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-50 to-rose-100 py-8 px-4">
       <div className="max-w-4xl mx-auto">
