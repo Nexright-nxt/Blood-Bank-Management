@@ -66,7 +66,7 @@ async def create_blood_request(
 async def get_blood_requests(
     status: Optional[str] = None,
     urgency: Optional[str] = None,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("requests", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     query = {}
@@ -81,7 +81,7 @@ async def get_blood_requests(
 @router.get("/{request_id}")
 async def get_blood_request(
     request_id: str, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("requests", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     request = await db.blood_requests.find_one(
@@ -93,7 +93,10 @@ async def get_blood_request(
     return request
 
 @router.put("/{request_id}/approve")
-async def approve_request(request_id: str, current_user: dict = Depends(get_current_user)):
+async def approve_request(
+    request_id: str, 
+    current_user: dict = Depends(require_permission("requests", "approve"))
+):
     result = await db.blood_requests.update_one(
         {"$or": [{"id": request_id}, {"request_id": request_id}]},
         {
@@ -109,7 +112,11 @@ async def approve_request(request_id: str, current_user: dict = Depends(get_curr
     return {"status": "success"}
 
 @router.put("/{request_id}/reject")
-async def reject_request(request_id: str, reason: str, current_user: dict = Depends(get_current_user)):
+async def reject_request(
+    request_id: str, 
+    reason: str, 
+    current_user: dict = Depends(require_permission("requests", "reject"))
+):
     result = await db.blood_requests.update_one(
         {"$or": [{"id": request_id}, {"request_id": request_id}]},
         {"$set": {"status": RequestStatus.REJECTED.value, "notes": reason}}
@@ -125,7 +132,7 @@ issuance_router = APIRouter(prefix="/issuances", tags=["Issuances"])
 async def create_issuance(
     request_id: str = Query(..., description="Request ID"),
     component_ids: List[str] = Query(default=[], description="List of component IDs"),
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(require_permission("requests", "fulfill"))
 ):
     if not component_ids:
         raise HTTPException(status_code=400, detail="At least one component ID is required")
