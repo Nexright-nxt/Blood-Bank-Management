@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { 
   MapPin, Search, Navigation, Phone, Mail, Clock, 
   Droplet, Building2, AlertCircle, RefreshCw, ExternalLink,
-  Locate, Filter, X
+  Locate, Filter, X, Megaphone, AlertTriangle, Package, MessageSquare
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -12,8 +12,9 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Badge } from '../components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog';
 import { Slider } from '../components/ui/slider';
+import { Textarea } from '../components/ui/textarea';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL + '/api';
 
@@ -33,6 +34,9 @@ export default function BloodLinkSearch() {
   const [results, setResults] = useState(null);
   const [selectedBank, setSelectedBank] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [broadcasts, setBroadcasts] = useState([]);
+  const [loadingBroadcasts, setLoadingBroadcasts] = useState(true);
+  const [selectedBroadcast, setSelectedBroadcast] = useState(null);
   
   const [searchParams, setSearchParams] = useState({
     latitude: null,
@@ -42,6 +46,23 @@ export default function BloodLinkSearch() {
     max_distance_km: 50,
     min_units: 1
   });
+
+  // Fetch active broadcasts on mount
+  useEffect(() => {
+    fetchBroadcasts();
+  }, []);
+
+  const fetchBroadcasts = async () => {
+    setLoadingBroadcasts(true);
+    try {
+      const response = await axios.get(`${API_URL}/broadcasts/active`);
+      setBroadcasts(response.data.broadcasts || []);
+    } catch (error) {
+      console.error('Failed to fetch broadcasts:', error);
+    } finally {
+      setLoadingBroadcasts(false);
+    }
+  };
 
   const getCurrentLocation = () => {
     if (!navigator.geolocation) {
