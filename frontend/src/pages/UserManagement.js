@@ -170,6 +170,19 @@ export default function UserManagement() {
     return org?.org_name || '-';
   };
 
+  const getCustomRoleName = (customRoleId) => {
+    if (!customRoleId) return null;
+    const role = customRoles.find(r => r.id === customRoleId);
+    return role?.name || null;
+  };
+
+  // Get available custom roles for user's org
+  const getAvailableRolesForOrg = (orgId) => {
+    return customRoles.filter(r => 
+      r.is_system_role || !r.org_id || r.org_id === orgId
+    );
+  };
+
   const handleCreateUser = async () => {
     try {
       await register({
