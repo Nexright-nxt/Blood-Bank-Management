@@ -52,7 +52,7 @@ class TestRolesAPI:
         })
         assert response.status_code == 200, f"Org admin login failed: {response.text}"
         data = response.json()
-        self.auth_token = data.get("access_token")
+        self.auth_token = data.get("token")
         self.session.headers.update({"Authorization": f"Bearer {self.auth_token}"})
         return data
     
@@ -64,7 +64,7 @@ class TestRolesAPI:
         })
         assert response.status_code == 200, f"System admin login failed: {response.text}"
         data = response.json()
-        self.auth_token = data.get("access_token")
+        self.auth_token = data.get("token")
         self.session.headers.update({"Authorization": f"Bearer {self.auth_token}"})
         return data
     
@@ -444,7 +444,7 @@ class TestPermissionMiddleware:
         })
         assert response.status_code == 200
         data = response.json()
-        self.session.headers.update({"Authorization": f"Bearer {data['access_token']}"})
+        self.session.headers.update({"Authorization": f"Bearer {data['token']}"})
         return data
     
     def test_authenticated_user_can_access_roles(self):
@@ -484,7 +484,7 @@ class TestExistingCustomRole:
         })
         assert response.status_code == 200
         data = response.json()
-        self.session.headers.update({"Authorization": f"Bearer {data['access_token']}"})
+        self.session.headers.update({"Authorization": f"Bearer {data['token']}"})
         return data
     
     def test_limited_viewer_exists(self):
