@@ -37,3 +37,4 @@ from .backups import router as backups_router
 from .roles import router as roles_router
 from .requestors import router as requestors_router
 from .blood_link import router as blood_link_router
+from .broadcasts import router as broadcasts_router
