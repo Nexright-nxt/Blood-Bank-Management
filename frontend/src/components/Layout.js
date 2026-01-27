@@ -302,6 +302,7 @@ export default function Layout() {
                 <NavLink
                   key={item.path}
                   to={item.path}
+                  onClick={() => setSidebarOpen(false)}
                   className={({ isActive }) =>
                     `sidebar-link ${isActive ? 'sidebar-link-active' : 'sidebar-link-inactive'}`
                   }
@@ -327,6 +328,7 @@ export default function Layout() {
                 <NavLink
                   key={item.path}
                   to={item.path}
+                  onClick={() => setSidebarOpen(false)}
                   className={({ isActive }) =>
                     `sidebar-link ${isActive ? 'sidebar-link-active' : 'sidebar-link-inactive'}`
                   }
@@ -350,6 +352,7 @@ export default function Layout() {
                 <NavLink
                   key={item.path}
                   to={item.path}
+                  onClick={() => setSidebarOpen(false)}
                   className={({ isActive }) =>
                     `sidebar-link ${isActive ? 'sidebar-link-active' : 'sidebar-link-inactive'}`
                   }
