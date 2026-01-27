@@ -19,7 +19,7 @@ const API_URL = process.env.REACT_APP_BACKEND_URL + '/api';
 
 const BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const COMPONENT_TYPES = [
-  { value: '', label: 'All Components' },
+  { value: 'all', label: 'All Components' },
   { value: 'whole_blood', label: 'Whole Blood' },
   { value: 'prc', label: 'Packed Red Cells' },
   { value: 'ffp', label: 'Fresh Frozen Plasma' },
