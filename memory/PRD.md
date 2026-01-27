@@ -319,7 +319,7 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
 - [x] **Requestor User Role** - Public registration, admin approval workflow, limited dashboard (COMPLETE)
 
 ### P2 (Medium Priority)
-- [ ] **Blood Link (Nearby Availability)** - Geolocation to find nearby blood banks with stock
+- [x] **Blood Link (Nearby Availability)** - Geolocation to find nearby blood banks with stock (COMPLETE)
 
 ### P3 (Future)
 - [ ] API Rate Limiting (deferred by user)
@@ -457,3 +457,5 @@ cd frontend && yarn install && yarn start
 - `/app/backend/tests/test_roles_permissions.py` - Roles & Permissions API tests
 - `/app/backend/tests/test_permission_enforcement.py` - Permission enforcement tests
 - `/app/backend/tests/test_requestors.py` - Requestor feature tests
+- `/app/backend/tests/test_blood_link_search.py` - Blood Link feature tests
+- `/app/test_reports/iteration_5.json` - Blood Link feature (100% pass rate, 17 backend tests)
