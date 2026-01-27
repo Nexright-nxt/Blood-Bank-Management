@@ -131,6 +131,7 @@ export default function Layout() {
         { path: '/org-dashboard', icon: Home, label: 'Org Dashboard', category: 'platform' },
         { path: '/organizations', icon: Building2, label: 'Branches', category: 'platform' },
         { path: '/users', icon: Settings, label: 'User Management', category: 'platform' },
+        { path: '/roles', icon: Shield, label: 'Roles & Permissions', category: 'platform' },
         { path: '/backups', icon: HardDrive, label: 'Backup & Recovery', category: 'platform' },
         // Separator - operational modules
         ...operationalModules.filter(item => 
@@ -144,6 +145,7 @@ export default function Layout() {
       items = [
         // Branch management
         { path: '/users', icon: Settings, label: 'User Management', category: 'platform' },
+        { path: '/roles', icon: Shield, label: 'Roles & Permissions', category: 'platform' },
         { path: '/audit-logs', icon: History, label: 'Audit Logs', category: 'platform' },
         { path: '/backups', icon: HardDrive, label: 'Backup & Recovery', category: 'platform' },
         // Operational modules
