@@ -47,6 +47,7 @@ import RequestorRegistration from "./pages/RequestorRegistration";
 import RequestorDashboard from "./pages/RequestorDashboard";
 import RequestorManagement from "./pages/RequestorManagement";
 import BloodLinkSearch from "./pages/BloodLinkSearch";
+import BroadcastsManagement from "./pages/BroadcastsManagement";
 import "./App.css";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
