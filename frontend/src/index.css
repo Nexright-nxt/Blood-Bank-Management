@@ -225,3 +225,107 @@
 .barcode-container img {
   max-height: 60px;
 }
+
+/* Mobile Responsive Overrides */
+@media (max-width: 640px) {
+  /* Reduce card padding on mobile */
+  .card-stat {
+    @apply p-3;
+  }
+
+  /* Make tables horizontally scrollable */
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Reduce font sizes on mobile */
+  .text-3xl {
+    font-size: 1.5rem;
+  }
+
+  .text-2xl {
+    font-size: 1.25rem;
+  }
+
+  /* Stack buttons on mobile */
+  .flex.gap-2 > button,
+  .flex.gap-3 > button {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Make dialogs full width on mobile */
+  [role="dialog"] {
+    max-width: calc(100vw - 2rem) !important;
+    margin: 1rem;
+  }
+
+  /* Improve touch targets */
+  button, a, [role="button"] {
+    min-height: 44px;
+  }
+
+  /* Fix dropdown menus on mobile */
+  [data-radix-popper-content-wrapper] {
+    max-width: calc(100vw - 1rem) !important;
+  }
+
+  /* Charts responsive */
+  .recharts-wrapper {
+    max-width: 100% !important;
+  }
+
+  /* Form inputs full width */
+  input, select, textarea {
+    width: 100%;
+  }
+
+  /* Badge sizing */
+  .badge {
+    font-size: 0.65rem;
+    padding: 0.15rem 0.4rem;
+  }
+}
+
+/* Small mobile devices */
+@media (max-width: 375px) {
+  .text-3xl {
+    font-size: 1.25rem;
+  }
+
+  .text-2xl {
+    font-size: 1.125rem;
+  }
+
+  .text-xl {
+    font-size: 1rem;
+  }
+}
+
+/* Ensure viewport meta is respected */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+/* Prevent horizontal scroll */
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Fix for iOS input zoom */
+@media screen and (max-width: 640px) {
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="number"],
+  input[type="tel"],
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
