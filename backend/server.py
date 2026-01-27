@@ -116,6 +116,7 @@ app.include_router(backups_router, prefix="/api")
 app.include_router(roles_router, prefix="/api")
 app.include_router(requestors_router, prefix="/api")
 app.include_router(blood_link_router, prefix="/api")
+app.include_router(broadcasts_router, prefix="/api")
 
 
 async def create_default_admin():
