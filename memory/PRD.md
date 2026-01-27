@@ -536,3 +536,5 @@ cd frontend && yarn install && yarn start
 - `/app/backend/tests/test_requestors.py` - Requestor feature tests
 - `/app/backend/tests/test_blood_link_search.py` - Blood Link feature tests
 - `/app/test_reports/iteration_5.json` - Blood Link feature (100% pass rate, 17 backend tests)
+- `/app/backend/tests/test_broadcasts.py` - Network Broadcasts feature tests
+- `/app/test_reports/iteration_6.json` - Network Broadcasts feature (100% pass rate, 18 backend tests)
