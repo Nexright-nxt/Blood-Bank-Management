@@ -130,11 +130,56 @@
   }
 
   .page-title {
-    @apply text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100;
+    @apply text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100;
   }
 
   .page-subtitle {
-    @apply text-sm text-slate-500 dark:text-slate-400 mt-1;
+    @apply text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1;
+  }
+
+  /* Mobile responsive utilities */
+  .mobile-card {
+    @apply bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-lg p-3 sm:p-4 md:p-5;
+  }
+
+  .mobile-table-container {
+    @apply overflow-x-auto -mx-3 sm:mx-0;
+  }
+
+  .mobile-table-container table {
+    @apply min-w-[600px] sm:min-w-full;
+  }
+
+  .mobile-stack {
+    @apply flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4;
+  }
+
+  .mobile-grid-2 {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4;
+  }
+
+  .mobile-grid-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4;
+  }
+
+  .mobile-grid-4 {
+    @apply grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4;
+  }
+
+  .mobile-hide {
+    @apply hidden sm:block;
+  }
+
+  .mobile-show {
+    @apply block sm:hidden;
+  }
+
+  .mobile-text-sm {
+    @apply text-xs sm:text-sm;
+  }
+
+  .mobile-button {
+    @apply w-full sm:w-auto;
   }
 }
 
