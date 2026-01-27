@@ -374,6 +374,43 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
 
 ---
 
+### Phase L: Blood Link - Nearby Availability (COMPLETE - Jan 28, 2026)
+- [x] **Backend Blood Link API** (`/app/backend/routers/blood_link.py`):
+  - [x] `POST /api/blood-link/search` - Public geolocation search for nearby blood banks
+  - [x] `GET /api/blood-link/availability/{org_id}` - Detailed availability for specific blood bank
+  - [x] `GET /api/blood-link/blood-groups` - Network-wide blood group availability summary
+  - [x] `GET /api/blood-link/emergency-contacts` - 24x7 blood bank contact list
+  - [x] `GET /api/blood-link/my-org/settings` - Get org's Blood Link settings (authenticated)
+  - [x] `PUT /api/blood-link/my-org/settings` - Update org's Blood Link settings (admin)
+- [x] **Geolocation Features:**
+  - [x] Haversine formula distance calculation (accurate great-circle distance)
+  - [x] Filter by blood group, component type, max radius, min units
+  - [x] Results sorted by distance (nearest first)
+  - [x] Organization latitude/longitude fields in organizations collection
+- [x] **Frontend Blood Link Search** (`/app/frontend/src/pages/BloodLinkSearch.js`):
+  - [x] Public accessible at `/blood-link` (no auth required)
+  - [x] Latitude/Longitude inputs with auto-detect geolocation button
+  - [x] Blood Group dropdown filter (Any, A+, A-, B+, B-, AB+, AB-, O+, O-)
+  - [x] Component Type dropdown filter (All, Whole Blood, PRC, FFP, Platelets, Cryoprecipitate)
+  - [x] Search Radius dropdown (10km, 25km, 50km, 100km, 200km)
+  - [x] Search results with blood bank cards showing:
+    - Organization name, address, city, state
+    - Distance from user location
+    - Total units available with availability badge (No Stock/Low Stock/Available)
+    - Operating hours and 24x7 badge
+    - Blood group availability breakdown
+  - [x] Blood bank detail modal with:
+    - Full contact info (phone, email, address)
+    - Complete availability breakdown by blood group and component
+    - Get Directions button (opens Google Maps)
+    - Call Now button
+  - [x] Empty state handling with helpful message
+  - [x] Emergency info card with guidance
+- [x] **Navigation Updates** (`/app/frontend/src/components/Layout.js`):
+  - [x] "Blood Link" public link in sidebar (visible to all users)
+
+---
+
 ## Deployment
 
 ### Deployment Files Location
