@@ -25,7 +25,7 @@ from routers import (
     organizations_router, inter_org_requests_router,
     audit_logs_router, sessions_router, documents_router,
     compliance_router, training_router, security_router, sensitive_actions_router,
-    backups_router, roles_router, requestors_router
+    backups_router, roles_router, requestors_router, blood_link_router
 )
 from routers.roles import seed_system_roles
 
