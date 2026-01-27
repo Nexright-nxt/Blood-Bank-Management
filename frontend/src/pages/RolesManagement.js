@@ -100,7 +100,7 @@ export default function RolesManagement() {
 
   const loadRoles = async () => {
     try {
-      const response = await api.get('/api/roles');
+      const response = await api.get('/roles');
       setRoles(response.data);
     } catch (error) {
       toast.error('Failed to load roles');
@@ -111,7 +111,7 @@ export default function RolesManagement() {
 
   const loadAvailableModules = async () => {
     try {
-      const response = await api.get('/api/roles/available-modules');
+      const response = await api.get('/roles/available-modules');
       setAvailableModules(response.data.modules || {});
     } catch (error) {
       console.error('Failed to load modules:', error);
@@ -120,7 +120,7 @@ export default function RolesManagement() {
 
   const handleCreateRole = async () => {
     try {
-      await api.post('/api/roles', formData);
+      await api.post('/roles', formData);
       toast.success('Role created successfully');
       setShowCreateDialog(false);
       resetForm();
@@ -132,7 +132,7 @@ export default function RolesManagement() {
 
   const handleUpdateRole = async () => {
     try {
-      await api.put(`/api/roles/${selectedRole.id}`, formData);
+      await api.put(`/roles/${selectedRole.id}`, formData);
       toast.success('Role updated successfully');
       setShowEditDialog(false);
       resetForm();
@@ -144,7 +144,7 @@ export default function RolesManagement() {
 
   const handleDeleteRole = async () => {
     try {
-      await api.delete(`/api/roles/${selectedRole.id}`);
+      await api.delete(`/roles/${selectedRole.id}`);
       toast.success('Role deleted successfully');
       setShowDeleteDialog(false);
       setSelectedRole(null);
@@ -156,7 +156,7 @@ export default function RolesManagement() {
 
   const handleDuplicateRole = async (role) => {
     try {
-      await api.post(`/api/roles/${role.id}/duplicate`);
+      await api.post(`/roles/${role.id}/duplicate`);
       toast.success('Role duplicated successfully');
       loadRoles();
     } catch (error) {
