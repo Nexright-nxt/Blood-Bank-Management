@@ -622,16 +622,16 @@ export default function UserManagement() {
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
+                    <TableHead>Custom Role</TableHead>
                     <TableHead>Organization</TableHead>
                     <TableHead>Status</TableHead>
-                    <TableHead>Last Login</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredStaff.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center py-8 text-slate-500">
+                      <TableCell colSpan={8} className="text-center py-8 text-slate-500">
                         No staff users found
                       </TableCell>
                     </TableRow>
@@ -653,6 +653,16 @@ export default function UserManagement() {
                           </Badge>
                         </TableCell>
                         <TableCell>
+                          {user.custom_role_id ? (
+                            <Badge variant="outline" className="bg-teal-50 text-teal-700 border-teal-200">
+                              <Shield className="w-3 h-3 mr-1" />
+                              {getCustomRoleName(user.custom_role_id) || 'Custom'}
+                            </Badge>
+                          ) : (
+                            <span className="text-xs text-slate-400">System Default</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           <div className="flex items-center gap-1 text-sm">
                             <Building2 className="w-3 h-3 text-slate-400" />
                             {getOrgName(user.org_id)}
@@ -662,12 +672,6 @@ export default function UserManagement() {
                           <Badge className={user.is_active ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'}>
                             {user.is_active ? 'Active' : 'Inactive'}
                           </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center gap-1 text-sm text-slate-500">
-                            <Clock className="w-3 h-3" />
-                            {formatDate(user.last_login)}
-                          </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex gap-1">
