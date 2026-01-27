@@ -78,10 +78,16 @@ class OrganizationUpdate(BaseModel):
     city: Optional[str] = None
     state: Optional[str] = None
     country: Optional[str] = None
+    pincode: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     contact_person: Optional[str] = None
     contact_phone: Optional[str] = None
     contact_email: Optional[str] = None
     license_number: Optional[str] = None
+    operating_hours: Optional[str] = None
+    is_24x7: Optional[bool] = None
+    accepts_external_requests: Optional[bool] = None
     is_active: Optional[bool] = None
 
 
@@ -95,6 +101,9 @@ class OrganizationResponse(BaseModel):
     city: Optional[str] = None
     state: Optional[str] = None
     country: Optional[str] = None
+    pincode: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     contact_person: Optional[str] = None
     contact_phone: Optional[str] = None
     contact_email: Optional[str] = None
