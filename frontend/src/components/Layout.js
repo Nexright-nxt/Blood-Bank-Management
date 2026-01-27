@@ -43,6 +43,7 @@ const platformModules = [
   { path: '/network', icon: Globe, label: 'Network Overview', category: 'platform' },
   { path: '/organizations', icon: Building2, label: 'Organizations', category: 'platform' },
   { path: '/requestor-management', icon: UserCheck, label: 'Requestors', category: 'platform' },
+  { path: '/broadcasts', icon: Megaphone, label: 'Network Broadcasts', category: 'platform' },
   { path: '/audit-logs', icon: History, label: 'Audit Logs', category: 'platform' },
   { path: '/users', icon: Settings, label: 'User Management', category: 'platform' },
   { path: '/roles', icon: Shield, label: 'Roles & Permissions', category: 'platform' },
