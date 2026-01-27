@@ -82,6 +82,9 @@ function AppRoutes() {
       <Route path="/track/:trackingNumber" element={<PublicTracking />} />
       <Route path="/track" element={<PublicTracking />} />
       
+      {/* Requestor Public Routes */}
+      <Route path="/requestor/register" element={<RequestorRegistration />} />
+      
       {/* Staff Login */}
       <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
       
@@ -94,6 +97,16 @@ function AppRoutes() {
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="org-dashboard" element={<OrgDashboard />} />
+        
+        {/* Requestor Dashboard - For approved requestors */}
+        <Route path="requestor-dashboard" element={<RequestorDashboard />} />
+        
+        {/* Requestor Management - Admin only */}
+        <Route path="requestor-management" element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <RequestorManagement />
+          </ProtectedRoute>
+        } />
         
         {/* Donor Management */}
         <Route path="donors" element={<DonorManagement />} />
