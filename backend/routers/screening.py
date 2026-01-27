@@ -9,13 +9,14 @@ from database import db
 from models import Screening, ScreeningCreate
 from services import get_current_user
 from middleware import ReadAccess, WriteAccess, OrgAccessHelper
+from middleware.permissions import require_permission
 
 router = APIRouter(prefix="/screenings", tags=["Screening"])
 
 @router.post("")
 async def create_screening(
     screening_data: ScreeningCreate, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("screening", "create")),
     access: OrgAccessHelper = Depends(WriteAccess)
 ):
     donor = await db.donors.find_one(
@@ -68,7 +69,7 @@ async def get_screenings(
     date: Optional[str] = None,
     status: Optional[str] = None,
     limit: int = 100,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("screening", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     query = {}
@@ -94,7 +95,7 @@ async def get_screenings(
 
 @router.get("/pending/donors")
 async def get_pending_screening_donors(
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("screening", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     """Get donors who need screening (registered but not screened today, or eligible to donate again)"""
@@ -137,7 +138,7 @@ async def get_pending_screening_donors(
 
 @router.get("/today/summary")
 async def get_today_screening_summary(
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("screening", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     """Get summary of today's screenings"""
@@ -157,7 +158,7 @@ async def get_today_screening_summary(
 @router.get("/{screening_id}")
 async def get_screening(
     screening_id: str, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("screening", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     screening = await db.screenings.find_one(access.filter({"id": screening_id}), {"_id": 0})
