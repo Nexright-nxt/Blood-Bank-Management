@@ -79,8 +79,8 @@ export default function BloodLinkSearch() {
       const response = await axios.post(`${API_URL}/blood-link/search`, {
         latitude: parseFloat(searchParams.latitude),
         longitude: parseFloat(searchParams.longitude),
-        blood_group: searchParams.blood_group || undefined,
-        component_type: searchParams.component_type || undefined,
+        blood_group: searchParams.blood_group === 'any' ? undefined : searchParams.blood_group,
+        component_type: searchParams.component_type === 'all' ? undefined : searchParams.component_type,
         max_distance_km: searchParams.max_distance_km,
         min_units: searchParams.min_units
       });
