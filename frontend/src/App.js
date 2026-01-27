@@ -113,6 +113,9 @@ function AppRoutes() {
           </ProtectedRoute>
         } />
         
+        {/* Broadcasts Management - Any staff */}
+        <Route path="broadcasts" element={<BroadcastsManagement />} />
+        
         {/* Donor Management */}
         <Route path="donors" element={<DonorManagement />} />
         <Route path="donors/register" element={<DonorRegistration />} />
