@@ -36,3 +36,4 @@ from .sensitive_actions import router as sensitive_actions_router
 from .backups import router as backups_router
 from .roles import router as roles_router
 from .requestors import router as requestors_router
+from .blood_link import router as blood_link_router
