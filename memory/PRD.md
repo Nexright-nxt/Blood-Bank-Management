@@ -277,6 +277,12 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
   - [x] `require_any_permission(module, actions)` - Check any of multiple actions
   - [x] `require_module_access(module)` - Check any access to a module
   - [x] `get_user_permissions(user)` - Get full permission object for user
+- [x] **Permission Enforcement Applied to Routes:**
+  - [x] `/api/donors` - donors.view, donors.create, donors.edit
+  - [x] `/api/inventory` - inventory.view
+  - [x] `/api/requests` - requests.view, requests.create, requests.approve, requests.reject, requests.fulfill
+  - [x] `/api/lab-tests` - laboratory.view, laboratory.create
+  - [x] `/api/screenings` - screening.view, screening.create
 - [x] **Frontend Roles Management** (`/app/frontend/src/pages/RolesManagement.js`):
   - [x] System Roles section (read-only, 8 seeded roles)
   - [x] Custom Roles section with full CRUD
