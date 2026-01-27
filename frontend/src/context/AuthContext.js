@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 const AuthContext = createContext(null);
@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [contextInfo, setContextInfo] = useState(null);
   const [isImpersonating, setIsImpersonating] = useState(false);
+  const [userPermissions, setUserPermissions] = useState(null);
 
   useEffect(() => {
     if (token) {
@@ -25,13 +26,22 @@ export const AuthProvider = ({ children }) => {
     try {
       const response = await axios.get(`${API_URL}/auth/me`);
       setUser(response.data);
-      // Fetch context info
-      await fetchContext();
+      // Fetch context info and permissions
+      await Promise.all([fetchContext(), fetchPermissions()]);
     } catch (error) {
       console.error('Failed to fetch user:', error);
       logout();
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchPermissions = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/roles/my-permissions`);
+      setUserPermissions(response.data);
+    } catch (error) {
+      console.error('Failed to fetch permissions:', error);
     }
   };
 
@@ -144,6 +154,29 @@ export const AuthProvider = ({ children }) => {
   const canViewNetworkInventory = () => isSystemAdmin() || isSuperAdmin() || isTenantAdmin();
   const canSwitchContext = () => isSystemAdmin() || isSuperAdmin();
 
+  // Permission check helper for custom roles
+  const hasPermission = useCallback((module, action) => {
+    // System admins have all permissions
+    if (user?.user_type === 'system_admin') return true;
+    
+    // Check user permissions object
+    if (!userPermissions?.permissions) return false;
+    
+    const modulePerms = userPermissions.permissions[module];
+    if (!modulePerms) return false;
+    
+    return modulePerms.includes(action);
+  }, [user, userPermissions]);
+
+  // Check if user can access a module (has any permission for it)
+  const canAccessModule = useCallback((module) => {
+    if (user?.user_type === 'system_admin') return true;
+    if (!userPermissions?.permissions) return false;
+    
+    const modulePerms = userPermissions.permissions[module];
+    return modulePerms && modulePerms.length > 0;
+  }, [user, userPermissions]);
+
   // Function to set auth data directly (used for MFA login flow)
   const setAuthData = ({ token: newToken, user: userData }) => {
     localStorage.setItem('token', newToken);
@@ -178,6 +211,11 @@ export const AuthProvider = ({ children }) => {
     canManageUsers,
     canViewNetworkInventory,
     canSwitchContext,
+    // Custom role permissions
+    userPermissions,
+    hasPermission,
+    canAccessModule,
+    refreshPermissions: fetchPermissions,
   };
 
   return (
