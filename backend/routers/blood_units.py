@@ -38,7 +38,7 @@ async def get_blood_units(
 @router.get("/{unit_id}")
 async def get_blood_unit(
     unit_id: str, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("inventory", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     unit = await db.blood_units.find_one(
@@ -53,7 +53,7 @@ async def get_blood_unit(
 async def update_blood_unit(
     unit_id: str, 
     updates: dict, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("inventory", "move")),
     access: OrgAccessHelper = Depends(WriteAccess)
 ):
     updates["updated_at"] = datetime.now(timezone.utc).isoformat()
@@ -69,7 +69,7 @@ async def update_blood_unit(
 @router.get("/{unit_id}/traceability")
 async def get_unit_traceability(
     unit_id: str, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("inventory", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     unit = await db.blood_units.find_one(
@@ -96,7 +96,7 @@ custody_router = APIRouter(prefix="/chain-custody", tags=["Chain of Custody"])
 @custody_router.post("")
 async def create_custody_record(
     custody_data: ChainOfCustodyCreate, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("inventory", "move")),
     access: OrgAccessHelper = Depends(WriteAccess)
 ):
     custody = ChainOfCustody(**custody_data.model_dump())
