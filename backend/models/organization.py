@@ -19,6 +19,11 @@ class Organization(BaseModel):
     city: Optional[str] = None
     state: Optional[str] = None
     country: Optional[str] = None
+    pincode: Optional[str] = None
+    
+    # Geolocation for Blood Link feature
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     
     # Contact
     contact_person: Optional[str] = None
@@ -28,8 +33,15 @@ class Organization(BaseModel):
     # Licensing
     license_number: Optional[str] = None
     
+    # Operating hours
+    operating_hours: Optional[str] = None  # e.g., "Mon-Sat: 9AM-6PM"
+    is_24x7: bool = False
+    
     # Status
     is_active: bool = True
+    
+    # Blood Link settings
+    accepts_external_requests: bool = True  # Whether to show in nearby search
     
     # Audit
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
@@ -47,10 +59,16 @@ class OrganizationCreate(BaseModel):
     city: Optional[str] = None
     state: Optional[str] = None
     country: Optional[str] = None
+    pincode: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     contact_person: Optional[str] = None
     contact_phone: Optional[str] = None
     contact_email: Optional[str] = None
     license_number: Optional[str] = None
+    operating_hours: Optional[str] = None
+    is_24x7: bool = False
+    accepts_external_requests: bool = True
 
 
 class OrganizationUpdate(BaseModel):
