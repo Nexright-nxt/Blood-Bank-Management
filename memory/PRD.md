@@ -279,10 +279,15 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
   - [x] `get_user_permissions(user)` - Get full permission object for user
 - [x] **Permission Enforcement Applied to Routes:**
   - [x] `/api/donors` - donors.view, donors.create, donors.edit
-  - [x] `/api/inventory` - inventory.view
-  - [x] `/api/requests` - requests.view, requests.create, requests.approve, requests.reject, requests.fulfill
-  - [x] `/api/lab-tests` - laboratory.view, laboratory.create
+  - [x] `/api/donations` - donations.view, donations.create, donations.edit
   - [x] `/api/screenings` - screening.view, screening.create
+  - [x] `/api/lab-tests` - laboratory.view, laboratory.create
+  - [x] `/api/components` - processing.view, processing.create, processing.edit
+  - [x] `/api/qc-validation` - qc_validation.view, qc_validation.create, qc_validation.approve
+  - [x] `/api/inventory` - inventory.view
+  - [x] `/api/blood-units` - inventory.view, inventory.move
+  - [x] `/api/requests` - requests.view, requests.create, requests.approve, requests.reject, requests.fulfill
+  - [x] `/api/logistics/shipments` - logistics.view, logistics.create, logistics.edit, logistics.dispatch, logistics.deliver
 - [x] **Frontend Roles Management** (`/app/frontend/src/pages/RolesManagement.js`):
   - [x] System Roles section (read-only, 8 seeded roles)
   - [x] Custom Roles section with full CRUD
