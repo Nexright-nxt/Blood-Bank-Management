@@ -187,7 +187,7 @@ export default function BloodLinkSearch() {
                     <SelectValue placeholder="Any" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Any Blood Group</SelectItem>
+                    <SelectItem value="any">Any Blood Group</SelectItem>
                     {BLOOD_GROUPS.map((bg) => (
                       <SelectItem key={bg} value={bg}>{bg}</SelectItem>
                     ))}
