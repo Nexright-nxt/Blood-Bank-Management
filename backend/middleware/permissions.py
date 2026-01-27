@@ -7,7 +7,7 @@ from fastapi import HTTPException, Depends
 from functools import wraps
 
 from database import db
-from routers.auth import get_current_user
+from services import get_current_user
 from models.role import AVAILABLE_MODULES, SYSTEM_ROLES
 
 
