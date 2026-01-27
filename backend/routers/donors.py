@@ -455,7 +455,7 @@ async def reject_donor_request(
 @router.post("/donors")
 async def create_donor(
     donor_data: DonorCreate, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("donors", "create")),
     access: OrgAccessHelper = Depends(WriteAccess)
 ):
     existing = await db.donors.find_one({
@@ -484,7 +484,7 @@ async def get_donors(
     search: Optional[str] = None,
     status: Optional[str] = None,
     blood_group: Optional[str] = None,
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("donors", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     # Build org-filtered query
@@ -507,7 +507,7 @@ async def get_donors(
 @router.get("/donors/{donor_id}")
 async def get_donor(
     donor_id: str, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("donors", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
     # First find the donor
