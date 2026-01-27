@@ -10,6 +10,7 @@ sys.path.append('..')
 from database import db
 from services import get_current_user
 from middleware import ReadAccess, WriteAccess, OrgAccessHelper
+from middleware.permissions import require_permission
 
 router = APIRouter(prefix="/logistics", tags=["Logistics"])
 
@@ -37,7 +38,7 @@ async def generate_shipment_id():
 @router.post("/shipments")
 async def create_shipment(
     data: ShipmentCreate, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("logistics", "create")),
     access: OrgAccessHelper = Depends(WriteAccess)
 ):
     """Create a new shipment for an issuance"""
