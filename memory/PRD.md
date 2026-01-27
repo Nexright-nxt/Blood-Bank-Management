@@ -316,7 +316,7 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
 - All P0 tasks complete!
 
 ### P1 (High Priority)
-- [ ] **Requestor User Role** - Public registration, admin approval workflow, limited dashboard
+- [x] **Requestor User Role** - Public registration, admin approval workflow, limited dashboard (COMPLETE)
 
 ### P2 (Medium Priority)
 - [ ] **Blood Link (Nearby Availability)** - Geolocation to find nearby blood banks with stock
@@ -326,6 +326,51 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
 - [ ] Logistics Module Notifications
 - [ ] Email Service Integration (Email OTP is MOCKED - prints to console)
 - [ ] Enterprise Backup & Recovery Upgrade (deferred by user)
+
+---
+
+### Phase K: Requestor User Role (COMPLETE - Jan 27, 2026)
+- [x] **Backend Requestor API** (`/app/backend/routers/requestors.py`):
+  - [x] `POST /api/requestors/register` - Public registration (no auth required)
+  - [x] `GET /api/requestors/check-status/{email}` - Public status check
+  - [x] `GET /api/requestors` - List all requestors (admin)
+  - [x] `GET /api/requestors/stats` - Statistics (admin)
+  - [x] `GET /api/requestors/pending` - Pending approvals (admin)
+  - [x] `GET /api/requestors/{id}` - Get single requestor (admin)
+  - [x] `PUT /api/requestors/{id}/approve` - Approve/Reject (admin)
+  - [x] `PUT /api/requestors/{id}/suspend` - Suspend approved requestor (admin)
+  - [x] `PUT /api/requestors/{id}/reactivate` - Reactivate suspended (admin)
+  - [x] `GET /api/requestors/me/profile` - Requestor self-service
+  - [x] `PUT /api/requestors/me/profile` - Requestor profile update
+- [x] **Requestor Model** (`/app/backend/models/requestor.py`):
+  - [x] RequestorStatus enum (pending, approved, rejected, suspended)
+  - [x] RequestorType enum (hospital, clinic, emergency_service, research_lab, other)
+  - [x] Requestor, RequestorRegistration, RequestorUpdate, RequestorApproval models
+- [x] **Frontend Public Registration** (`/app/frontend/src/pages/RequestorRegistration.js`):
+  - [x] 3-step registration form (Organization Info, Account Details, Address)
+  - [x] Form validation at each step
+  - [x] Success confirmation with status check link
+- [x] **Frontend Admin Management** (`/app/frontend/src/pages/RequestorManagement.js`):
+  - [x] Stats cards (pending, approved, rejected, total)
+  - [x] Pending approval alert
+  - [x] Search and filter (by status, type)
+  - [x] Table with approve/reject/suspend/reactivate actions
+  - [x] Detail dialog with full requestor info
+  - [x] Approval dialog with org selection
+  - [x] Rejection dialog with reason input
+- [x] **Frontend Requestor Dashboard** (`/app/frontend/src/pages/RequestorDashboard.js`):
+  - [x] Stats cards (pending, approved, fulfilled requests)
+  - [x] Blood availability view by blood group
+  - [x] My Requests list with status tracking
+  - [x] New Request dialog with patient info form
+  - [x] Organization profile tab
+- [x] **Navigation Updates** (`/app/frontend/src/components/Layout.js`):
+  - [x] "Requestors" link in sidebar for admins
+  - [x] Requestor user type redirects to requestor dashboard
+- [x] **Routes** (`/app/frontend/src/App.js`):
+  - [x] `/requestor/register` - Public registration page
+  - [x] `/requestor-dashboard` - Approved requestor dashboard
+  - [x] `/requestor-management` - Admin management page
 
 ---
 
