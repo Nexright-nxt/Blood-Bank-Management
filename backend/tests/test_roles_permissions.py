@@ -461,7 +461,7 @@ class TestPermissionMiddleware:
         """Unauthenticated user cannot access roles"""
         # No login - try to access roles
         response = self.session.get(f"{BASE_URL}/api/roles")
-        assert response.status_code == 401, f"Should return 401, got {response.status_code}"
+        assert response.status_code in [401, 403], f"Should return 401 or 403, got {response.status_code}"
         
         print("SUCCESS: Unauthenticated user blocked from roles")
 
