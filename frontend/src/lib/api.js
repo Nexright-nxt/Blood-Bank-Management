@@ -217,6 +217,18 @@ export const userAPI = {
   getModules: () => api.get('/users/permissions/modules'),
 };
 
+// Roles API (Custom Roles & Permissions)
+export const rolesAPI = {
+  getAll: () => api.get('/roles'),
+  getOne: (id) => api.get(`/roles/${id}`),
+  create: (data) => api.post('/roles', data),
+  update: (id, data) => api.put(`/roles/${id}`, data),
+  delete: (id) => api.delete(`/roles/${id}`),
+  duplicate: (id) => api.post(`/roles/${id}/duplicate`),
+  getAvailableModules: () => api.get('/roles/available-modules'),
+  getMyPermissions: () => api.get('/roles/my-permissions'),
+};
+
 // Donor APIs
 export const donorAPI = {
   create: (data) => api.post('/donors', data),
