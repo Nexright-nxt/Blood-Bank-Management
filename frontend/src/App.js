@@ -43,6 +43,9 @@ import AuditLogs from "./pages/AuditLogs";
 import SecuritySettings from "./pages/SecuritySettings";
 import BackupManagement from "./pages/BackupManagement";
 import RolesManagement from "./pages/RolesManagement";
+import RequestorRegistration from "./pages/RequestorRegistration";
+import RequestorDashboard from "./pages/RequestorDashboard";
+import RequestorManagement from "./pages/RequestorManagement";
 import "./App.css";
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
