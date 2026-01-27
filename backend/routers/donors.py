@@ -529,7 +529,7 @@ async def get_donor(
 async def update_donor(
     donor_id: str, 
     updates: dict, 
-    current_user: dict = Depends(get_current_user),
+    current_user: dict = Depends(require_permission("donors", "edit")),
     access: OrgAccessHelper = Depends(WriteAccess)
 ):
     # Find donor first to check org access
@@ -558,7 +558,10 @@ async def update_donor(
     return {"status": "success"}
 
 @router.get("/donors/{donor_id}/eligibility")
-async def check_donor_eligibility(donor_id: str, current_user: dict = Depends(get_current_user)):
+async def check_donor_eligibility(
+    donor_id: str, 
+    current_user: dict = Depends(require_permission("donors", "view"))
+):
     donor = await db.donors.find_one(
         {"$or": [{"id": donor_id}, {"donor_id": donor_id}]},
         {"_id": 0}
