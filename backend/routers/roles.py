@@ -17,52 +17,6 @@ from middleware.permissions import check_permission, get_user_permissions
 router = APIRouter(prefix="/roles", tags=["Roles"])
 
 
-async def check_permission(user: dict, module: str, action: str) -> bool:
-    """Check if user has permission for a specific module action"""
-    # System admins have all permissions
-    if user.get("user_type") == "system_admin":
-        return True
-    
-    # Get user's role
-    role_key = user.get("role")
-    if not role_key:
-        return False
-    
-    # First check if user has a custom role assigned
-    custom_role_id = user.get("custom_role_id")
-    if custom_role_id:
-        role = await db.roles.find_one({"id": custom_role_id}, {"_id": 0})
-        if role:
-            permissions = role.get("permissions", {})
-            return action in permissions.get(module, [])
-    
-    # Fall back to system role
-    role = await db.roles.find_one({"role_key": role_key, "is_system_role": True}, {"_id": 0})
-    if role:
-        permissions = role.get("permissions", {})
-        return action in permissions.get(module, [])
-    
-    # Check built-in system roles
-    if role_key in SYSTEM_ROLES:
-        permissions = SYSTEM_ROLES[role_key]["permissions"]
-        return action in permissions.get(module, [])
-    
-    return False
-
-
-async def require_permission(module: str, action: str):
-    """Dependency to require specific permission"""
-    async def permission_checker(current_user: dict = Depends(get_current_user)):
-        has_permission = await check_permission(current_user, module, action)
-        if not has_permission:
-            raise HTTPException(
-                status_code=403,
-                detail=f"Permission denied: {module}.{action}"
-            )
-        return current_user
-    return permission_checker
-
-
 @router.get("/available-modules")
 async def get_available_modules(current_user: dict = Depends(get_current_user)):
     """Get all available modules and their actions for role creation"""
