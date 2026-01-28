@@ -306,7 +306,9 @@ export default function BroadcastsManagement() {
       <Tabs defaultValue="network" className="w-full">
         <TabsList>
           <TabsTrigger value="network">Network Alerts ({networkBroadcasts.length})</TabsTrigger>
-          <TabsTrigger value="my">My Broadcasts ({myBroadcasts.length})</TabsTrigger>
+          <TabsTrigger value="my">
+            {isAdminView ? `All Broadcasts (${myBroadcasts.length})` : `My Broadcasts (${myBroadcasts.length})`}
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="network" className="mt-4">
