@@ -29,7 +29,7 @@ const COMPONENT_TYPES = [
 ];
 
 export default function BroadcastsManagement() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [myBroadcasts, setMyBroadcasts] = useState([]);
   const [networkBroadcasts, setNetworkBroadcasts] = useState([]);
@@ -38,6 +38,10 @@ export default function BroadcastsManagement() {
   const [showResponseDialog, setShowResponseDialog] = useState(false);
   const [selectedBroadcast, setSelectedBroadcast] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [isAdminView, setIsAdminView] = useState(false);
+
+  // System admin cannot create broadcasts (no org_id)
+  const canCreateBroadcast = user?.org_id || user?.user_type !== 'system_admin';
 
   const [newBroadcast, setNewBroadcast] = useState({
     broadcast_type: 'urgent_need',
