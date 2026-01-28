@@ -346,24 +346,71 @@ export default function BloodLinkSearch() {
             </div>
 
             {/* Search Button */}
-            <Button 
-              className="w-full bg-red-600 hover:bg-red-700"
-              onClick={handleSearch}
-              disabled={loading || !searchParams.latitude || !searchParams.longitude}
-              data-testid="search-btn"
-            >
-              {loading ? (
-                <RefreshCw className="w-4 h-4 animate-spin mr-2" />
-              ) : (
-                <Search className="w-4 h-4 mr-2" />
-              )}
-              Search Blood Banks
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                className="flex-1 bg-red-600 hover:bg-red-700"
+                onClick={handleSearch}
+                disabled={loading || !searchParams.latitude || !searchParams.longitude}
+                data-testid="search-btn"
+              >
+                {loading ? (
+                  <RefreshCw className="w-4 h-4 animate-spin mr-2" />
+                ) : (
+                  <Search className="w-4 h-4 mr-2" />
+                )}
+                Search Blood Banks
+              </Button>
+            </div>
           </CardContent>
         </Card>
 
-        {/* Results */}
-        {results && (
+        {/* View Mode Toggle */}
+        <div className="flex items-center justify-center gap-2 mb-6">
+          <Button
+            variant={viewMode === 'list' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('list')}
+            className={viewMode === 'list' ? 'bg-red-600 hover:bg-red-700' : ''}
+          >
+            <Search className="w-4 h-4 mr-1" />
+            List View
+          </Button>
+          <Button
+            variant={viewMode === 'map' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => setViewMode('map')}
+            className={viewMode === 'map' ? 'bg-red-600 hover:bg-red-700' : ''}
+          >
+            <Map className="w-4 h-4 mr-1" />
+            Map View
+          </Button>
+        </div>
+
+        {/* Map View */}
+        {viewMode === 'map' && (
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Map className="w-5 h-5 text-red-600" />
+                Blood Banks on Map
+              </CardTitle>
+              <CardDescription>
+                Click on markers to see blood bank details and get directions
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <BloodBankMap
+                height="500px"
+                initialUserLocation={searchParams.latitude && searchParams.longitude 
+                  ? [parseFloat(searchParams.latitude), parseFloat(searchParams.longitude)] 
+                  : null}
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* List View Results */}
+        {viewMode === 'list' && results && (
           <div className="space-y-4">
             {/* Results Header */}
             <div className="flex items-center justify-between">
