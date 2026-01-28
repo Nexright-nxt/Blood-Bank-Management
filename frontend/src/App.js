@@ -94,7 +94,11 @@ function AppRoutes() {
       <Route path="/blood-link" element={<BloodLinkSearch />} />
       
       {/* Staff Login */}
-      <Route path="/login" element={user ? <Navigate to="/dashboard" /> : <Login />} />
+      <Route path="/login" element={
+        user ? (
+          user.user_type === 'requestor' ? <Navigate to="/requestor-dashboard" /> : <Navigate to="/dashboard" />
+        ) : <Login />
+      } />
       
       {/* Protected Staff Routes */}
       <Route path="/" element={
