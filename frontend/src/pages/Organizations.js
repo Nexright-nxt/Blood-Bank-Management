@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import {
   Building2, Plus, Edit2, Trash2, Users, Package, ChevronRight,
   ChevronDown, RefreshCw, MapPin, Phone, Mail, FileText, Eye,
-  Building, GitBranch, UserPlus, Shield
+  Building, GitBranch, UserPlus, Shield, Map
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -26,6 +26,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Checkbox } from '../components/ui/checkbox';
 import SensitiveActionModal from '../components/SensitiveActionModal';
+import MapPicker from '../components/MapPicker';
 
 const ORG_TYPES = [
   { value: 'hospital_network', label: 'Hospital Network' },
