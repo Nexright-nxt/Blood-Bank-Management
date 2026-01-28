@@ -236,7 +236,11 @@ export default function FindBlood() {
             Search for blood within your organization or from the Blood Link network
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" onClick={() => navigate('/blood-requests')} data-testid="view-my-requests-btn">
+            <List className="w-4 h-4 mr-2" />
+            View My Requests
+          </Button>
           <Button variant="outline" onClick={fetchData} disabled={loading}>
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
@@ -244,6 +248,7 @@ export default function FindBlood() {
           <Button 
             className="bg-red-600 hover:bg-red-700"
             onClick={() => openRequestDialog('internal')}
+            data-testid="new-request-btn"
           >
             <Plus className="w-4 h-4 mr-2" />
             New Request
