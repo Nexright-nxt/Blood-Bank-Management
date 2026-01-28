@@ -1011,6 +1011,36 @@ export default function Organizations() {
                     onChange={(e) => setOrgWithAdminData({ ...orgWithAdminData, state: e.target.value })}
                   />
                 </div>
+                
+                <div className="col-span-2">
+                  <Label>Address</Label>
+                  <Input
+                    value={orgWithAdminData.address}
+                    onChange={(e) => setOrgWithAdminData({ ...orgWithAdminData, address: e.target.value })}
+                    placeholder="Full address"
+                  />
+                </div>
+                
+                <div className="col-span-2">
+                  <Label className="flex items-center gap-2 mb-2">
+                    <Map className="w-4 h-4" />
+                    Location on Map
+                  </Label>
+                  <MapPicker
+                    initialPosition={orgWithAdminData.latitude && orgWithAdminData.longitude 
+                      ? [orgWithAdminData.latitude, orgWithAdminData.longitude] 
+                      : null}
+                    onLocationChange={(loc) => setOrgWithAdminData({ 
+                      ...orgWithAdminData, 
+                      latitude: loc.latitude, 
+                      longitude: loc.longitude 
+                    })}
+                    height="200px"
+                    showSearch={true}
+                    showCurrentLocation={true}
+                    showCoordinates={true}
+                  />
+                </div>
               </div>
             </div>
             
