@@ -43,6 +43,7 @@ export default function RequestorDashboard() {
   const [requests, setRequests] = useState([]);
   const [availability, setAvailability] = useState({});
   const [showNewRequest, setShowNewRequest] = useState(false);
+  const [showMapView, setShowMapView] = useState(false);
   const [requestForm, setRequestForm] = useState({
     blood_group: '',
     component_type: 'whole_blood',
@@ -55,7 +56,12 @@ export default function RequestorDashboard() {
     hospital_name: '',
     doctor_name: '',
     required_by_date: '',
-    notes: ''
+    notes: '',
+    // Location fields
+    location_type: 'delivery', // delivery or pickup
+    delivery_latitude: null,
+    delivery_longitude: null,
+    delivery_address: ''
   });
 
   const api = axios.create({
