@@ -202,8 +202,15 @@ function AppRoutes() {
         
         {/* Blood Requests (Inter-Org) */}
         <Route path="blood-requests" element={
-          <ProtectedRoute allowedRoles={['admin', 'inventory', 'distribution']}>
+          <ProtectedRoute allowedRoles={['admin', 'inventory', 'distribution', 'blood_request_staff']}>
             <BloodRequests />
+          </ProtectedRoute>
+        } />
+        
+        {/* Find Blood - Search and Request */}
+        <Route path="find-blood" element={
+          <ProtectedRoute allowedRoles={['admin', 'inventory', 'distribution', 'blood_request_staff']}>
+            <FindBlood />
           </ProtectedRoute>
         } />
         
