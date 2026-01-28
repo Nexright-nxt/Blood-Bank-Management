@@ -192,7 +192,8 @@ export default function RequestorDashboard() {
     return <Badge className={styles[status] || 'bg-slate-100'}>{status}</Badge>;
   };
 
-  const myRequests = requests.filter(r => r.requestor_id === user?.requestor_id || r.created_by === user?.id);
+  // Requests are already filtered server-side for this requestor
+  const myRequests = requests;
   const pendingCount = myRequests.filter(r => r.status === 'pending').length;
   const approvedCount = myRequests.filter(r => r.status === 'approved').length;
   const fulfilledCount = myRequests.filter(r => r.status === 'fulfilled').length;
