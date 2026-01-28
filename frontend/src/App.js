@@ -13,6 +13,9 @@ import DonorRequests from "./pages/DonorRequests";
 import DonorLanding from "./pages/DonorLanding";
 import DonorDashboard from "./pages/DonorDashboard";
 import DonorStatus from "./pages/DonorStatus";
+
+// Leaflet CSS for maps
+import 'leaflet/dist/leaflet.css';
 import Screening from "./pages/Screening";
 import Collection from "./pages/Collection";
 import Traceability from "./pages/Traceability";
