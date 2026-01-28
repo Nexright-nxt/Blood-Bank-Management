@@ -775,6 +775,28 @@ export default function Organizations() {
                 />
               </div>
             </div>
+            
+            {/* Location Map Picker */}
+            <div>
+              <Label className="flex items-center gap-2 mb-2">
+                <Map className="w-4 h-4" />
+                Location on Map
+              </Label>
+              <MapPicker
+                initialPosition={formData.latitude && formData.longitude 
+                  ? [formData.latitude, formData.longitude] 
+                  : null}
+                onLocationChange={(loc) => setFormData({ 
+                  ...formData, 
+                  latitude: loc.latitude, 
+                  longitude: loc.longitude 
+                })}
+                height="200px"
+                showSearch={true}
+                showCurrentLocation={true}
+                showCoordinates={true}
+              />
+            </div>
           </div>
           
           <DialogFooter>
