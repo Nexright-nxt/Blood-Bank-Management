@@ -296,6 +296,8 @@ export default function Organizations() {
       city: org.city || '',
       state: org.state || '',
       country: org.country || '',
+      latitude: org.latitude || (org.location?.coordinates?.[1]) || null,
+      longitude: org.longitude || (org.location?.coordinates?.[0]) || null,
       contact_person: org.contact_person || '',
       contact_phone: org.contact_phone || '',
       contact_email: org.contact_email || '',
