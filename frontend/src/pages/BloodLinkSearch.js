@@ -4,7 +4,7 @@ import { toast } from 'sonner';
 import { 
   MapPin, Search, Navigation, Phone, Mail, Clock, 
   Droplet, Building2, AlertCircle, RefreshCw, ExternalLink,
-  Locate, Filter, X, Megaphone, AlertTriangle, Package, MessageSquare
+  Locate, Filter, X, Megaphone, AlertTriangle, Package, MessageSquare, Map
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -15,6 +15,8 @@ import { Badge } from '../components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '../components/ui/dialog';
 import { Slider } from '../components/ui/slider';
 import { Textarea } from '../components/ui/textarea';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import BloodBankMap from '../components/BloodBankMap';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL + '/api';
 
