@@ -449,6 +449,22 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
 - [x] **Navigation Updates** (`/app/frontend/src/components/Layout.js`):
   - [x] "Network Broadcasts" link in sidebar for all staff roles
 
+### Phase M.1: In-App Notifications for Critical Broadcasts (COMPLETE - Jan 28, 2026)
+- [x] **Notification Listener** (`/app/frontend/src/components/BroadcastNotificationListener.js`):
+  - [x] Polling architecture (30 second intervals)
+  - [x] Initial 3 second delay to let app settle
+  - [x] Tracks "seen" broadcasts to avoid duplicate notifications
+  - [x] Filters for critical and high priority broadcasts only
+  - [x] Excludes same-org broadcasts (users don't need notifications for their own)
+- [x] **Toast Notifications** (using sonner):
+  - [x] Critical priority: Red background (#fef2f2), 15 second duration, 🚨 emoji
+  - [x] High priority: Amber background (#fffbeb), 10 second duration, ⚠️ emoji
+  - [x] Shows blood group, organization name, and broadcast title
+  - [x] "View" button navigates to /broadcasts page
+- [x] **Integration**:
+  - [x] BroadcastNotificationListener rendered in Layout.js for all logged-in users
+  - [x] Works with existing auth context for org_id filtering
+
 ---
 
 ## Deployment
