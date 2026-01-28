@@ -24,6 +24,7 @@ class UserRole(str, Enum):
     QC_MANAGER = "qc_manager"
     INVENTORY = "inventory"
     DISTRIBUTION = "distribution"
+    BLOOD_REQUEST_STAFF = "blood_request_staff"  # Blood request management role
     REQUESTOR = "requestor"        # External requestor role
 
 class DonorStatus(str, Enum):
