@@ -13,6 +13,7 @@ class UserType(str, Enum):
     SUPER_ADMIN = "super_admin"    # Parent org admin
     TENANT_ADMIN = "tenant_admin"  # Branch admin
     STAFF = "staff"                # Regular staff
+    REQUESTOR = "requestor"        # External requestor (hospital, clinic, etc.)
 
 class UserRole(str, Enum):
     ADMIN = "admin"
@@ -23,6 +24,7 @@ class UserRole(str, Enum):
     QC_MANAGER = "qc_manager"
     INVENTORY = "inventory"
     DISTRIBUTION = "distribution"
+    REQUESTOR = "requestor"        # External requestor role
 
 class DonorStatus(str, Enum):
     ACTIVE = "active"
