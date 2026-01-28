@@ -236,12 +236,21 @@ export default function BroadcastsManagement() {
             <RefreshCw className={`w-4 h-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button className="bg-red-600 hover:bg-red-700" onClick={() => setShowCreateDialog(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            New Broadcast
-          </Button>
+          {canCreateBroadcast && (
+            <Button className="bg-red-600 hover:bg-red-700" onClick={() => setShowCreateDialog(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              New Broadcast
+            </Button>
+          )}
         </div>
       </div>
+
+      {/* Admin Notice */}
+      {isAdminView && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700">
+          <strong>Admin View:</strong> You are viewing all broadcasts across the network. System admins cannot create broadcasts but can manage them.
+        </div>
+      )}
 
       {/* Stats */}
       {stats && (
