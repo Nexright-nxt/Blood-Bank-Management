@@ -177,6 +177,11 @@ class DonorCreate(BaseModel):
     phone: str
     email: Optional[str] = None
     address: str
+    city: Optional[str] = None
+    state: Optional[str] = None
+    pincode: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     identity_type: str
     identity_number: str
     weight: Optional[float] = None
