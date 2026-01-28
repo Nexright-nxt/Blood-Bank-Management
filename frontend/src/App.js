@@ -106,7 +106,11 @@ function AppRoutes() {
           <Layout />
         </ProtectedRoute>
       }>
-        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route index element={
+          user?.user_type === 'requestor' 
+            ? <Navigate to="/requestor-dashboard" replace /> 
+            : <Navigate to="/dashboard" replace />
+        } />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="org-dashboard" element={<OrgDashboard />} />
         
