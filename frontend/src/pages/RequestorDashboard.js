@@ -73,6 +73,19 @@ export default function RequestorDashboard() {
     fetchData();
   }, []);
 
+  // Auto-fill location from profile when profile loads
+  useEffect(() => {
+    if (profile) {
+      setRequestForm(prev => ({
+        ...prev,
+        hospital_name: profile.organization_name || prev.hospital_name,
+        delivery_latitude: profile.latitude || prev.delivery_latitude,
+        delivery_longitude: profile.longitude || prev.delivery_longitude,
+        delivery_address: profile.address ? `${profile.address}, ${profile.city}, ${profile.state}` : prev.delivery_address
+      }));
+    }
+  }, [profile]);
+
   const fetchData = async () => {
     setLoading(true);
     try {
