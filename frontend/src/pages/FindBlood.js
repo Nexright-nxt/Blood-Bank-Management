@@ -149,34 +149,36 @@ export default function FindBlood() {
 
     setSubmitting(true);
     try {
-      // Map frontend fields to backend BloodRequestCreate model
-      const payload = {
-        request_type: requestForm.request_type === 'internal' ? 'internal' : 'external',
-        requester_name: user?.name || user?.full_name || orgProfile?.contact_person || 'Staff',
-        requester_contact: orgProfile?.contact_phone || user?.phone || '',
-        hospital_name: orgProfile?.org_name,
-        hospital_address: orgProfile?.address,
-        patient_name: requestForm.patient_name,
-        patient_diagnosis: requestForm.diagnosis,
-        blood_group: requestForm.blood_group,
-        product_type: requestForm.component_type || 'whole_blood',
-        quantity: parseInt(requestForm.units_required) || 1,
-        urgency: requestForm.urgency,
-        requested_date: new Date().toISOString().split('T')[0],
-        required_by_date: requestForm.required_by_date,
-        notes: requestForm.notes,
-        // Additional fields for tracking
-        target_org_id: requestForm.target_org_id,
-        target_org_name: requestForm.target_org_name,
-        delivery_latitude: requestForm.delivery_latitude,
-        delivery_longitude: requestForm.delivery_longitude,
-        delivery_address: requestForm.delivery_address,
-        requesting_org_id: user?.org_id,
-        requesting_org_name: orgProfile?.org_name
+      // Map urgency from Find Blood to inter-org request format
+      const urgencyMap = {
+        'normal': 'routine',
+        'urgent': 'urgent',
+        'emergency': 'emergency'
       };
 
-      await axios.post(`${API_URL}/requests`, payload, { headers });
-      toast.success('Blood request submitted successfully');
+      // Build payload for inter-org-requests API (unified with Blood Requests management)
+      const payload = {
+        request_type: requestForm.request_type,
+        // For internal requests, target_org_id becomes fulfilling_org_id
+        fulfilling_org_id: requestForm.request_type === 'internal' ? requestForm.target_org_id : null,
+        // For external requests
+        external_org_id: requestForm.request_type === 'external' ? requestForm.target_org_id : null,
+        external_org_name: requestForm.request_type === 'external' ? requestForm.target_org_name : null,
+        external_org_address: requestForm.delivery_address || null,
+        external_contact_person: null,
+        external_contact_phone: null,
+        external_contact_email: null,
+        // Blood details
+        component_type: requestForm.component_type || 'whole_blood',
+        blood_group: requestForm.blood_group,
+        quantity: parseInt(requestForm.units_required) || 1,
+        urgency_level: urgencyMap[requestForm.urgency] || 'routine',
+        clinical_indication: `Patient: ${requestForm.patient_name}${requestForm.diagnosis ? ` - ${requestForm.diagnosis}` : ''}${requestForm.notes ? `. Notes: ${requestForm.notes}` : ''}`,
+        required_by: requestForm.required_by_date ? new Date(requestForm.required_by_date).toISOString() : null
+      };
+
+      await axios.post(`${API_URL}/inter-org-requests`, payload, { headers });
+      toast.success('Blood request submitted successfully! View it in Blood Requests page.');
       setShowRequestDialog(false);
       resetRequestForm();
     } catch (error) {
