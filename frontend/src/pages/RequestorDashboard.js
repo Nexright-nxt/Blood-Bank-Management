@@ -616,6 +616,81 @@ export default function RequestorDashboard() {
                 placeholder="Any special requirements or notes"
               />
             </div>
+
+            {/* Location Section */}
+            <div className="border-t pt-4 mt-2">
+              <Label className="flex items-center gap-2 mb-3">
+                <MapPin className="w-4 h-4" />
+                Delivery/Pickup Location
+              </Label>
+              
+              {/* Location Type Toggle */}
+              <div className="flex gap-2 mb-3">
+                <Button
+                  type="button"
+                  variant={requestForm.location_type === 'delivery' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setRequestForm({ ...requestForm, location_type: 'delivery' })}
+                  className={requestForm.location_type === 'delivery' ? 'bg-red-600 hover:bg-red-700' : ''}
+                >
+                  <Truck className="w-4 h-4 mr-1" />
+                  Delivery
+                </Button>
+                <Button
+                  type="button"
+                  variant={requestForm.location_type === 'pickup' ? 'default' : 'outline'}
+                  size="sm"
+                  onClick={() => setRequestForm({ ...requestForm, location_type: 'pickup' })}
+                  className={requestForm.location_type === 'pickup' ? 'bg-red-600 hover:bg-red-700' : ''}
+                >
+                  <Building2 className="w-4 h-4 mr-1" />
+                  Self Pickup
+                </Button>
+              </div>
+
+              {requestForm.location_type === 'delivery' && (
+                <div className="space-y-3">
+                  <div className="flex gap-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={useProfileLocation}
+                    >
+                      <MapPin className="w-4 h-4 mr-1" />
+                      Use Registered Location
+                    </Button>
+                  </div>
+                  
+                  <MapPicker
+                    initialPosition={requestForm.delivery_latitude && requestForm.delivery_longitude 
+                      ? [requestForm.delivery_latitude, requestForm.delivery_longitude] 
+                      : null}
+                    onLocationChange={handleLocationChange}
+                    height="200px"
+                    showSearch={true}
+                    showCurrentLocation={true}
+                    showCoordinates={true}
+                  />
+
+                  <div>
+                    <Label>Delivery Address</Label>
+                    <Textarea
+                      value={requestForm.delivery_address}
+                      onChange={(e) => setRequestForm({ ...requestForm, delivery_address: e.target.value })}
+                      placeholder="Full delivery address"
+                      className="min-h-[60px]"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {requestForm.location_type === 'pickup' && (
+                <p className="text-sm text-slate-500 bg-slate-50 p-3 rounded-lg">
+                  You will pick up the blood from the blood bank. The blood bank will provide pickup instructions once your request is approved.
+                </p>
+              )}
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowNewRequest(false)}>Cancel</Button>
@@ -627,6 +702,27 @@ export default function RequestorDashboard() {
               Submit Request
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Blood Bank Map Dialog */}
+      <Dialog open={showMapView} onOpenChange={setShowMapView}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Map className="w-5 h-5 text-red-600" />
+              Find Nearby Blood Banks
+            </DialogTitle>
+            <DialogDescription>
+              View blood banks on the map and check their availability
+            </DialogDescription>
+          </DialogHeader>
+          <BloodBankMap
+            height="450px"
+            initialUserLocation={profile?.latitude && profile?.longitude 
+              ? [profile.latitude, profile.longitude] 
+              : null}
+          />
         </DialogContent>
       </Dialog>
     </div>
