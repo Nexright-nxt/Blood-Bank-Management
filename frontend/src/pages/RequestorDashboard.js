@@ -89,14 +89,22 @@ export default function RequestorDashboard() {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [profileRes, requestsRes, availabilityRes] = await Promise.all([
+      // Use requestor-specific endpoints
+      const [profileRes, requestsRes] = await Promise.all([
         api.get('/requestors/me/profile'),
-        api.get('/requests'),
-        api.get('/inventory/by-blood-group')
+        api.get('/requestors/me/requests')
       ]);
       setProfile(profileRes.data);
       setRequests(requestsRes.data);
-      setAvailability(availabilityRes.data);
+      
+      // Try to get public blood availability from blood-link
+      try {
+        const availRes = await axios.get(`${API_URL}/blood-link/blood-groups`);
+        setAvailability(availRes.data || {});
+      } catch (e) {
+        console.log('Could not fetch public availability');
+        setAvailability({});
+      }
     } catch (error) {
       console.error('Error fetching data:', error);
       toast.error('Failed to load dashboard data');
