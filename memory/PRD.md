@@ -506,6 +506,31 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
 
 ---
 
+### Phase O: Requestor Portal Improvements (COMPLETE - Jan 28, 2026)
+- [x] **Routing Fixes** (`/app/frontend/src/App.js`):
+  - [x] Requestors now redirect to `/requestor-dashboard` on login (not `/dashboard`)
+  - [x] Index route also handles requestor redirect correctly
+- [x] **Backend API Enhancements** (`/app/backend/routers/requestors.py`):
+  - [x] `GET /api/requestors/me/profile` - Requestor self-service profile endpoint
+  - [x] `GET /api/requestors/me/requests` - Get requestor's own blood requests
+  - [x] `POST /api/requestors/me/requests` - Create blood request as requestor
+  - [x] All endpoints validate `user_type === 'requestor'`
+- [x] **RequestorDashboard Improvements** (`/app/frontend/src/pages/RequestorDashboard.js`):
+  - [x] Uses requestor-specific API endpoints
+  - [x] Stats cards: Pending, Approved, Fulfilled, Total Requests
+  - [x] My Requests tab with status badges and request details
+  - [x] Blood Availability tab showing public blood stock (fixed NaN bug)
+  - [x] My Profile tab showing organization details
+  - [x] New Request dialog with all fields including delivery/pickup location
+  - [x] Find Blood Banks button opening map dialog
+- [x] **Navigation Updates** (`/app/frontend/src/components/Layout.js`):
+  - [x] Requestor sidebar shows: Dashboard, Find Blood, Network Alerts
+- [x] **Enum Updates** (`/app/backend/models/enums.py`):
+  - [x] Added `REQUESTOR` to UserType enum
+  - [x] Added `REQUESTOR` to UserRole enum
+
+---
+
 ## Deployment
 
 ### Deployment Files Location
