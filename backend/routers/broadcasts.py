@@ -186,10 +186,22 @@ async def get_my_broadcasts(
     current_user: dict = Depends(get_current_user)
 ):
     """Get broadcasts created by current user's organization."""
-    if not current_user.get("org_id"):
-        raise HTTPException(status_code=400, detail="No organization associated")
-    
     await expire_old_broadcasts()
+    
+    # System admins can see all broadcasts
+    if current_user.get("user_type") == "system_admin":
+        query = {}
+        if status:
+            query["status"] = status
+        broadcasts = await db.broadcasts.find(
+            query, {"_id": 0}
+        ).sort("created_at", -1).to_list(100)
+        return {"count": len(broadcasts), "broadcasts": broadcasts, "is_admin_view": True}
+    
+    # Regular users need an org_id
+    if not current_user.get("org_id"):
+        # Return empty list instead of error for users without org
+        return {"count": 0, "broadcasts": [], "message": "No organization associated"}
     
     query = {"org_id": current_user["org_id"]}
     if status:
