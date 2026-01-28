@@ -43,6 +43,7 @@ import OrganizationDetail from "./pages/OrganizationDetail";
 import BloodRequests from "./pages/BloodRequests";
 import NetworkDashboard from "./pages/NetworkDashboard";
 import AuditLogs from "./pages/AuditLogs";
+import FindBlood from "./pages/FindBlood";
 import SecuritySettings from "./pages/SecuritySettings";
 import BackupManagement from "./pages/BackupManagement";
 import RolesManagement from "./pages/RolesManagement";
