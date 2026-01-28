@@ -80,6 +80,7 @@ export default function BroadcastsManagement() {
       setMyBroadcasts(myRes.data.broadcasts || []);
       setNetworkBroadcasts(networkRes.data.broadcasts || []);
       setStats(statsRes.data);
+      setIsAdminView(myRes.data.is_admin_view || false);
     } catch (error) {
       toast.error('Failed to load broadcasts');
     } finally {
