@@ -24,6 +24,7 @@ import {
 import { Badge } from './ui/badge';
 import NotificationBell from './NotificationBell';
 import ContextSwitcherModal from './ContextSwitcherModal';
+import BroadcastNotificationListener from './BroadcastNotificationListener';
 
 const roleLabels = {
   admin: 'Administrator',
