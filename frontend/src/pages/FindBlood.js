@@ -269,7 +269,7 @@ export default function FindBlood() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Package className="w-5 h-5 text-blue-600" />
-                Your Organization's Inventory
+                Your Organization&apos;s Inventory
               </CardTitle>
               <CardDescription>
                 Blood stock available within {orgProfile?.org_name || 'your organization'}
