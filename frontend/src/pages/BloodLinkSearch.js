@@ -509,6 +509,19 @@ export default function BloodLinkSearch() {
           </div>
         )}
 
+        {/* List view placeholder when no results yet */}
+        {viewMode === 'list' && !results && (
+          <Card>
+            <CardContent className="py-12 text-center">
+              <Search className="w-12 h-12 text-slate-300 mx-auto mb-4" />
+              <p className="text-slate-600 mb-2">Enter your location to search</p>
+              <p className="text-sm text-slate-500">
+                Use the search form above to find nearby blood banks
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Blood Bank Detail Dialog */}
         <Dialog open={!!selectedBank} onOpenChange={() => setSelectedBank(null)}>
           <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
