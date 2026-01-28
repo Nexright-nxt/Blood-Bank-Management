@@ -544,6 +544,8 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
   - [x] Internal request: from own inventory
   - [x] External request: shows target blood bank info and delivery location map
   - [x] MapPicker for delivery location selection
+  - [x] **"View My Requests" button** - Navigates to Blood Requests page
+  - [x] **Unified data flow** - Requests created here now use `/api/inter-org-requests` endpoint
 - [x] **Backend API Updates**:
   - [x] `GET /api/organizations/current` - Get current user's organization with location
   - [x] Blood request creation works with correct payload mapping
