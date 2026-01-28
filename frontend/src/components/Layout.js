@@ -55,8 +55,9 @@ const platformModules = [
 
 // Operational modules - visible when in org/branch context
 const operationalModules = [
-  { path: '/dashboard', icon: Home, label: 'Dashboard', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution', 'config_manager'], category: 'operational' },
-  { path: '/blood-requests', icon: ArrowLeftRight, label: 'Blood Requests', roles: ['admin', 'inventory', 'distribution'], category: 'operational' },
+  { path: '/dashboard', icon: Home, label: 'Dashboard', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution', 'config_manager', 'blood_request_staff'], category: 'operational' },
+  { path: '/blood-requests', icon: ArrowLeftRight, label: 'Blood Requests', roles: ['admin', 'inventory', 'distribution', 'blood_request_staff'], category: 'operational' },
+  { path: '/find-blood', icon: Droplet, label: 'Find Blood', roles: ['admin', 'inventory', 'distribution', 'blood_request_staff'], category: 'operational' },
   { path: '/donor-requests', icon: UserPlus, label: 'Donor Requests', roles: ['admin', 'registration'], category: 'operational' },
   { path: '/donors', icon: Users, label: 'Donor Management', roles: ['admin', 'registration'], category: 'operational' },
   { path: '/screening', icon: Clipboard, label: 'Screening', roles: ['admin', 'registration', 'phlebotomist'], category: 'operational' },
@@ -66,19 +67,19 @@ const operationalModules = [
   { path: '/laboratory', icon: FlaskConical, label: 'Laboratory', roles: ['admin', 'lab_tech'], category: 'operational' },
   { path: '/processing', icon: Layers, label: 'Processing', roles: ['admin', 'processing'], category: 'operational' },
   { path: '/qc-validation', icon: ShieldCheck, label: 'QC Validation', roles: ['admin', 'qc_manager'], category: 'operational' },
-  { path: '/inventory', icon: Package, label: 'Inventory', roles: ['admin', 'inventory', 'distribution'], category: 'operational' },
+  { path: '/inventory', icon: Package, label: 'Inventory', roles: ['admin', 'inventory', 'distribution', 'blood_request_staff'], category: 'operational' },
   { path: '/storage', icon: Warehouse, label: 'Storage', roles: ['admin', 'inventory'], category: 'operational' },
-  { path: '/requests', icon: ClipboardList, label: 'Requests', roles: ['admin', 'inventory', 'distribution'], category: 'operational' },
+  { path: '/requests', icon: ClipboardList, label: 'Requests', roles: ['admin', 'inventory', 'distribution', 'blood_request_staff'], category: 'operational' },
   { path: '/distribution', icon: Truck, label: 'Distribution', roles: ['admin', 'distribution'], category: 'operational' },
   { path: '/logistics-enhanced', icon: Navigation, label: 'Logistics', roles: ['admin', 'distribution'], category: 'operational' },
-  { path: '/returns', icon: RotateCcw, label: 'Returns', roles: ['admin', 'inventory', 'qc_manager'], category: 'operational' },
-  { path: '/discards', icon: Trash2, label: 'Discards', roles: ['admin', 'inventory', 'qc_manager'], category: 'operational' },
+  { path: '/returns', icon: RotateCcw, label: 'Returns', roles: ['admin', 'inventory', 'qc_manager', 'blood_request_staff'], category: 'operational' },
+  { path: '/discards', icon: Trash2, label: 'Discards', roles: ['admin', 'inventory', 'qc_manager', 'blood_request_staff'], category: 'operational' },
   { path: '/reports', icon: BarChart3, label: 'Reports', roles: ['admin', 'qc_manager', 'inventory'], category: 'operational' },
-  { path: '/leaderboard', icon: Trophy, label: 'Leaderboard', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution'], category: 'operational' },
-  { path: '/broadcasts', icon: Megaphone, label: 'Network Broadcasts', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution'], category: 'operational' },
-  { path: '/alerts', icon: Bell, label: 'Alerts', roles: ['admin', 'qc_manager', 'inventory', 'registration'], category: 'operational' },
+  { path: '/leaderboard', icon: Trophy, label: 'Leaderboard', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution', 'blood_request_staff'], category: 'operational' },
+  { path: '/broadcasts', icon: Megaphone, label: 'Network Broadcasts', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution', 'blood_request_staff'], category: 'operational' },
+  { path: '/alerts', icon: Bell, label: 'Alerts', roles: ['admin', 'qc_manager', 'inventory', 'registration', 'blood_request_staff'], category: 'operational' },
   { path: '/configuration', icon: Cog, label: 'Configuration', roles: ['admin', 'config_manager'], category: 'operational' },
-  { path: '/security', icon: Lock, label: 'Security', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution', 'config_manager'], category: 'operational' },
+  { path: '/security', icon: Lock, label: 'Security', roles: ['admin', 'registration', 'phlebotomist', 'lab_tech', 'processing', 'qc_manager', 'inventory', 'distribution', 'config_manager', 'blood_request_staff'], category: 'operational' },
 ];
 
 export default function Layout() {
