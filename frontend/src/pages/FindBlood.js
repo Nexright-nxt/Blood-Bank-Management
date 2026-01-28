@@ -149,16 +149,23 @@ export default function FindBlood() {
 
     setSubmitting(true);
     try {
+      // Map frontend fields to backend BloodRequestCreate model
       const payload = {
-        blood_group: requestForm.blood_group,
-        component_type: requestForm.component_type,
-        units_required: parseInt(requestForm.units_required),
-        urgency: requestForm.urgency,
+        request_type: requestForm.request_type === 'internal' ? 'internal' : 'external',
+        requester_name: user?.name || user?.full_name || orgProfile?.contact_person || 'Staff',
+        requester_contact: orgProfile?.contact_phone || user?.phone || '',
+        hospital_name: orgProfile?.org_name,
+        hospital_address: orgProfile?.address,
         patient_name: requestForm.patient_name,
-        diagnosis: requestForm.diagnosis,
+        patient_diagnosis: requestForm.diagnosis,
+        blood_group: requestForm.blood_group,
+        product_type: requestForm.component_type || 'whole_blood',
+        quantity: parseInt(requestForm.units_required) || 1,
+        urgency: requestForm.urgency,
+        requested_date: new Date().toISOString().split('T')[0],
         required_by_date: requestForm.required_by_date,
         notes: requestForm.notes,
-        request_type: requestForm.request_type,
+        // Additional fields for tracking
         target_org_id: requestForm.target_org_id,
         target_org_name: requestForm.target_org_name,
         delivery_latitude: requestForm.delivery_latitude,
