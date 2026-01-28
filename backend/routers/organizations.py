@@ -202,6 +202,28 @@ async def get_public_organizations():
     return result
 
 
+@router.get("/current")
+async def get_current_organization(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get the current user's organization details.
+    """
+    org_id = current_user.get("org_id")
+    if not org_id:
+        raise HTTPException(status_code=404, detail="No organization associated with user")
+    
+    org = await db.organizations.find_one(
+        {"id": org_id},
+        {"_id": 0}
+    )
+    
+    if not org:
+        raise HTTPException(status_code=404, detail="Organization not found")
+    
+    return org
+
+
 # ============== Organization CRUD ==============
 
 @router.post("", response_model=OrganizationResponse)
