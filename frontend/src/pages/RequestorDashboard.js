@@ -123,7 +123,12 @@ export default function RequestorDashboard() {
         ...requestForm,
         units_required: parseInt(requestForm.units_required),
         patient_age: requestForm.patient_age ? parseInt(requestForm.patient_age) : null,
-        requestor_org_name: profile?.organization_name
+        requestor_org_name: profile?.organization_name,
+        // Include location data
+        location_type: requestForm.location_type,
+        delivery_latitude: requestForm.delivery_latitude,
+        delivery_longitude: requestForm.delivery_longitude,
+        delivery_address: requestForm.delivery_address
       });
       toast.success('Blood request submitted successfully');
       setShowNewRequest(false);
@@ -139,11 +144,37 @@ export default function RequestorDashboard() {
         hospital_name: profile?.organization_name || '',
         doctor_name: '',
         required_by_date: '',
-        notes: ''
+        notes: '',
+        location_type: 'delivery',
+        delivery_latitude: profile?.latitude || null,
+        delivery_longitude: profile?.longitude || null,
+        delivery_address: profile?.address ? `${profile.address}, ${profile.city}, ${profile.state}` : ''
       });
       fetchData();
     } catch (error) {
       toast.error(error.response?.data?.detail || 'Failed to create request');
+    }
+  };
+
+  const handleLocationChange = (location) => {
+    setRequestForm(prev => ({
+      ...prev,
+      delivery_latitude: location.latitude,
+      delivery_longitude: location.longitude
+    }));
+  };
+
+  const useProfileLocation = () => {
+    if (profile?.latitude && profile?.longitude) {
+      setRequestForm(prev => ({
+        ...prev,
+        delivery_latitude: profile.latitude,
+        delivery_longitude: profile.longitude,
+        delivery_address: `${profile.address}, ${profile.city}, ${profile.state}`
+      }));
+      toast.success('Using registered location');
+    } else {
+      toast.error('No registered location found');
     }
   };
 
