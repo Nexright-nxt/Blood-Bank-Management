@@ -1,0 +1,93 @@
+{
+  "summary": "Completed testing of Find Blood page and location features. Most features working correctly. Found 1 critical issue: Blood request creation API mismatch between frontend and backend.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "POST /api/requests",
+        "issue": "Frontend FindBlood.js sends payload with fields (units_required, diagnosis, patient_name, etc.) but backend BloodRequestCreate model expects different fields (requester_name, requester_contact, product_type, quantity, requested_date). This causes 422 validation error when submitting blood requests from Find Blood page.",
+        "priority": "HIGH"
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "GET /api/roles",
+        "issue": "Returns 500 Internal Server Error - separate issue not related to Find Blood features"
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Blood Request Creation from Find Blood page",
+        "issue": "Submit Request button will fail with 422 error due to API payload mismatch",
+        "affected_selectors": ["button:has-text('Submit Request')"]
+      }
+    ],
+    "design_issues": [
+      {
+        "screen": "Organization Edit Dialog",
+        "issues": ["Map picker not included in edit dialog - only in create dialog. Should add MapPicker to edit form for consistency."]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_find_blood_features.py",
+    "/app/test_reports/pytest/find_blood_results.xml"
+  ],
+  "action_items": [
+    "CRITICAL: Fix FindBlood.js handleCreateRequest() to send correct payload matching BloodRequestCreate model (requester_name, requester_contact, product_type, quantity, requested_date)",
+    "Add MapPicker to Organization edit dialog for location updates",
+    "Fix /api/roles endpoint 500 error (separate issue)"
+  ],
+  "critical_code_review_comments": [
+    "FindBlood.js line 152-169: Payload fields don't match backend BloodRequestCreate model - needs alignment",
+    "Organizations.js: Edit dialog (line 669-800) missing MapPicker that exists in Create with Admin dialog (line 1029)",
+    "blood_request_staff role correctly configured with permissions: requests, returns, discard, inventory, blood_link, donors, collection"
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_find_blood_features.py"
+  ],
+  "success_rate": {
+    "backend": "89% (8/9 tests passed)",
+    "frontend": "90% (most UI elements working, request submission will fail)"
+  },
+  "test_credentials": {
+    "org_admin": {"email": "admin@testorg.com", "password": "Test@123"}
+  },
+  "seed_data_creation": "None - used existing Test Organization",
+  "retest_needed": true,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Find Blood page UI is working. Key findings: 1) /api/organizations/current works correctly with location data. 2) Find Blood page loads with Internal Inventory and External Blood Banks tabs. 3) Blood group cards display correctly. 4) New Request dialog opens with Internal/External toggle. 5) External request shows delivery location map (MapPicker). 6) Donor Registration has mandatory map picker in Step 2. 7) blood_request_staff role exists with correct permissions. 8) CRITICAL: Blood request submission will fail due to API payload mismatch - frontend sends different fields than backend expects.",
+  "features_tested": {
+    "find_blood_page_accessible": "✓ PASS - /find-blood accessible for admin role",
+    "internal_inventory_tab": "✓ PASS - Shows blood group cards (A+, A-, B+, B-, AB+, AB-, O+, O-)",
+    "external_blood_banks_tab": "✓ PASS - Shows search controls (Blood Group, Max Distance, Search, List/Map toggle)",
+    "new_request_button": "✓ PASS - Opens blood request dialog",
+    "request_dialog_toggle": "✓ PASS - Has Internal/External toggle buttons",
+    "external_request_map": "✓ PASS - Shows delivery location MapPicker for external requests",
+    "api_organizations_current": "✓ PASS - Returns user's org details with location",
+    "donor_registration_map": "✓ PASS - Has mandatory map picker in Step 2 (Location on Map *)",
+    "organization_creation_map": "✓ PASS - Create with Admin dialog has MapPicker",
+    "blood_request_staff_role": "✓ PASS - Role exists with correct permissions",
+    "find_blood_sidebar_link": "✓ PASS - Visible in sidebar for admin role",
+    "blood_request_submission": "✗ FAIL - API payload mismatch causes 422 error"
+  },
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  },
+  "rca_of_issue": {
+    "issue": "Blood request creation fails with 422 validation error",
+    "root_cause": "Frontend FindBlood.js sends payload with fields: blood_group, component_type, units_required, urgency, patient_name, diagnosis, required_by_date, notes, request_type, target_org_id, etc. Backend BloodRequestCreate model expects: request_type, requester_name, requester_contact, blood_group, product_type, quantity, requested_date, etc.",
+    "reproduction_steps": [
+      "1. Login as admin@testorg.com",
+      "2. Navigate to /find-blood",
+      "3. Click 'New Request' button",
+      "4. Fill in form fields",
+      "5. Click 'Submit Request'",
+      "6. Observe 422 error in console"
+    ],
+    "mitigation": "Update FindBlood.js handleCreateRequest() to map frontend form fields to backend expected fields: units_required -> quantity, component_type -> product_type, patient_name -> requester_name (or add requester fields), required_by_date -> requested_date"
+  }
+}
