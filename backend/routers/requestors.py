@@ -95,6 +95,104 @@ async def check_registration_status(email: str):
     }
 
 
+# ==================== REQUESTOR SELF-SERVICE ROUTES ====================
+
+@router.get("/me/profile")
+async def get_my_requestor_profile(
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get the current requestor's profile.
+    Only accessible by users with user_type='requestor'.
+    """
+    if current_user.get("user_type") != "requestor":
+        raise HTTPException(status_code=403, detail="Only requestors can access this endpoint")
+    
+    # Find requestor record by email
+    requestor = await db.requestors.find_one(
+        {"email": current_user["email"]},
+        {"_id": 0, "password_hash": 0}
+    )
+    
+    if not requestor:
+        raise HTTPException(status_code=404, detail="Requestor profile not found")
+    
+    return requestor
+
+
+@router.get("/me/requests")
+async def get_my_requests(
+    status: Optional[str] = None,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Get blood requests created by the current requestor.
+    """
+    if current_user.get("user_type") != "requestor":
+        raise HTTPException(status_code=403, detail="Only requestors can access this endpoint")
+    
+    query = {"created_by": current_user["id"]}
+    if status:
+        query["status"] = status
+    
+    requests = await db.requests.find(query, {"_id": 0}).sort("created_at", -1).to_list(100)
+    return requests
+
+
+@router.post("/me/requests")
+async def create_requestor_blood_request(
+    request_data: dict,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Create a new blood request as a requestor.
+    """
+    if current_user.get("user_type") != "requestor":
+        raise HTTPException(status_code=403, detail="Only requestors can access this endpoint")
+    
+    # Get requestor profile for org info
+    requestor = await db.requestors.find_one(
+        {"email": current_user["email"]},
+        {"_id": 0}
+    )
+    
+    now = datetime.now(timezone.utc).isoformat()
+    
+    request = {
+        "id": str(uuid.uuid4()),
+        "blood_group": request_data.get("blood_group"),
+        "component_type": request_data.get("component_type", "whole_blood"),
+        "units_required": request_data.get("units_required", 1),
+        "urgency": request_data.get("urgency", "normal"),
+        "patient_name": request_data.get("patient_name"),
+        "patient_age": request_data.get("patient_age"),
+        "patient_gender": request_data.get("patient_gender", "male"),
+        "diagnosis": request_data.get("diagnosis"),
+        "hospital_name": request_data.get("hospital_name") or (requestor.get("organization_name") if requestor else None),
+        "doctor_name": request_data.get("doctor_name"),
+        "required_by_date": request_data.get("required_by_date"),
+        "notes": request_data.get("notes"),
+        "status": "pending",
+        "created_by": current_user["id"],
+        "created_by_name": current_user.get("name") or current_user.get("full_name"),
+        "requestor_org_name": requestor.get("organization_name") if requestor else None,
+        "requestor_id": requestor.get("id") if requestor else None,
+        # Location info
+        "location_type": request_data.get("location_type", "delivery"),
+        "delivery_latitude": request_data.get("delivery_latitude"),
+        "delivery_longitude": request_data.get("delivery_longitude"),
+        "delivery_address": request_data.get("delivery_address"),
+        # Timestamps
+        "created_at": now,
+        "updated_at": now
+    }
+    
+    await db.requests.insert_one(request)
+    request.pop("_id", None)
+    
+    return {"status": "success", "request": request}
+
+
 # ==================== ADMIN ROUTES (Auth Required) ====================
 
 @router.get("")
