@@ -127,16 +127,11 @@ export default function RequestorDashboard() {
     }
 
     try {
-      await api.post('/requests', {
+      // Use requestor-specific endpoint
+      await api.post('/requestors/me/requests', {
         ...requestForm,
         units_required: parseInt(requestForm.units_required),
-        patient_age: requestForm.patient_age ? parseInt(requestForm.patient_age) : null,
-        requestor_org_name: profile?.organization_name,
-        // Include location data
-        location_type: requestForm.location_type,
-        delivery_latitude: requestForm.delivery_latitude,
-        delivery_longitude: requestForm.delivery_longitude,
-        delivery_address: requestForm.delivery_address
+        patient_age: requestForm.patient_age ? parseInt(requestForm.patient_age) : null
       });
       toast.success('Blood request submitted successfully');
       setShowNewRequest(false);
