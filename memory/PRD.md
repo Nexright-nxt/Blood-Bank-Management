@@ -531,6 +531,35 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
 
 ---
 
+### Phase P: Inter-Organization Blood Requests & Location Features (COMPLETE - Jan 28, 2026)
+- [x] **New Role: Blood Request Staff** (`blood_request_staff`):
+  - [x] Permissions: requests, returns, discard, inventory, blood_link, donors, collection
+  - [x] Added to UserRole enum
+  - [x] Created system role in database
+- [x] **Find Blood Page** (`/app/frontend/src/pages/FindBlood.js`):
+  - [x] Route at `/find-blood` for admin, inventory, distribution, blood_request_staff roles
+  - [x] Internal Inventory tab showing org's blood stock by blood group
+  - [x] External Blood Banks tab with search controls (blood group, max distance, list/map toggle)
+  - [x] New Request button with Internal/External toggle
+  - [x] Internal request: from own inventory
+  - [x] External request: shows target blood bank info and delivery location map
+  - [x] MapPicker for delivery location selection
+- [x] **Backend API Updates**:
+  - [x] `GET /api/organizations/current` - Get current user's organization with location
+  - [x] Blood request creation works with correct payload mapping
+- [x] **Donor Registration Location** (`/app/frontend/src/pages/DonorRegistration.js`):
+  - [x] MapPicker added to Step 2 (Contact Information)
+  - [x] Location is mandatory for registration
+  - [x] City, State, Pincode fields added
+  - [x] Donor model updated with latitude/longitude fields
+- [x] **Organization Registration Location** (`/app/frontend/src/pages/Organizations.js`):
+  - [x] MapPicker added to Create Organization with Admin dialog
+  - [x] Latitude/longitude stored with organization
+- [x] **Navigation Updates** (`/app/frontend/src/components/Layout.js`):
+  - [x] "Find Blood" link added to sidebar for appropriate roles
+  - [x] blood_request_staff role added to all relevant menu items
+---
+
 ## Deployment
 
 ### Deployment Files Location
