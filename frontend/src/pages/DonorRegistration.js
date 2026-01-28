@@ -208,7 +208,7 @@ export default function DonorRegistration() {
       case 1:
         return formData.full_name && formData.date_of_birth && formData.gender;
       case 2:
-        return formData.phone && formData.address;
+        return formData.phone && formData.address && formData.city && formData.state && formData.pincode && formData.latitude && formData.longitude;
       case 3:
         if (!formData.identity_type || !formData.identity_number) return false;
         const validation = validateMalaysianId(formData.identity_type, formData.identity_number);
