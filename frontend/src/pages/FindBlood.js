@@ -33,6 +33,7 @@ const COMPONENT_TYPES = [
 
 export default function FindBlood() {
   const { user, token } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [orgProfile, setOrgProfile] = useState(null);
   const [searchResults, setSearchResults] = useState([]);
