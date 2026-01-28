@@ -55,6 +55,8 @@ async def register_requestor(data: RequestorRegistration):
         city=data.city,
         state=data.state,
         pincode=data.pincode,
+        latitude=data.latitude,
+        longitude=data.longitude,
         license_number=data.license_number,
         registration_number=data.registration_number,
         notes=data.notes,
