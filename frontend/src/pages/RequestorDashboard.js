@@ -212,10 +212,18 @@ export default function RequestorDashboard() {
             Welcome, {profile?.organization_name || user?.requestor_org_name}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={handleRefresh} disabled={refreshing}>
             <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
             Refresh
+          </Button>
+          <Button 
+            variant="outline"
+            onClick={() => setShowMapView(true)}
+            data-testid="map-view-btn"
+          >
+            <Map className="w-4 h-4 mr-2" />
+            Find Blood Banks
           </Button>
           <Button 
             className="bg-red-600 hover:bg-red-700"
