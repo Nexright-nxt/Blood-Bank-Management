@@ -467,6 +467,45 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
 
 ---
 
+### Phase N: Map Integration for Requestors (COMPLETE - Jan 28, 2026)
+- [x] **Map Components** (OpenStreetMap + Leaflet):
+  - [x] `MapPicker.jsx` - Reusable map picker with location selection
+    - Click to select location, draggable marker
+    - Address search using Nominatim (free geocoding)
+    - Current location detection (geolocation API)
+    - Reverse geocoding to show address
+  - [x] `BloodBankMap.jsx` - Interactive blood bank map display
+    - Custom colored markers: green (24/7 with stock), blue (has stock), gray (no stock)
+    - User location marker (blue dot)
+    - Blood group filter dropdown
+    - My Location button, Refresh button
+    - Click marker for popup with details
+    - Get Directions button (opens Google Maps)
+    - Map legend
+- [x] **Blood Link Page Updates** (`/app/frontend/src/pages/BloodLinkSearch.js`):
+  - [x] List View / Map View toggle buttons
+  - [x] Map View shows BloodBankMap component
+  - [x] Blood banks displayed as interactive markers
+- [x] **Requestor Registration** (`/app/frontend/src/pages/RequestorRegistration.js`):
+  - [x] Step 3 renamed to "Location & Documents"
+  - [x] MapPicker for location selection (required field)
+  - [x] Address search functionality
+  - [x] Current location detection
+  - [x] Latitude/longitude stored with requestor profile
+- [x] **Requestor Dashboard** (`/app/frontend/src/pages/RequestorDashboard.js`):
+  - [x] "Find Blood Banks" button opens map dialog
+  - [x] Map dialog shows nearby blood banks on map
+  - [x] New Blood Request form has location section:
+    - Delivery / Self Pickup toggle
+    - "Use Registered Location" button for delivery
+    - MapPicker for custom delivery location
+    - Address input field
+- [x] **Backend Updates**:
+  - [x] `Requestor` model updated with latitude/longitude fields
+  - [x] `RequestorRegistration` model accepts lat/lng
+
+---
+
 ## Deployment
 
 ### Deployment Files Location
