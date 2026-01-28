@@ -115,6 +115,8 @@ export default function Layout() {
     if (userType === 'requestor') {
       items = [
         { path: '/requestor-dashboard', icon: Home, label: 'Dashboard', category: 'operational' },
+        { path: '/blood-link', icon: Droplet, label: 'Find Blood', category: 'operational' },
+        { path: '/broadcasts', icon: Megaphone, label: 'Network Alerts', category: 'operational' },
       ];
       return items;
     }
