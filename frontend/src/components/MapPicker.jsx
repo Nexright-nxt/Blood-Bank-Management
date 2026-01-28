@@ -129,13 +129,20 @@ export function MapPicker({
   const [gettingLocation, setGettingLocation] = useState(false);
   const [address, setAddress] = useState('');
   const mapRef = useRef(null);
+  const onLocationChangeRef = useRef(onLocationChange);
 
   // Default center (can be customized)
   const defaultCenter = [20.5937, 78.9629]; // India center
 
+  // Keep the callback ref updated
   useEffect(() => {
-    if (position && onLocationChange) {
-      onLocationChange({
+    onLocationChangeRef.current = onLocationChange;
+  }, [onLocationChange]);
+
+  // Handle position changes - only triggers when position actually changes
+  useEffect(() => {
+    if (position && onLocationChangeRef.current) {
+      onLocationChangeRef.current({
         latitude: position[0],
         longitude: position[1],
       });
@@ -144,7 +151,7 @@ export function MapPicker({
         if (addr) setAddress(addr);
       });
     }
-  }, [position, onLocationChange]);
+  }, [position]); // Only depend on position, not onLocationChange
 
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
