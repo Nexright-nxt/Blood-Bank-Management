@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { donorAPI } from '../lib/api';
 import { toast } from 'sonner';
-import { ArrowLeft, Save, User, Phone, MapPin, CreditCard, Upload, Heart, FileText, Camera, X, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Save, User, Phone, MapPin, CreditCard, Upload, Heart, FileText, Camera, X, AlertTriangle, Map } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
 import { Label } from '../components/ui/label';
@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Checkbox } from '../components/ui/checkbox';
 import { Textarea } from '../components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '../components/ui/radio-group';
+import MapPicker from '../components/MapPicker';
 
 const bloodGroups = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'];
 const genders = ['Male', 'Female', 'Other'];
