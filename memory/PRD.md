@@ -556,7 +556,11 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
   - [x] Donor model updated with latitude/longitude fields
 - [x] **Organization Registration Location** (`/app/frontend/src/pages/Organizations.js`):
   - [x] MapPicker added to Create Organization with Admin dialog
+  - [x] **MapPicker added to Edit Organization dialog** (Jan 28, 2026)
   - [x] Latitude/longitude stored with organization
+  - [x] Edit dialog pre-populates existing location on map
+- [x] **MapPicker Component Fix** (`/app/frontend/src/components/MapPicker.jsx`):
+  - [x] Fixed infinite loop by using useRef for onLocationChange callback
 - [x] **Navigation Updates** (`/app/frontend/src/components/Layout.js`):
   - [x] "Find Blood" link added to sidebar for appropriate roles
   - [x] blood_request_staff role added to all relevant menu items
