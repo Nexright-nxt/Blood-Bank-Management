@@ -477,6 +477,67 @@ export default function DonorRegistration() {
                   data-testid="input-address"
                 />
               </div>
+              
+              {/* City, State, Pincode */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="city">City *</Label>
+                  <Input
+                    id="city"
+                    value={formData.city}
+                    onChange={(e) => handleChange('city', e.target.value)}
+                    placeholder="City"
+                    required
+                    data-testid="input-city"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="state">State *</Label>
+                  <Input
+                    id="state"
+                    value={formData.state}
+                    onChange={(e) => handleChange('state', e.target.value)}
+                    placeholder="State"
+                    required
+                    data-testid="input-state"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="pincode">PIN Code *</Label>
+                  <Input
+                    id="pincode"
+                    value={formData.pincode}
+                    onChange={(e) => handleChange('pincode', e.target.value)}
+                    placeholder="PIN Code"
+                    required
+                    data-testid="input-pincode"
+                  />
+                </div>
+              </div>
+
+              {/* Location Map */}
+              <div className="space-y-2">
+                <Label className="flex items-center gap-2">
+                  <Map className="w-4 h-4" />
+                  Location on Map *
+                </Label>
+                <MapPicker
+                  initialPosition={formData.latitude && formData.longitude 
+                    ? [formData.latitude, formData.longitude] 
+                    : null}
+                  onLocationChange={(loc) => {
+                    handleChange('latitude', loc.latitude);
+                    handleChange('longitude', loc.longitude);
+                  }}
+                  height="250px"
+                  showSearch={true}
+                  showCurrentLocation={true}
+                  showCoordinates={true}
+                />
+                <p className="text-xs text-slate-500">
+                  Please select your location on the map. This is required for registration.
+                </p>
+              </div>
             </CardContent>
           </Card>
         )}
