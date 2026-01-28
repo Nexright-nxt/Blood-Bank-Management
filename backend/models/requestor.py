@@ -35,6 +35,8 @@ class RequestorRegistration(BaseModel):
     city: str
     state: str
     pincode: str
+    latitude: Optional[float] = None  # Map location
+    longitude: Optional[float] = None  # Map location
     license_number: Optional[str] = None
     registration_number: Optional[str] = None
     notes: Optional[str] = None
@@ -52,6 +54,8 @@ class Requestor(BaseModel):
     city: str
     state: str
     pincode: str
+    latitude: Optional[float] = None  # Map location
+    longitude: Optional[float] = None  # Map location
     license_number: Optional[str] = None
     registration_number: Optional[str] = None
     notes: Optional[str] = None
