@@ -257,6 +257,9 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+      {/* Broadcast Notification Listener - monitors for critical/high priority broadcasts */}
+      <BroadcastNotificationListener />
+      
       {/* Mobile Overlay - Must be before sidebar to receive clicks */}
       {sidebarOpen && (
         <div 
