@@ -39,6 +39,7 @@ export default function BloodLinkSearch() {
   const [broadcasts, setBroadcasts] = useState([]);
   const [loadingBroadcasts, setLoadingBroadcasts] = useState(true);
   const [selectedBroadcast, setSelectedBroadcast] = useState(null);
+  const [viewMode, setViewMode] = useState('list'); // 'list' or 'map'
   
   const [searchParams, setSearchParams] = useState({
     latitude: null,
