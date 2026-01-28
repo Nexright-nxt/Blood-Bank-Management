@@ -377,9 +377,8 @@ export default function RequestorDashboard() {
             <CardContent>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 {BLOOD_GROUPS.map((group) => {
-                  const data = availability[group] || { whole_blood_units: 0, components: {} };
-                  const totalUnits = data.whole_blood_units + 
-                    Object.values(data.components || {}).reduce((a, b) => a + b, 0);
+                  const data = availability[group] || { whole_blood: 0, components: 0, total: 0 };
+                  const totalUnits = data.total || (data.whole_blood || 0) + (data.components || 0);
                   
                   return (
                     <div 
@@ -392,9 +391,9 @@ export default function RequestorDashboard() {
                       <p className={`text-sm ${totalUnits > 0 ? 'text-green-600' : 'text-red-600'}`}>
                         {totalUnits} units
                       </p>
-                      {data.whole_blood_units > 0 && (
+                      {(data.whole_blood || 0) > 0 && (
                         <p className="text-xs text-slate-500 mt-1">
-                          {data.whole_blood_units} whole blood
+                          {data.whole_blood} whole blood
                         </p>
                       )}
                     </div>
