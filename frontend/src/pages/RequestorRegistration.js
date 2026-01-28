@@ -4,7 +4,7 @@ import axios from 'axios';
 import { toast } from 'sonner';
 import { 
   Building2, User, Mail, Phone, MapPin, FileText, 
-  ArrowRight, CheckCircle, Loader2, ArrowLeft
+  ArrowRight, CheckCircle, Loader2, ArrowLeft, Map
 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -12,6 +12,7 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { Textarea } from '../components/ui/textarea';
+import MapPicker from '../components/MapPicker';
 
 const API_URL = process.env.REACT_APP_BACKEND_URL + '/api';
 
@@ -40,6 +41,8 @@ export default function RequestorRegistration() {
     city: '',
     state: '',
     pincode: '',
+    latitude: null,
+    longitude: null,
     license_number: '',
     registration_number: '',
     notes: ''
@@ -51,6 +54,14 @@ export default function RequestorRegistration() {
 
   const handleSelectChange = (name, value) => {
     setFormData({ ...formData, [name]: value });
+  };
+
+  const handleLocationChange = (location) => {
+    setFormData({ 
+      ...formData, 
+      latitude: location.latitude, 
+      longitude: location.longitude 
+    });
   };
 
   const validateStep1 = () => {
@@ -85,6 +96,10 @@ export default function RequestorRegistration() {
   const validateStep3 = () => {
     if (!formData.address || !formData.city || !formData.state || !formData.pincode) {
       toast.error('Please fill in all required address fields');
+      return false;
+    }
+    if (!formData.latitude || !formData.longitude) {
+      toast.error('Please select your location on the map');
       return false;
     }
     return true;
@@ -167,17 +182,24 @@ export default function RequestorRegistration() {
 
         {/* Progress Steps */}
         <div className="flex items-center justify-center mb-8">
-          {[1, 2, 3].map((s) => (
-            <React.Fragment key={s}>
-              <div 
-                className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
-                  step >= s ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-500'
-                }`}
-              >
-                {s}
+          {[
+            { num: 1, label: 'Organization' },
+            { num: 2, label: 'Account' },
+            { num: 3, label: 'Location' }
+          ].map((s, idx) => (
+            <React.Fragment key={s.num}>
+              <div className="flex flex-col items-center">
+                <div 
+                  className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold ${
+                    step >= s.num ? 'bg-red-600 text-white' : 'bg-slate-200 text-slate-500'
+                  }`}
+                >
+                  {s.num}
+                </div>
+                <span className="text-xs text-slate-500 mt-1">{s.label}</span>
               </div>
-              {s < 3 && (
-                <div className={`w-16 h-1 mx-2 ${step > s ? 'bg-red-600' : 'bg-slate-200'}`} />
+              {idx < 2 && (
+                <div className={`w-16 h-1 mx-2 mb-4 ${step > s.num ? 'bg-red-600' : 'bg-slate-200'}`} />
               )}
             </React.Fragment>
           ))}
@@ -188,12 +210,12 @@ export default function RequestorRegistration() {
             <CardTitle>
               {step === 1 && 'Organization Information'}
               {step === 2 && 'Account Details'}
-              {step === 3 && 'Address & Documents'}
+              {step === 3 && 'Location & Documents'}
             </CardTitle>
             <CardDescription>
               {step === 1 && 'Tell us about your organization'}
               {step === 2 && 'Create your login credentials'}
-              {step === 3 && 'Provide your location and documents'}
+              {step === 3 && 'Select your location on the map and provide documents'}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -312,60 +334,82 @@ export default function RequestorRegistration() {
               </div>
             )}
 
-            {/* Step 3: Address & Documents */}
+            {/* Step 3: Location & Documents */}
             {step === 3 && (
               <div className="space-y-4">
+                {/* Map for location selection */}
                 <div>
-                  <Label htmlFor="address">Address *</Label>
-                  <div className="relative mt-1">
-                    <MapPin className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                    <Textarea
-                      id="address"
-                      name="address"
-                      value={formData.address}
-                      onChange={handleChange}
-                      className="pl-10 min-h-[80px]"
-                      placeholder="Full address"
-                      data-testid="address-input"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="city">City *</Label>
-                    <Input
-                      id="city"
-                      name="city"
-                      value={formData.city}
-                      onChange={handleChange}
-                      placeholder="City"
-                      data-testid="city-input"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="state">State *</Label>
-                    <Input
-                      id="state"
-                      name="state"
-                      value={formData.state}
-                      onChange={handleChange}
-                      placeholder="State"
-                      data-testid="state-input"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <Label htmlFor="pincode">PIN Code *</Label>
-                  <Input
-                    id="pincode"
-                    name="pincode"
-                    value={formData.pincode}
-                    onChange={handleChange}
-                    placeholder="PIN Code"
-                    data-testid="pincode-input"
+                  <Label className="flex items-center gap-2 mb-2">
+                    <Map className="w-4 h-4" />
+                    Select Your Location on Map *
+                  </Label>
+                  <MapPicker
+                    initialPosition={formData.latitude && formData.longitude ? [formData.latitude, formData.longitude] : null}
+                    onLocationChange={handleLocationChange}
+                    height="300px"
+                    showSearch={true}
+                    showCurrentLocation={true}
+                    showCoordinates={true}
                   />
                 </div>
-                <div className="border-t pt-4 mt-4">
+
+                <div className="border-t pt-4">
+                  <h4 className="font-medium text-slate-700 mb-3 flex items-center">
+                    <MapPin className="w-4 h-4 mr-2" />
+                    Address Details
+                  </h4>
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="address">Street Address *</Label>
+                      <Textarea
+                        id="address"
+                        name="address"
+                        value={formData.address}
+                        onChange={handleChange}
+                        className="min-h-[60px]"
+                        placeholder="Building name, street, area"
+                        data-testid="address-input"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="city">City *</Label>
+                        <Input
+                          id="city"
+                          name="city"
+                          value={formData.city}
+                          onChange={handleChange}
+                          placeholder="City"
+                          data-testid="city-input"
+                        />
+                      </div>
+                      <div>
+                        <Label htmlFor="state">State *</Label>
+                        <Input
+                          id="state"
+                          name="state"
+                          value={formData.state}
+                          onChange={handleChange}
+                          placeholder="State"
+                          data-testid="state-input"
+                        />
+                      </div>
+                    </div>
+                    <div className="w-1/2">
+                      <Label htmlFor="pincode">PIN Code *</Label>
+                      <Input
+                        id="pincode"
+                        name="pincode"
+                        value={formData.pincode}
+                        onChange={handleChange}
+                        placeholder="PIN Code"
+                        data-testid="pincode-input"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <div className="border-t pt-4">
                   <h4 className="font-medium text-slate-700 mb-3 flex items-center">
                     <FileText className="w-4 h-4 mr-2" />
                     Optional Documents
@@ -395,6 +439,7 @@ export default function RequestorRegistration() {
                     </div>
                   </div>
                 </div>
+
                 <div>
                   <Label htmlFor="notes">Additional Notes</Label>
                   <Textarea
