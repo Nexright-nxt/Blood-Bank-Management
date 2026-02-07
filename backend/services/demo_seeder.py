@@ -688,10 +688,11 @@ async def seed_comprehensive_demo_data(db, logger):
         logger.info(f"  → 5 pending (awaiting testing)")
         
         # ============================================
-        # 6. BLOOD UNITS (18 total - various statuses for lab demo)
+        # 6. BLOOD UNITS (26 total - various statuses for lab & processing demo)
         # Structure:
-        # - 10 processed (from completed tests)
+        # - 10 processed (from completed tests, already processed into components)
         # - 8 collected (awaiting laboratory testing - for Lab page demo)
+        # - 8 lab (tested and ready for processing - for Processing page demo)
         # ============================================
         blood_units = []
         
@@ -732,14 +733,14 @@ async def seed_comprehensive_demo_data(db, logger):
             blood_unit = {
                 "id": str(uuid.uuid4()),
                 "unit_id": f"PDN-BU-PEND-{i + 1}",
-                "donation_id": None,  # May not have a linked donation record yet
+                "donation_id": None,
                 "donor_id": donor['id'],
-                "blood_group": None,  # Not confirmed yet
-                "preliminary_blood_group": blood_group,  # From screening
+                "blood_group": None,
+                "preliminary_blood_group": blood_group,
                 "volume": random.choice([350, 450, 500]),
                 "collection_date": collection_date.strftime("%Y-%m-%d"),
-                "expiry_date": None,  # Set after testing
-                "status": "collected",  # Ready for laboratory testing
+                "expiry_date": None,
+                "status": "collected",
                 "bag_barcode": f"BC{random.randint(100000000, 999999999)}",
                 "sample_labels": [f"PDN-BU-PEND-{i+1}-S1", f"PDN-BU-PEND-{i+1}-S2"],
                 "storage_location": f"LAB-QUEUE-{random.randint(1, 3)}",
@@ -752,10 +753,41 @@ async def seed_comprehensive_demo_data(db, logger):
             }
             blood_units.append(blood_unit)
         
+        # 8 Lab-completed blood units (READY FOR PROCESSING - for Processing page demo)
+        for i in range(8):
+            collection_date = datetime.now(timezone.utc) - timedelta(hours=random.randint(12, 36))
+            donor = random.choice(donors[:20])
+            blood_group = random.choice(BLOOD_GROUPS)
+            
+            blood_unit = {
+                "id": str(uuid.uuid4()),
+                "unit_id": f"PDN-BU-LAB-{i + 1}",
+                "donation_id": None,
+                "donor_id": donor['id'],
+                "blood_group": blood_group,  # Confirmed by lab
+                "preliminary_blood_group": blood_group,
+                "volume": random.choice([350, 450, 500]),
+                "collection_date": collection_date.strftime("%Y-%m-%d"),
+                "expiry_date": (collection_date + timedelta(days=42)).strftime("%Y-%m-%d"),
+                "status": "lab",  # Tested and ready for component separation
+                "bag_barcode": f"BC{random.randint(100000000, 999999999)}",
+                "sample_labels": [f"PDN-BU-LAB-{i+1}-S1", f"PDN-BU-LAB-{i+1}-S2"],
+                "storage_location": f"PROCESSING-QUEUE-{random.randint(1, 3)}",
+                "temperature_log": [{"temp": round(random.uniform(2, 6), 1), "time": collection_date.isoformat()}],
+                "qc_status": "passed",
+                "lab_status": "passed",
+                "notes": "All lab tests passed - ready for component separation",
+                "org_id": org_id,
+                "created_at": collection_date.isoformat(),
+                "created_by": random.choice(staff_ids),
+            }
+            blood_units.append(blood_unit)
+        
         await db.blood_units.insert_many(blood_units)
         logger.info(f"✓ Created {len(blood_units)} blood units:")
         logger.info(f"  → 10 processed (testing completed)")
         logger.info(f"  → 8 collected (AWAITING LAB TESTING)")
+        logger.info(f"  → 8 lab (READY FOR PROCESSING)")
         
         # ============================================
         # 7. COMPONENTS (50+ - various statuses for processing demo)
