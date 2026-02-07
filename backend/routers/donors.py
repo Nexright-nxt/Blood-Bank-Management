@@ -510,10 +510,6 @@ async def get_donor(
     current_user: dict = Depends(require_permission("donors", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
-    import logging
-    logger = logging.getLogger("server")
-    logger.info(f"GET /donors/{donor_id} - User: {current_user.get('email')}, Type: {current_user.get('user_type')}")
-    
     # First find the donor
     donor = await db.donors.find_one(
         {"$or": [{"id": donor_id}, {"donor_id": donor_id}]},
@@ -522,19 +518,15 @@ async def get_donor(
     if not donor:
         raise HTTPException(status_code=404, detail="Donor not found")
     
-    # Check org access - System admin always has access
+    # Check org access - System admin and super_admin always have access
     donor_org_id = donor.get("org_id")
     user_type = current_user.get("user_type", "staff")
     
-    logger.info(f"  Donor org: {donor_org_id}, User type: {user_type}, can_access: {access.can_access(donor_org_id) if donor_org_id else 'N/A'}")
-    
-    # System admin bypasses org check
-    if user_type == "system_admin":
-        logger.info(f"  System admin - access granted")
+    # System admin and super_admin bypass org check
+    if user_type in ["system_admin", "super_admin"]:
         return donor
     
     if donor_org_id and not access.can_access(donor_org_id):
-        logger.warning(f"  Access DENIED - donor org not in user's org list")
         raise HTTPException(status_code=403, detail="Access denied to this donor's organization")
     
     return donor
