@@ -111,10 +111,13 @@ export default function Screening() {
 
   const fetchDonorAndStartScreening = async (id) => {
     try {
+      console.log('Fetching donor with ID:', id);
       const [donorRes, eligibilityRes] = await Promise.all([
         donorAPI.getById(id),
         donorAPI.checkEligibility(id)
       ]);
+      console.log('Donor response:', donorRes.data);
+      console.log('Eligibility response:', eligibilityRes.data);
       setDonor(donorRes.data);
       setEligibility(eligibilityRes.data);
       if (donorRes.data.blood_group) {
@@ -122,7 +125,8 @@ export default function Screening() {
       }
       setShowScreeningForm(true);
     } catch (error) {
-      toast.error('Failed to fetch donor');
+      console.error('Error fetching donor:', error.response?.data || error.message || error);
+      toast.error(error.response?.data?.detail || 'Failed to fetch donor');
     }
   };
 
