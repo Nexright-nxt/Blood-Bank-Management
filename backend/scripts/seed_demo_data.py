@@ -55,7 +55,10 @@ def generate_phone():
 
 def random_date_between(start_days_ago, end_days_ago):
     """Generate random date between start and end days ago"""
-    days = random.randint(end_days_ago, start_days_ago)
+    # Ensure start is the larger number (further in the past)
+    min_days = min(start_days_ago, end_days_ago)
+    max_days = max(start_days_ago, end_days_ago)
+    days = random.randint(min_days, max_days)
     return (datetime.now(timezone.utc) - timedelta(days=days)).isoformat()
 
 async def seed_demo_data():
