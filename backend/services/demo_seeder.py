@@ -1027,6 +1027,7 @@ async def seed_comprehensive_demo_data(db, logger):
         logger.info(f"  • Inter-Org Requests: {len(inter_org)}")
         logger.info(f"  • Alerts: {len(alerts)} (6 resolved, 4 active)")
         logger.info(f"  • Audit Logs: {len(audit_logs)}")
+        logger.info(f"  • Donor Requests: {len(donor_requests)} (8 pending, 5 approved, 3 rejected)")
         logger.info("")
         logger.info("Login Credentials:")
         logger.info("  Admin: admin@pdn.gov.my / Admin@123")
