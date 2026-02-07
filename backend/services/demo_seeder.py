@@ -430,14 +430,19 @@ async def seed_comprehensive_demo_data(db, logger):
         logger.info(f"  → 5 pending (awaiting review)")
         
         # ============================================
-        # 4. DONATIONS (15 total - proper status distribution)
+        # 4. DONATIONS - Create for donors with completed screenings
+        # Structure:
+        # - Donors 0-11: COMPLETED donations (past, successful)
+        # - Donors 12-14: IN_PROGRESS donations (currently being collected)
+        # - Donors 15-19: NO donations (old screenings, eligible for new cycle)
+        # - Donors 20-24: NO donations - THESE ARE READY FOR COLLECTION
         # ============================================
         donations = []
-        completed_screenings = [s for s in screenings if s['status'] == 'completed']
         
-        # First 12 completed screenings -> completed donations
-        for i, screening in enumerate(completed_screenings[:12]):
-            donor = next(d for d in donors if d['id'] == screening['donor_id'])
+        # Completed donations for donors 0-11 (matching their old screenings)
+        for i in range(12):
+            screening = screenings[i]
+            donor = donors[i]
             don_date = datetime.fromisoformat(screening['created_at'].replace('Z', '+00:00')) + timedelta(minutes=30)
             
             donation = {
@@ -472,14 +477,15 @@ async def seed_comprehensive_demo_data(db, logger):
             }
             donations.append(donation)
         
-        # Screenings 17-19 (indices 17, 18, 19) -> in_progress donations
-        for i, screening in enumerate(completed_screenings[17:20]):
-            donor = next(d for d in donors if d['id'] == screening['donor_id'])
+        # In-progress donations for donors 12-14 (recent)
+        for i in range(3):
+            screening = screenings[12 + i]
+            donor = donors[12 + i]
             don_date = datetime.now(timezone.utc) - timedelta(hours=random.randint(1, 3))
             
             donation = {
                 "id": str(uuid.uuid4()),
-                "donation_id": f"PDN-DON-{2024020 + i}",
+                "donation_id": f"PDN-DON-{2024013 + i}",
                 "donor_id": donor['id'],
                 "donor_name": donor['full_name'],
                 "screening_id": screening['id'],
@@ -507,12 +513,14 @@ async def seed_comprehensive_demo_data(db, logger):
             }
             donations.append(donation)
         
-        # NOTE: Screenings 12-16 (indices 12, 13, 14, 15, 16) have completed screenings
-        # but NO donations - these are READY FOR COLLECTION in the demo!
+        # NOTE: Donors 15-19 have old screenings but no donation for that screening
+        # NOTE: Donors 20-24 have TODAY's completed screenings and NO donations - READY FOR COLLECTION!
         
         await db.donations.insert_many(donations)
-        logger.info(f"✓ Created {len(donations)} donations (12 completed, 3 in_progress)")
-        logger.info(f"  → 5 donors with completed screenings ready for collection (no donation yet)")
+        logger.info(f"✓ Created {len(donations)} donations:")
+        logger.info(f"  → 12 completed (past)")
+        logger.info(f"  → 3 in_progress (ongoing)")
+        logger.info(f"  → 5 donors (20-24) with completed screenings READY FOR COLLECTION")
         
         # ============================================
         # 5. LAB TESTS (12 - mix of completed & pending)
