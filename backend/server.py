@@ -202,7 +202,9 @@ async def create_default_admin():
             logger.info(f"Migrated {result.modified_count} documents in {collection_name} to org_id: {default_org_id}")
 
 
-async def seed_demo_data_if_empty():
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8001)
     """Seed demo data if the database is empty (for demo purposes)"""
     import bcrypt
     import random
