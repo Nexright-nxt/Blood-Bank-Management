@@ -248,7 +248,7 @@ async def seed_demo_data_if_empty():
         org = {
             "id": org_id,
             "org_name": "Pusat Darah Negara Malaysia",
-            "org_type": "blood_bank",
+            "org_type": "standalone",
             "is_parent": True,
             "address": "Jalan Tun Razak, 50400",
             "city": city['city'],
