@@ -1,6 +1,12 @@
 """
 Comprehensive Demo Data Seeding Script for Blood Link
 Creates end-to-end data for ALL modules to demonstrate the complete workflow.
+
+Usage:
+  cd /app/backend
+  DB_NAME=bloodlink_production python scripts/seed_demo_data.py
+  
+For production deployment, set MONGO_URL to your production MongoDB connection string.
 """
 
 import asyncio
@@ -9,14 +15,15 @@ import uuid
 from datetime import datetime, timedelta, timezone
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
-from passlib.context import CryptContext
+import bcrypt
 
-# Password hashing
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Password hashing (using native bcrypt to match backend)
+def hash_password(password: str) -> str:
+    return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
 # MongoDB connection
 MONGO_URL = os.environ.get("MONGO_URL", "mongodb://localhost:27017")
-DB_NAME = os.environ.get("DB_NAME", "bbms")
+DB_NAME = os.environ.get("DB_NAME", "bloodlink_production")
 
 # Demo data constants
 BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
