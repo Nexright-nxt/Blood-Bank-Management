@@ -1562,7 +1562,7 @@ async def seed_comprehensive_demo_data(db, logger):
         logger.info(f"  • Donations: {len(donations)} (12 completed, 3 in_progress)")
         logger.info(f"  • ★ READY FOR COLLECTION: 5 donors (PDN-D-2024021 to PDN-D-2024025)")
         logger.info(f"  • Lab Tests: {len(lab_tests)} (10 completed, 5 in_progress, 5 pending)")
-        logger.info(f"  • Blood Units: {len(blood_units)} (10 processed, 8 awaiting lab testing)")
+        logger.info(f"  • Blood Units: {len(blood_units)} (10 processed, 8 awaiting lab, 8 ready for processing)")
         logger.info(f"  • Components: {len(components)} (various processing statuses)")
         logger.info(f"  • Blood Requests: {len(blood_requests)} (pending/approved/fulfilled)")
         logger.info(f"  • Issuances: {len(issuances)}")
