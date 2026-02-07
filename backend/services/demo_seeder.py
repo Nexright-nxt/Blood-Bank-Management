@@ -688,11 +688,15 @@ async def seed_comprehensive_demo_data(db, logger):
         logger.info(f"  → 5 pending (awaiting testing)")
         
         # ============================================
-        # 6. BLOOD UNITS (10 - processed from completed tests)
+        # 6. BLOOD UNITS (18 total - various statuses for lab demo)
+        # Structure:
+        # - 10 processed (from completed tests)
+        # - 8 collected (awaiting laboratory testing - for Lab page demo)
         # ============================================
         blood_units = []
-        completed_tests = [t for t in lab_tests if t['status'] == 'completed']
         
+        # 10 Processed blood units (from completed lab tests)
+        completed_tests = [t for t in lab_tests if t['status'] == 'completed']
         for i, test in enumerate(completed_tests[:10]):
             donation = next(d for d in donations if d['id'] == test['donation_id'])
             collection_date = datetime.fromisoformat(donation['created_at'].replace('Z', '+00:00'))
@@ -703,6 +707,7 @@ async def seed_comprehensive_demo_data(db, logger):
                 "donation_id": donation['id'],
                 "donor_id": donation['donor_id'],
                 "blood_group": donation['blood_group'],
+                "preliminary_blood_group": donation['blood_group'],
                 "volume": donation.get('volume_collected', 450),
                 "collection_date": collection_date.strftime("%Y-%m-%d"),
                 "expiry_date": (collection_date + timedelta(days=42)).strftime("%Y-%m-%d"),
@@ -718,8 +723,39 @@ async def seed_comprehensive_demo_data(db, logger):
             }
             blood_units.append(blood_unit)
         
+        # 8 Collected blood units (AWAITING LAB TESTING - for Laboratory page demo)
+        for i in range(8):
+            collection_date = datetime.now(timezone.utc) - timedelta(hours=random.randint(1, 12))
+            donor = random.choice(donors[:20])
+            blood_group = random.choice(BLOOD_GROUPS)
+            
+            blood_unit = {
+                "id": str(uuid.uuid4()),
+                "unit_id": f"PDN-BU-PEND-{i + 1}",
+                "donation_id": None,  # May not have a linked donation record yet
+                "donor_id": donor['id'],
+                "blood_group": None,  # Not confirmed yet
+                "preliminary_blood_group": blood_group,  # From screening
+                "volume": random.choice([350, 450, 500]),
+                "collection_date": collection_date.strftime("%Y-%m-%d"),
+                "expiry_date": None,  # Set after testing
+                "status": "collected",  # Ready for laboratory testing
+                "bag_barcode": f"BC{random.randint(100000000, 999999999)}",
+                "sample_labels": [f"PDN-BU-PEND-{i+1}-S1", f"PDN-BU-PEND-{i+1}-S2"],
+                "storage_location": f"LAB-QUEUE-{random.randint(1, 3)}",
+                "temperature_log": [{"temp": round(random.uniform(2, 6), 1), "time": collection_date.isoformat()}],
+                "qc_status": "pending",
+                "notes": "Awaiting blood group confirmation and infectious disease screening",
+                "org_id": org_id,
+                "created_at": collection_date.isoformat(),
+                "created_by": random.choice(staff_ids),
+            }
+            blood_units.append(blood_unit)
+        
         await db.blood_units.insert_many(blood_units)
-        logger.info(f"✓ Created {len(blood_units)} blood units")
+        logger.info(f"✓ Created {len(blood_units)} blood units:")
+        logger.info(f"  → 10 processed (testing completed)")
+        logger.info(f"  → 8 collected (AWAITING LAB TESTING)")
         
         # ============================================
         # 7. COMPONENTS (50+ - various statuses for processing demo)
