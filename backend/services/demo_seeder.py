@@ -127,13 +127,18 @@ async def seed_comprehensive_demo_data(db, logger):
         logger.info(f"✓ Created {len(staff_ids) + 1} users")
         
         # ============================================
-        # 2. DONORS (25 with various statuses)
+        # 2. DONORS (30 with various statuses)
+        # We create 30 donors to ensure we have enough for all demo scenarios:
+        # - First 20: Eligible donors (will have screenings)
+        # - Next 5: Eligible donors ready for collection (completed screening, no donation)
+        # - Last 5: Various statuses (pending, deferred) for demo variety
         # ============================================
         donors = []
-        for i in range(25):
+        
+        # First 20 donors - eligible with past donations (> 56 days ago)
+        for i in range(20):
             city = random.choice(CITIES)
             first, last = random.choice(FIRST_NAMES), random.choice(LAST_NAMES)
-            status = random.choices(['eligible', 'pending', 'deferred'], weights=[70, 20, 10])[0]
             
             donor = {
                 "id": str(uuid.uuid4()),
@@ -159,11 +164,13 @@ async def seed_comprehensive_demo_data(db, logger):
                 "occupation": random.choice(['Engineer', 'Teacher', 'Doctor', 'Accountant', 'Business Owner']),
                 "emergency_contact_name": f"{random.choice(FIRST_NAMES)} {random.choice(LAST_NAMES)}",
                 "emergency_contact_phone": gen_phone(),
-                "status": status,
-                "eligibility_status": "eligible" if status == "eligible" else "pending",
-                "donation_count": random.randint(0, 15) if status == 'eligible' else 0,
-                "total_donations": random.randint(0, 15) if status == 'eligible' else 0,
-                "last_donation_date": rand_date_str(60, 365) if status == 'eligible' and random.random() > 0.3 else None,
+                "status": "eligible",
+                "is_active": True,
+                "eligibility_status": "eligible",
+                "donation_count": random.randint(1, 15),
+                "total_donations": random.randint(1, 15),
+                # Last donation was 60-365 days ago (> 56 days, so eligible)
+                "last_donation_date": rand_date_str(60, 365),
                 "medical_conditions": random.choice([None, None, None, "Controlled Hypertension"]),
                 "allergies": random.choice([None, None, None, "Penicillin"]),
                 "org_id": org_id,
@@ -172,8 +179,97 @@ async def seed_comprehensive_demo_data(db, logger):
             }
             donors.append(donor)
         
+        # Next 5 donors (indices 20-24) - READY FOR COLLECTION
+        # These have NO last_donation_date (or very old) so they show as eligible
+        for i in range(5):
+            city = random.choice(CITIES)
+            first, last = random.choice(FIRST_NAMES), random.choice(LAST_NAMES)
+            
+            donor = {
+                "id": str(uuid.uuid4()),
+                "donor_id": f"PDN-D-{2024021 + i}",
+                "id_type": "mykad",
+                "id_number": gen_mykad(),
+                "first_name": first,
+                "last_name": last,
+                "full_name": f"{first} {last}",
+                "date_of_birth": f"{random.randint(1975, 1995)}-{random.randint(1,12):02d}-{random.randint(1,28):02d}",
+                "gender": random.choice(['male', 'female']),
+                "blood_group": random.choice(BLOOD_GROUPS),
+                "rh_factor": random.choice(['+', '-']),
+                "phone": gen_phone(),
+                "email": f"{first.lower()}.{last.lower()}{random.randint(10,99)}@email.com.my",
+                "address": f"No. {random.randint(1, 200)}, Jalan {random.choice(['Merdeka', 'Ampang', 'Cheras', 'Bangsar'])} {random.randint(1, 30)}",
+                "city": city['city'],
+                "state": city['state'],
+                "country": "Malaysia",
+                "pincode": f"{random.randint(40000, 81000)}",
+                "latitude": city['lat'] + random.uniform(-0.02, 0.02),
+                "longitude": city['lng'] + random.uniform(-0.02, 0.02),
+                "occupation": random.choice(['Engineer', 'Teacher', 'Doctor', 'Accountant', 'Business Owner']),
+                "emergency_contact_name": f"{random.choice(FIRST_NAMES)} {random.choice(LAST_NAMES)}",
+                "emergency_contact_phone": gen_phone(),
+                "status": "eligible",
+                "is_active": True,
+                "eligibility_status": "eligible",
+                "donation_count": 0,
+                "total_donations": 0,
+                # NO last_donation_date - these are new donors ready for first/next donation
+                "last_donation_date": None,
+                "medical_conditions": None,
+                "allergies": None,
+                "org_id": org_id,
+                "created_at": rand_datetime_str(1, 7),  # Recent registration
+                "created_by": admin_id,
+            }
+            donors.append(donor)
+        
+        # Last 5 donors (indices 25-29) - various non-eligible statuses for demo
+        for i in range(5):
+            city = random.choice(CITIES)
+            first, last = random.choice(FIRST_NAMES), random.choice(LAST_NAMES)
+            status = random.choice(['pending', 'deferred'])
+            
+            donor = {
+                "id": str(uuid.uuid4()),
+                "donor_id": f"PDN-D-{2024026 + i}",
+                "id_type": random.choice(['mykad', 'passport']),
+                "id_number": gen_mykad(),
+                "first_name": first,
+                "last_name": last,
+                "full_name": f"{first} {last}",
+                "date_of_birth": f"{random.randint(1970, 2005)}-{random.randint(1,12):02d}-{random.randint(1,28):02d}",
+                "gender": random.choice(['male', 'female']),
+                "blood_group": random.choice(BLOOD_GROUPS),
+                "rh_factor": random.choice(['+', '-']),
+                "phone": gen_phone(),
+                "email": f"{first.lower()}.{last.lower()}{random.randint(10,99)}@email.com.my",
+                "address": f"No. {random.randint(1, 200)}, Jalan {random.choice(['Merdeka', 'Ampang', 'Cheras'])} {random.randint(1, 30)}",
+                "city": city['city'],
+                "state": city['state'],
+                "country": "Malaysia",
+                "pincode": f"{random.randint(40000, 81000)}",
+                "latitude": city['lat'] + random.uniform(-0.02, 0.02),
+                "longitude": city['lng'] + random.uniform(-0.02, 0.02),
+                "occupation": random.choice(['Student', 'Retired', 'Homemaker']),
+                "emergency_contact_name": f"{random.choice(FIRST_NAMES)} {random.choice(LAST_NAMES)}",
+                "emergency_contact_phone": gen_phone(),
+                "status": status,
+                "is_active": True,
+                "eligibility_status": "pending" if status == "pending" else "deferred",
+                "donation_count": 0,
+                "total_donations": 0,
+                "last_donation_date": None,
+                "medical_conditions": "Under evaluation" if status == "pending" else "Temporary medical condition",
+                "allergies": None,
+                "org_id": org_id,
+                "created_at": rand_datetime_str(1, 30),
+                "created_by": admin_id,
+            }
+            donors.append(donor)
+        
         await db.donors.insert_many(donors)
-        logger.info(f"✓ Created {len(donors)} donors")
+        logger.info(f"✓ Created {len(donors)} donors (20 with past donations, 5 ready for collection, 5 pending/deferred)")
         
         # ============================================
         # 3. SCREENINGS (25 total - proper flow for collection)
