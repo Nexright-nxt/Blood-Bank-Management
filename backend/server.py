@@ -169,6 +169,24 @@ async def create_default_admin():
         }
         await db.users.insert_one(admin_user)
         logger.info("Default system admin user created: admin@bloodbank.com")
+    
+    # Create secondary system admin (admin@bbms.local) if not exists
+    bbms_admin_exists = await db.users.find_one({"email": "admin@bbms.local"})
+    if not bbms_admin_exists:
+        bbms_admin = {
+            "id": str(uuid.uuid4()),
+            "email": "admin@bbms.local",
+            "password_hash": hash_password("Admin@123456"),
+            "full_name": "BBMS System Admin",
+            "role": "admin",
+            "org_id": None,
+            "user_type": "system_admin",
+            "is_active": True,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+            "updated_at": datetime.now(timezone.utc).isoformat()
+        }
+        await db.users.insert_one(bbms_admin)
+        logger.info("Secondary system admin created: admin@bbms.local")
     else:
         # Update existing admin to be system admin
         if admin_exists.get("user_type") != "system_admin":
