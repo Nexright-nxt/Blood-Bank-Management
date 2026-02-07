@@ -1,0 +1,47 @@
+{
+  "summary": "Tested the blood collection workflow fix for demo data. All 5 features verified successfully - eligible donors display with Select button, dialog opens correctly showing donor info and hemoglobin, and most importantly, starting collection does NOT show 'screening not done' error. The fix to demo_seeder.py properly creates completed screenings with eligibility_status='eligible' for donors ready for collection.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/.screenshots/03_collection_page.png",
+    "/app/.screenshots/05_collection_dialog.png",
+    "/app/.screenshots/06_start_collection_success.png",
+    "/app/.screenshots/07_collection_complete.png"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [],
+  "updated_files": [],
+  "success_rate": {
+    "backend": "N/A (frontend-only testing)",
+    "frontend": "100% (all 5 features pass)"
+  },
+  "test_credentials": {
+    "admin_email": "admin@pdn.gov.my",
+    "admin_password": "Admin@123"
+  },
+  "seed_data_creation": "Demo seeder creates 5 donors (PDN-D-2024021 to PDN-D-2024025) with completed screenings ready for collection",
+  "retest_needed": false,
+  "should_main_agent_self_test": false,
+  "context_for_next_testing_agent": "Blood collection workflow is fully functional. Tested with donors PDN-D-2024021 and PDN-D-2024022 - both successfully started and completed collections. The demo seeder fix properly creates completed screenings with eligibility_status='eligible'. Donation IDs DON-2026-00017 and DON-2026-00018 created during testing.",
+  "features_tested": {
+    "admin_login": "✓ PASS - Login with admin@pdn.gov.my / Admin@123 successful",
+    "collection_page_loads": "✓ PASS - Shows 30 total donors, 30 eligible, with Select buttons",
+    "select_button_works": "✓ PASS - Clicking Select opens Blood Collection dialog",
+    "dialog_shows_donor_info": "✓ PASS - Dialog displays donor name, ID, blood group, hemoglobin value",
+    "start_collection_no_error": "✓ PASS - Collection started successfully WITHOUT 'screening not done' error",
+    "complete_collection": "✓ PASS - Collection completed, Unit ID BU-2026-000011 generated",
+    "target_donors_visible": "✓ PASS - All 5 target donors (PDN-D-2024021 to PDN-D-2024025) visible in table"
+  },
+  "mocked_apis": {
+    "has_mocked_apis": false,
+    "mocked_apis_list": []
+  },
+  "notes": "The fix resolved the data integrity issue where donation records were blocked because screenings were not properly linked. Demo seeder now creates completed screenings with eligibility_status='eligible' for donors ready for collection."
+}
