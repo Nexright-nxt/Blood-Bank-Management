@@ -108,7 +108,7 @@ async def seed_comprehensive_demo_data(db, logger):
         # Staff users
         staff_ids = []
         staff_data = [
-            ("labtech@pdn.gov.my", "Siti Aminah binti Razak", "lab_technician"),
+            ("labtech@pdn.gov.my", "Siti Aminah binti Razak", "lab_tech"),
             ("nurse@pdn.gov.my", "Fatimah binti Omar", "registration"),
             ("inventory@pdn.gov.my", "Ali bin Rahman", "inventory"),
             ("distribution@pdn.gov.my", "Hassan bin Ibrahim", "distribution"),
