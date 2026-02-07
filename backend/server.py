@@ -40,6 +40,7 @@ async def lifespan(app: FastAPI):
     # Startup
     await create_default_admin()
     await seed_system_roles()  # Seed system roles
+    await seed_demo_data_if_empty()  # Seed demo data if database is empty
     yield
     # Shutdown
     client.close()
