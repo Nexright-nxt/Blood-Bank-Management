@@ -272,27 +272,20 @@ async def seed_comprehensive_demo_data(db, logger):
         logger.info(f"✓ Created {len(donors)} donors (20 with past donations, 5 ready for collection, 5 pending/deferred)")
         
         # ============================================
-        # 3. SCREENINGS (25 total - proper flow for collection)
+        # 3. SCREENINGS - Create for donors who need them
+        # Structure:
+        # - Donors 0-11: Completed screening + completed donation (past)
+        # - Donors 12-14: Completed screening + in-progress donation
+        # - Donors 15-19: Completed screening (past, but eligible for new donation)
+        # - Donors 20-24: Completed screening TODAY - READY FOR COLLECTION (no donation yet)
+        # - Donors 25-29: Pending screening (demo pending status)
         # ============================================
         screenings = []
-        eligible_donors = [d for d in donors if d['status'] == 'eligible']
         
-        for i, donor in enumerate(eligible_donors[:25]):
-            scr_date = rand_date(0, 30)
-            
-            # Status distribution:
-            # - First 12: completed (will have completed donations)
-            # - Next 5: completed (ready for collection - no donation yet)
-            # - Next 3: completed (will have in_progress donations)
-            # - Last 5: pending (awaiting review)
-            if i < 20:
-                status = "completed"
-                eligibility = "eligible"
-                notes = "Donor cleared for donation"
-            else:
-                status = "pending"
-                eligibility = "pending"
-                notes = "Awaiting physician review"
+        # Screenings for donors 0-19 (past screenings with completed eligibility)
+        for i in range(20):
+            donor = donors[i]
+            scr_date = rand_date(60, 120)  # 60-120 days ago (old enough)
             
             screening = {
                 "id": str(uuid.uuid4()),
@@ -302,41 +295,139 @@ async def seed_comprehensive_demo_data(db, logger):
                 "blood_group": donor['blood_group'],
                 "screening_date": scr_date.strftime("%Y-%m-%d"),
                 "screening_time": f"{random.randint(8, 16):02d}:{random.randint(0, 59):02d}",
-                # Vital signs - all filled
-                "hemoglobin": round(random.uniform(12.5, 16.5), 1),
+                # Vital signs - all within normal range
+                "hemoglobin": round(random.uniform(13.0, 16.0), 1),
                 "hemoglobin_unit": "g/dL",
-                "blood_pressure_systolic": random.randint(100, 140),
-                "blood_pressure_diastolic": random.randint(60, 90),
-                "pulse": random.randint(60, 100),
-                "temperature": round(random.uniform(36.0, 37.2), 1),
-                "weight_kg": round(random.uniform(50, 90), 1),
-                "height_cm": random.randint(150, 185),
+                "blood_pressure_systolic": random.randint(100, 130),
+                "blood_pressure_diastolic": random.randint(65, 85),
+                "pulse": random.randint(60, 90),
+                "temperature": round(random.uniform(36.2, 37.0), 1),
+                "weight_kg": round(random.uniform(55, 85), 1),
+                "height_cm": random.randint(155, 180),
                 # Blood typing
                 "preliminary_blood_group": donor['blood_group'],
                 "preliminary_rh": '+' if '+' in donor['blood_group'] else '-',
-                # Questionnaire - all completed
+                # Questionnaire - all passed
                 "questionnaire_completed": True,
+                "questionnaire_passed": True,
                 "recent_illness": False,
                 "recent_travel": False,
                 "recent_surgery": False,
                 "recent_tattoo": False,
                 "high_risk_behavior": False,
-                # Status
-                "status": status,
-                "eligibility_status": eligibility,
+                # Status - COMPLETED and ELIGIBLE
+                "status": "completed",
+                "eligibility_status": "eligible",
                 "eligibility_reason": None,
                 "screened_by": random.choice(staff_ids),
                 "screened_by_name": "Nurse Fatimah",
-                "verified_by": admin_id if status == "completed" else None,
-                "verified_at": scr_date.isoformat() if status == "completed" else None,
-                "notes": notes,
+                "verified_by": admin_id,
+                "verified_at": scr_date.isoformat(),
+                "notes": "Donor cleared for donation",
+                "org_id": org_id,
+                "created_at": scr_date.isoformat(),
+            }
+            screenings.append(screening)
+        
+        # Screenings for donors 20-24: READY FOR COLLECTION (recent screening, no donation)
+        for i in range(5):
+            donor = donors[20 + i]
+            scr_date = datetime.now(timezone.utc) - timedelta(hours=random.randint(1, 6))  # Today, few hours ago
+            
+            screening = {
+                "id": str(uuid.uuid4()),
+                "screening_id": f"PDN-SCR-{2024021 + i}",
+                "donor_id": donor['id'],
+                "donor_name": donor['full_name'],
+                "blood_group": donor['blood_group'],
+                "screening_date": scr_date.strftime("%Y-%m-%d"),
+                "screening_time": scr_date.strftime("%H:%M"),
+                # Vital signs - all within normal range (these will be collected)
+                "hemoglobin": round(random.uniform(13.5, 15.5), 1),
+                "hemoglobin_unit": "g/dL",
+                "blood_pressure_systolic": random.randint(105, 125),
+                "blood_pressure_diastolic": random.randint(68, 82),
+                "pulse": random.randint(65, 85),
+                "temperature": round(random.uniform(36.3, 36.8), 1),
+                "weight_kg": round(random.uniform(55, 80), 1),
+                "height_cm": random.randint(158, 178),
+                # Blood typing
+                "preliminary_blood_group": donor['blood_group'],
+                "preliminary_rh": '+' if '+' in donor['blood_group'] else '-',
+                # Questionnaire - all passed
+                "questionnaire_completed": True,
+                "questionnaire_passed": True,
+                "recent_illness": False,
+                "recent_travel": False,
+                "recent_surgery": False,
+                "recent_tattoo": False,
+                "high_risk_behavior": False,
+                # Status - COMPLETED and ELIGIBLE (ready for collection!)
+                "status": "completed",
+                "eligibility_status": "eligible",
+                "eligibility_reason": None,
+                "screened_by": random.choice(staff_ids),
+                "screened_by_name": "Nurse Fatimah",
+                "verified_by": admin_id,
+                "verified_at": scr_date.isoformat(),
+                "notes": "Donor screened and cleared - ready for blood collection",
+                "org_id": org_id,
+                "created_at": scr_date.isoformat(),
+            }
+            screenings.append(screening)
+        
+        # Screenings for donors 25-29: PENDING (awaiting review for demo)
+        for i in range(5):
+            donor = donors[25 + i]
+            scr_date = rand_date(0, 3)  # Recent
+            
+            screening = {
+                "id": str(uuid.uuid4()),
+                "screening_id": f"PDN-SCR-{2024026 + i}",
+                "donor_id": donor['id'],
+                "donor_name": donor['full_name'],
+                "blood_group": donor['blood_group'],
+                "screening_date": scr_date.strftime("%Y-%m-%d"),
+                "screening_time": f"{random.randint(9, 15):02d}:{random.randint(0, 59):02d}",
+                # Vital signs - some may be borderline
+                "hemoglobin": round(random.uniform(11.5, 14.0), 1),
+                "hemoglobin_unit": "g/dL",
+                "blood_pressure_systolic": random.randint(95, 145),
+                "blood_pressure_diastolic": random.randint(60, 95),
+                "pulse": random.randint(55, 105),
+                "temperature": round(random.uniform(36.0, 37.3), 1),
+                "weight_kg": round(random.uniform(48, 90), 1),
+                "height_cm": random.randint(150, 185),
+                # Blood typing
+                "preliminary_blood_group": donor['blood_group'],
+                "preliminary_rh": '+' if '+' in donor['blood_group'] else '-',
+                # Questionnaire - needs review
+                "questionnaire_completed": True,
+                "questionnaire_passed": None,  # Pending review
+                "recent_illness": random.choice([False, True]),
+                "recent_travel": random.choice([False, True]),
+                "recent_surgery": False,
+                "recent_tattoo": False,
+                "high_risk_behavior": False,
+                # Status - PENDING
+                "status": "pending",
+                "eligibility_status": "pending",
+                "eligibility_reason": "Awaiting physician review",
+                "screened_by": random.choice(staff_ids),
+                "screened_by_name": "Nurse Fatimah",
+                "verified_by": None,
+                "verified_at": None,
+                "notes": "Pending medical officer review",
                 "org_id": org_id,
                 "created_at": scr_date.isoformat(),
             }
             screenings.append(screening)
         
         await db.screenings.insert_many(screenings)
-        logger.info(f"✓ Created {len(screenings)} screenings (20 completed, 5 pending)")
+        logger.info(f"✓ Created {len(screenings)} screenings:")
+        logger.info(f"  → 20 completed (past donations)")
+        logger.info(f"  → 5 completed TODAY - READY FOR COLLECTION")
+        logger.info(f"  → 5 pending (awaiting review)")
         
         # ============================================
         # 4. DONATIONS (15 total - proper status distribution)
