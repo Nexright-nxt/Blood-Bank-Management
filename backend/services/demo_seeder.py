@@ -722,9 +722,14 @@ async def seed_comprehensive_demo_data(db, logger):
         logger.info(f"✓ Created {len(blood_units)} blood units")
         
         # ============================================
-        # 7. COMPONENTS (40 - various statuses)
+        # 7. COMPONENTS (50+ - various statuses for processing demo)
+        # Structure:
+        # - From processed blood units: available, reserved, issued, quarantine
+        # - Additional processing items: pending_processing, in_processing
         # ============================================
         components = []
+        
+        # Components from processed blood units
         for i, unit in enumerate(blood_units):
             donation = next(d for d in donations if d['id'] == unit['donation_id'])
             collection_date = datetime.fromisoformat(unit['created_at'].replace('Z', '+00:00'))
@@ -763,8 +768,125 @@ async def seed_comprehensive_demo_data(db, logger):
                 }
                 components.append(component)
         
+        # Additional PENDING PROCESSING items (just collected, awaiting separation)
+        for i in range(8):
+            collection_date = datetime.now(timezone.utc) - timedelta(hours=random.randint(1, 6))
+            blood_group = random.choice(BLOOD_GROUPS)
+            donor = random.choice(donors[:20])
+            
+            for j, comp_type in enumerate(['prc', 'ffp', 'platelets']):
+                exp_days = 42 if comp_type == 'prc' else 5 if comp_type == 'platelets' else 365
+                
+                component = {
+                    "id": str(uuid.uuid4()),
+                    "component_id": f"PDN-CMP-PEND-{i + 1}-{j + 1}",
+                    "blood_unit_id": None,  # Not yet assigned
+                    "donation_id": None,
+                    "donor_id": donor['id'],
+                    "component_type": comp_type,
+                    "component_name": comp_type.upper().replace('_', ' '),
+                    "blood_group": blood_group,
+                    "volume_ml": None,  # Not measured yet
+                    "collection_date": collection_date.strftime("%Y-%m-%d"),
+                    "processing_date": None,  # Not processed yet
+                    "expiry_date": None,  # Will be set after processing
+                    "expiry_time": None,
+                    "status": "pending_processing",
+                    "storage_location": "CENTRIFUGE-QUEUE",
+                    "storage_temperature": 4.0,
+                    "qc_status": "pending",
+                    "qc_date": None,
+                    "barcode": f"CMP{random.randint(100000000, 999999999)}",
+                    "irradiated": False,
+                    "leukoreduced": False,
+                    "issued_to": None,
+                    "issued_date": None,
+                    "notes": "Awaiting centrifugation and component separation",
+                    "org_id": org_id,
+                    "created_at": collection_date.isoformat(),
+                }
+                components.append(component)
+        
+        # Additional IN PROCESSING items (currently being separated)
+        for i in range(5):
+            collection_date = datetime.now(timezone.utc) - timedelta(hours=random.randint(2, 4))
+            blood_group = random.choice(BLOOD_GROUPS)
+            donor = random.choice(donors[:20])
+            
+            for j, comp_type in enumerate(['prc', 'ffp']):
+                component = {
+                    "id": str(uuid.uuid4()),
+                    "component_id": f"PDN-CMP-PROC-{i + 1}-{j + 1}",
+                    "blood_unit_id": None,
+                    "donation_id": None,
+                    "donor_id": donor['id'],
+                    "component_type": comp_type,
+                    "component_name": comp_type.upper().replace('_', ' '),
+                    "blood_group": blood_group,
+                    "volume_ml": random.randint(200, 300) if j == 0 else None,  # PRC measured, FFP pending
+                    "collection_date": collection_date.strftime("%Y-%m-%d"),
+                    "processing_date": collection_date.strftime("%Y-%m-%d"),  # Processing started today
+                    "expiry_date": None,
+                    "expiry_time": None,
+                    "status": "in_processing",
+                    "storage_location": f"CENTRIFUGE-{random.randint(1, 3)}",
+                    "storage_temperature": 4.0,
+                    "qc_status": "pending",
+                    "qc_date": None,
+                    "barcode": f"CMP{random.randint(100000000, 999999999)}",
+                    "irradiated": False,
+                    "leukoreduced": False,
+                    "issued_to": None,
+                    "issued_date": None,
+                    "notes": "Component separation in progress",
+                    "org_id": org_id,
+                    "created_at": collection_date.isoformat(),
+                }
+                components.append(component)
+        
+        # Additional QC PENDING items (separated but awaiting quality check)
+        for i in range(6):
+            collection_date = datetime.now(timezone.utc) - timedelta(hours=random.randint(6, 12))
+            blood_group = random.choice(BLOOD_GROUPS)
+            donor = random.choice(donors[:20])
+            exp_days = 42
+            
+            component = {
+                "id": str(uuid.uuid4()),
+                "component_id": f"PDN-CMP-QC-{i + 1}",
+                "blood_unit_id": None,
+                "donation_id": None,
+                "donor_id": donor['id'],
+                "component_type": "prc",
+                "component_name": "PACKED RED CELLS",
+                "blood_group": blood_group,
+                "volume_ml": random.randint(250, 350),
+                "collection_date": collection_date.strftime("%Y-%m-%d"),
+                "processing_date": collection_date.strftime("%Y-%m-%d"),
+                "expiry_date": (collection_date + timedelta(days=exp_days)).strftime("%Y-%m-%d"),
+                "expiry_time": "23:59",
+                "status": "qc_pending",
+                "storage_location": f"QC-HOLD-{random.randint(1, 5)}",
+                "storage_temperature": 4.0,
+                "qc_status": "pending",
+                "qc_date": None,
+                "barcode": f"CMP{random.randint(100000000, 999999999)}",
+                "irradiated": False,
+                "leukoreduced": True,
+                "issued_to": None,
+                "issued_date": None,
+                "notes": "Awaiting quality control verification",
+                "org_id": org_id,
+                "created_at": collection_date.isoformat(),
+            }
+            components.append(component)
+        
         await db.components.insert_many(components)
-        logger.info(f"✓ Created {len(components)} components")
+        logger.info(f"✓ Created {len(components)} components:")
+        logger.info(f"  → ~37 from blood units (available/reserved/issued/quarantine)")
+        logger.info(f"  → 24 pending_processing (awaiting separation)")
+        logger.info(f"  → 10 in_processing (currently separating)")
+        logger.info(f"  → 6 qc_pending (awaiting QC verification)")
         
         # ============================================
         # 8. BLOOD REQUESTS (15 - various statuses)
