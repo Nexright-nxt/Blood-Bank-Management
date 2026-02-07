@@ -679,3 +679,58 @@ cd frontend && yarn install && yarn start
 - `/app/test_reports/iteration_7.json` - In-App Notifications for Broadcasts (100% pass rate, 9 frontend tests)
 - `/app/test_reports/iteration_8.json` - Map Integration for Requestors (100% pass rate, 10 frontend tests)
 - `/app/test_reports/iteration_9.json` - Requestor Portal Improvements (100% pass rate, 13 backend + all frontend tests)
+- `/app/test_reports/iteration_13.json` - Blood Collection Demo Data Fix (100% pass rate, all 5 frontend tests)
+
+---
+
+## Demo Data Seeder (COMPLETE - Feb 7, 2026)
+
+### Automatic Demo Data Population
+- [x] **Auto-seeding on startup**: The `/app/backend/services/demo_seeder.py` script runs automatically when the application starts if the database is empty
+- [x] **Malaysian Localization**: All demo data uses Malaysian names, addresses, phone numbers (+60-XX-XXXXXXX), and organizations
+- [x] **Comprehensive Data Coverage**: Populates all modules with realistic, interconnected data
+
+### Demo Data Summary (30 donors, properly structured for workflows)
+- **Organization**: Pusat Darah Negara Malaysia (primary blood bank)
+- **Users**: 5 (1 admin + 4 staff with different roles)
+- **Donors**: 30 total
+  - 20 eligible donors with past donations (>56 days ago, eligible for new donation)
+  - **5 donors ready for collection** (PDN-D-2024021 to PDN-D-2024025) with completed TODAY screenings
+  - 5 pending/deferred donors for demo variety
+- **Screenings**: 30 total (25 completed with eligibility_status='eligible', 5 pending)
+- **Donations**: 15 total (12 completed, 3 in_progress)
+- **Lab Tests**: 12 (10 completed, 2 pending)
+- **Blood Units**: 10
+- **Components**: 36 (various statuses)
+- **Blood Requests**: 15 (pending/approved/fulfilled/cancelled)
+- **Issuances**: 5
+- **Returns**: 5
+- **Discards**: 6
+- **Logistics Orders**: 8
+- **QC Validations**: 10
+- **Quarantine Records**: 5
+- **Storage Locations**: 6
+- **Requestors (Hospitals)**: 5
+- **Broadcasts**: 5
+- **Inter-Org Requests**: 6
+- **Alerts**: 10
+- **Audit Logs**: 30
+- **Donor Registration Requests**: 16 (8 pending, 5 approved, 3 rejected)
+
+### Demo Credentials
+| Role | Email | Password | Notes |
+|------|-------|----------|-------|
+| Org Admin | admin@pdn.gov.my | Admin@123 | Primary demo organization admin |
+| Lab Tech | labtech@pdn.gov.my | Staff@123 | Staff user |
+| Nurse | nurse@pdn.gov.my | Staff@123 | Staff user |
+| Inventory | inventory@pdn.gov.my | Staff@123 | Staff user |
+| Distribution | distribution@pdn.gov.my | Staff@123 | Staff user |
+| Requestor | bloodbank@hospitalkualalumpur.gov.my | Hospital@123 | Hospital requestor |
+
+### Blood Collection Workflow Fix (Feb 7, 2026)
+- [x] **Fixed data integrity issue**: Donation records are now correctly linked to completed screening records
+- [x] **Ready-for-collection donors**: 5 donors (PDN-D-2024021 to PDN-D-2024025) have:
+  - No last_donation_date (eligible for donation)
+  - Completed screening TODAY with `eligibility_status: "eligible"`
+  - No existing donation for their screening (ready to start collection)
+- [x] **Verified workflow**: Click "Select" on eligible donor → Opens Blood Collection dialog → "Start Collection" works without "screening not done" error
