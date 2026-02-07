@@ -302,7 +302,7 @@ export default function RequestorRegistration() {
                       value={formData.phone}
                       onChange={handleChange}
                       className="pl-10"
-                      placeholder="+91 XXXXXXXXXX"
+                      placeholder="+60 1X-XXXXXXX"
                       data-testid="phone-input"
                     />
                   </div>
