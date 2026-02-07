@@ -225,14 +225,48 @@ export default function DonorLanding() {
           <p className="text-teal-100 mb-8 text-lg">
             Join thousands of donors who are saving lives every day. Your contribution matters.
           </p>
-          <Button 
-            size="lg"
-            onClick={() => { setAuthMode('register'); setShowAuthModal(true); }}
-            className="bg-white text-teal-700 hover:bg-teal-50 text-lg px-8"
-          >
-            Register Now
-            <ArrowRight className="w-5 h-5 ml-2" />
-          </Button>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button 
+              size="lg"
+              onClick={() => { setAuthMode('register'); setShowAuthModal(true); }}
+              className="bg-white text-teal-700 hover:bg-teal-50 text-lg px-8"
+            >
+              Register as Donor
+              <ArrowRight className="w-5 h-5 ml-2" />
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Requestor Section - For Hospitals/Clinics */}
+      <section className="py-16 bg-slate-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <Card className="border-0 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50">
+            <CardContent className="p-8">
+              <div className="flex flex-col md:flex-row items-center gap-8">
+                <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center flex-shrink-0">
+                  <Building2 className="w-10 h-10 text-white" />
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                  <h3 className="text-2xl font-bold text-slate-900 mb-2">Are you a Hospital or Clinic?</h3>
+                  <p className="text-slate-600 mb-4">
+                    Register your organization to request blood units from our network. 
+                    Get access to real-time availability and streamlined request management.
+                  </p>
+                  <Button 
+                    size="lg"
+                    onClick={() => navigate('/requestor/register')}
+                    className="bg-blue-600 hover:bg-blue-700"
+                    data-testid="requestor-register-btn"
+                  >
+                    <Building2 className="w-5 h-5 mr-2" />
+                    Register as Requestor
+                    <ArrowRight className="w-5 h-5 ml-2" />
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </section>
 
