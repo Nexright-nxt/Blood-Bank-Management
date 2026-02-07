@@ -359,15 +359,28 @@ async def create_donation_session(
     if donor.get("status") == "deferred_temporary":
         deferral_end = donor.get("deferral_end_date")
         if deferral_end:
-            end_date = datetime.fromisoformat(deferral_end).date()
-            if end_date > date.today():
-                raise HTTPException(status_code=400, detail=f"Donor is deferred until {deferral_end}")
+            try:
+                if 'T' in deferral_end:
+                    end_date = datetime.fromisoformat(deferral_end.replace('Z', '+00:00')).date()
+                else:
+                    end_date = datetime.strptime(deferral_end, "%Y-%m-%d").date()
+                if end_date > date.today():
+                    raise HTTPException(status_code=400, detail=f"Donor is deferred until {deferral_end}")
+            except (ValueError, AttributeError):
+                pass
     
     if donor.get("last_donation_date"):
-        last_donation = datetime.fromisoformat(donor["last_donation_date"]).date()
-        days_since = (date.today() - last_donation).days
-        if days_since < 56:
-            raise HTTPException(status_code=400, detail=f"Only {days_since} days since last donation. Minimum 56 days required.")
+        try:
+            last_donation_str = donor["last_donation_date"]
+            if 'T' in last_donation_str:
+                last_donation = datetime.fromisoformat(last_donation_str.replace('Z', '+00:00')).date()
+            else:
+                last_donation = datetime.strptime(last_donation_str, "%Y-%m-%d").date()
+            days_since = (date.today() - last_donation).days
+            if days_since < 56:
+                raise HTTPException(status_code=400, detail=f"Only {days_since} days since last donation. Minimum 56 days required.")
+        except (ValueError, AttributeError):
+            pass
     
     # Check for existing active session
     existing_session = await db.donation_sessions.find_one({
