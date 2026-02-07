@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { publicDonorAPI } from '../lib/api';
 import { toast } from 'sonner';
-import { Droplet, Heart, Users, Clock, CheckCircle, Shield, ArrowRight, User, LogIn } from 'lucide-react';
+import { Droplet, Heart, Users, Clock, CheckCircle, Shield, ArrowRight, User, LogIn, Building2 } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '../components/ui/dialog';
