@@ -197,8 +197,8 @@ class OrgAccessHelper:
     
     def can_access(self, org_id: str) -> bool:
         """Check if user can access given org_id."""
-        # System admin can access ALL organizations
-        if self.user_type == "system_admin":
+        # System admin and super admin can access ALL organizations
+        if self.user_type in ["system_admin", "super_admin"]:
             return True
         return org_id in self.org_ids
     
