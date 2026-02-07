@@ -897,6 +897,108 @@ async def seed_comprehensive_demo_data(db, logger):
         logger.info(f"✓ Created {len(audit_logs)} audit logs")
         
         # ============================================
+        # 21. DONOR REQUESTS (16 - registration requests)
+        # ============================================
+        donor_requests = []
+        
+        # 8 pending requests (for demo approval/rejection)
+        for i in range(8):
+            first, last = random.choice(FIRST_NAMES), random.choice(LAST_NAMES)
+            donor_requests.append({
+                "id": str(uuid.uuid4()),
+                "request_id": f"DR-{2024001 + i}",
+                "donor_id": None,
+                "identity_type": random.choice(["mykad", "passport"]),
+                "identity_number": f"{random.randint(70, 99):02d}{random.randint(1, 12):02d}{random.randint(1, 28):02d}-{random.randint(1, 14):02d}-{random.randint(1000, 9999)}",
+                "full_name": f"{first} {last}",
+                "date_of_birth": f"{random.randint(1970, 2000)}-{random.randint(1,12):02d}-{random.randint(1,28):02d}",
+                "gender": random.choice(["male", "female"]),
+                "blood_group": random.choice(BLOOD_GROUPS),
+                "weight": round(random.uniform(50, 90), 1),
+                "height": random.randint(150, 185),
+                "phone": f"+60-{random.choice(['11', '12', '13', '16', '17', '18', '19'])}-{random.randint(1000000, 9999999)}",
+                "email": f"{first.lower()}.{last.lower()}{random.randint(10,99)}@email.com.my",
+                "address": f"No. {random.randint(1, 200)}, Jalan {random.choice(['Merdeka', 'Ampang', 'Cheras'])} {random.randint(1, 30)}, Kuala Lumpur",
+                "health_questionnaire": {
+                    "recent_illness": False,
+                    "on_medication": random.choice([False, False, True]),
+                    "recent_surgery": False,
+                    "recent_tattoo": False,
+                },
+                "consent_given": True,
+                "request_type": "new_registration",
+                "status": "pending",
+                "reviewed_by": None,
+                "reviewed_at": None,
+                "rejection_reason": None,
+                "created_at": rand_date(0, 5).isoformat(),
+            })
+        
+        # 5 approved requests
+        for i in range(5):
+            first, last = random.choice(FIRST_NAMES), random.choice(LAST_NAMES)
+            created = rand_date(10, 30)
+            reviewed = created + timedelta(hours=random.randint(2, 24))
+            donor_requests.append({
+                "id": str(uuid.uuid4()),
+                "request_id": f"DR-{2024020 + i}",
+                "donor_id": f"PDN-D-{2024100 + i}",
+                "identity_type": "mykad",
+                "identity_number": f"{random.randint(70, 99):02d}{random.randint(1, 12):02d}{random.randint(1, 28):02d}-{random.randint(1, 14):02d}-{random.randint(1000, 9999)}",
+                "full_name": f"{first} {last}",
+                "date_of_birth": f"{random.randint(1970, 2000)}-{random.randint(1,12):02d}-{random.randint(1,28):02d}",
+                "gender": random.choice(["male", "female"]),
+                "blood_group": random.choice(BLOOD_GROUPS),
+                "weight": round(random.uniform(50, 90), 1),
+                "height": random.randint(150, 185),
+                "phone": f"+60-{random.choice(['11', '12', '16', '17'])}-{random.randint(1000000, 9999999)}",
+                "email": f"{first.lower()}.{last.lower()}{random.randint(10,99)}@email.com.my",
+                "address": f"No. {random.randint(1, 200)}, Jalan Example, Kuala Lumpur",
+                "health_questionnaire": {"recent_illness": False, "on_medication": False},
+                "consent_given": True,
+                "request_type": "new_registration",
+                "status": "approved",
+                "reviewed_by": "admin@pdn.gov.my",
+                "reviewed_at": reviewed.isoformat(),
+                "rejection_reason": None,
+                "created_at": created.isoformat(),
+            })
+        
+        # 3 rejected requests
+        rejection_reasons = ["Age below minimum requirement", "Failed health screening", "Incomplete documentation"]
+        for i, reason in enumerate(rejection_reasons):
+            first, last = random.choice(FIRST_NAMES), random.choice(LAST_NAMES)
+            created = rand_date(15, 45)
+            reviewed = created + timedelta(hours=random.randint(4, 48))
+            donor_requests.append({
+                "id": str(uuid.uuid4()),
+                "request_id": f"DR-{2024030 + i}",
+                "donor_id": None,
+                "identity_type": "mykad",
+                "identity_number": f"{random.randint(70, 99):02d}{random.randint(1, 12):02d}{random.randint(1, 28):02d}-{random.randint(1, 14):02d}-{random.randint(1000, 9999)}",
+                "full_name": f"{first} {last}",
+                "date_of_birth": f"{random.randint(1970, 2005)}-{random.randint(1,12):02d}-{random.randint(1,28):02d}",
+                "gender": random.choice(["male", "female"]),
+                "blood_group": random.choice(BLOOD_GROUPS),
+                "weight": round(random.uniform(45, 90), 1),
+                "height": random.randint(150, 185),
+                "phone": f"+60-{random.choice(['11', '12', '16', '17'])}-{random.randint(1000000, 9999999)}",
+                "email": f"{first.lower()}.{last.lower()}{random.randint(10,99)}@email.com.my",
+                "address": f"No. {random.randint(1, 200)}, Jalan Example, Kuala Lumpur",
+                "health_questionnaire": {"recent_illness": False, "on_medication": False},
+                "consent_given": True,
+                "request_type": "new_registration",
+                "status": "rejected",
+                "reviewed_by": "admin@pdn.gov.my",
+                "reviewed_at": reviewed.isoformat(),
+                "rejection_reason": reason,
+                "created_at": created.isoformat(),
+            })
+        
+        await db.donor_requests.insert_many(donor_requests)
+        logger.info(f"✓ Created {len(donor_requests)} donor requests (8 pending, 5 approved, 3 rejected)")
+        
+        # ============================================
         # COMPLETION SUMMARY
         # ============================================
         logger.info("=" * 60)
