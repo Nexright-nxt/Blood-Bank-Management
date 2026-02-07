@@ -71,7 +71,7 @@ class TestDemoDataVerification:
     
     def test_blood_requests_list(self):
         """Test blood requests API returns seeded requests"""
-        response = requests.get(f"{BASE_URL}/api/inter-org-requests", headers=self.headers)
+        response = requests.get(f"{BASE_URL}/api/inter-org-requests/incoming", headers=self.headers)
         assert response.status_code == 200
         data = response.json()
         
