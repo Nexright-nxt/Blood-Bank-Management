@@ -67,11 +67,70 @@ async def seed_demo_data():
     print("BLOOD LINK - Demo Data Seeding Script")
     print("=" * 60)
     
-    # Get existing org (Test Organization)
+    # ========================================
+    # 0. CREATE ORGANIZATION & ADMIN IF NEEDED
+    # ========================================
     test_org = await db.organizations.find_one({"org_name": "Test Organization"})
+    
     if not test_org:
-        print("ERROR: Test Organization not found. Please create it first.")
-        return
+        print("\n🏢 Creating Test Organization and Admin...")
+        
+        # Create organization
+        org_id = str(uuid.uuid4())
+        city_info = CITIES[0]  # Kuala Lumpur
+        test_org = {
+            "id": org_id,
+            "org_name": "Test Organization",
+            "org_type": "hospital_network",
+            "is_parent": True,
+            "parent_org_id": None,
+            "address": "123 Jalan Darah, Bukit Bintang",
+            "city": city_info['city'],
+            "state": city_info['state'],
+            "country": "Malaysia",
+            "latitude": city_info['lat'],
+            "longitude": city_info['lng'],
+            "location": {
+                "type": "Point",
+                "coordinates": [city_info['lng'], city_info['lat']]
+            },
+            "contact_person": "Dr. Ahmad Rahman",
+            "contact_phone": "+60-12-3456789",
+            "contact_email": "admin@testorg.com",
+            "license_number": "LIC-TEST-001",
+            "is_active": True,
+            "is_24x7": True,
+            "operating_hours": "24/7",
+            "blood_link_visible": True,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        await db.organizations.insert_one(test_org)
+        
+        # Create geospatial index
+        try:
+            await db.organizations.create_index([("location", "2dsphere")])
+        except:
+            pass
+        
+        # Create super admin user
+        admin_id = str(uuid.uuid4())
+        admin_user = {
+            "id": admin_id,
+            "email": "admin@testorg.com",
+            "password_hash": pwd_context.hash("Test@123"),
+            "full_name": "Test Org Admin",
+            "phone": "+60-12-3456789",
+            "role": "admin",
+            "user_type": "super_admin",
+            "org_id": org_id,
+            "org_name": "Test Organization",
+            "is_active": True,
+            "created_at": datetime.now(timezone.utc).isoformat(),
+        }
+        await db.users.insert_one(admin_user)
+        
+        print(f"   ✓ Created organization: Test Organization")
+        print(f"   ✓ Created admin user: admin@testorg.com / Test@123")
     
     org_id = test_org['id']
     print(f"\n✓ Using organization: {test_org['org_name']} ({org_id})")
