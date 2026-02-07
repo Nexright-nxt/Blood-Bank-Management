@@ -176,14 +176,27 @@ async def seed_comprehensive_demo_data(db, logger):
         logger.info(f"✓ Created {len(donors)} donors")
         
         # ============================================
-        # 3. SCREENINGS (20 - mix of pending & completed)
+        # 3. SCREENINGS (25 total - proper flow for collection)
         # ============================================
         screenings = []
         eligible_donors = [d for d in donors if d['status'] == 'eligible']
         
-        for i, donor in enumerate(eligible_donors[:20]):
+        for i, donor in enumerate(eligible_donors[:25]):
             scr_date = rand_date(0, 30)
-            is_completed = i < 15  # 15 completed, 5 pending
+            
+            # Status distribution:
+            # - First 12: completed (will have completed donations)
+            # - Next 5: completed (ready for collection - no donation yet)
+            # - Next 3: completed (will have in_progress donations)
+            # - Last 5: pending (awaiting review)
+            if i < 20:
+                status = "completed"
+                eligibility = "eligible"
+                notes = "Donor cleared for donation"
+            else:
+                status = "pending"
+                eligibility = "pending"
+                notes = "Awaiting physician review"
             
             screening = {
                 "id": str(uuid.uuid4()),
@@ -193,7 +206,7 @@ async def seed_comprehensive_demo_data(db, logger):
                 "blood_group": donor['blood_group'],
                 "screening_date": scr_date.strftime("%Y-%m-%d"),
                 "screening_time": f"{random.randint(8, 16):02d}:{random.randint(0, 59):02d}",
-                # Vital signs
+                # Vital signs - all filled
                 "hemoglobin": round(random.uniform(12.5, 16.5), 1),
                 "hemoglobin_unit": "g/dL",
                 "blood_pressure_systolic": random.randint(100, 140),
@@ -205,38 +218,40 @@ async def seed_comprehensive_demo_data(db, logger):
                 # Blood typing
                 "preliminary_blood_group": donor['blood_group'],
                 "preliminary_rh": '+' if '+' in donor['blood_group'] else '-',
-                # Questionnaire
+                # Questionnaire - all completed
                 "questionnaire_completed": True,
                 "recent_illness": False,
-                "recent_travel": random.choice([False, False, True]),
+                "recent_travel": False,
                 "recent_surgery": False,
                 "recent_tattoo": False,
                 "high_risk_behavior": False,
                 # Status
-                "status": "completed" if is_completed else "pending",
-                "eligibility_status": "eligible" if is_completed else "pending",
+                "status": status,
+                "eligibility_status": eligibility,
                 "eligibility_reason": None,
                 "screened_by": random.choice(staff_ids),
                 "screened_by_name": "Nurse Fatimah",
-                "notes": "Donor cleared for donation" if is_completed else "Awaiting review",
+                "verified_by": admin_id if status == "completed" else None,
+                "verified_at": scr_date.isoformat() if status == "completed" else None,
+                "notes": notes,
                 "org_id": org_id,
                 "created_at": scr_date.isoformat(),
             }
             screenings.append(screening)
         
         await db.screenings.insert_many(screenings)
-        logger.info(f"✓ Created {len(screenings)} screenings (15 completed, 5 pending)")
+        logger.info(f"✓ Created {len(screenings)} screenings (20 completed, 5 pending)")
         
         # ============================================
-        # 4. DONATIONS (15 - mix of completed & in_progress)
+        # 4. DONATIONS (15 total - proper status distribution)
         # ============================================
         donations = []
         completed_screenings = [s for s in screenings if s['status'] == 'completed']
         
-        for i, screening in enumerate(completed_screenings[:15]):
+        # First 12 completed screenings -> completed donations
+        for i, screening in enumerate(completed_screenings[:12]):
             donor = next(d for d in donors if d['id'] == screening['donor_id'])
             don_date = datetime.fromisoformat(screening['created_at'].replace('Z', '+00:00')) + timedelta(minutes=30)
-            is_completed = i < 12  # 12 completed, 3 in_progress
             
             donation = {
                 "id": str(uuid.uuid4()),
@@ -249,9 +264,9 @@ async def seed_comprehensive_demo_data(db, logger):
                 "donation_date": don_date.strftime("%Y-%m-%d"),
                 "donation_time": don_date.strftime("%H:%M"),
                 "collection_start_time": don_date.isoformat(),
-                "collection_end_time": (don_date + timedelta(minutes=12)).isoformat() if is_completed else None,
-                "volume_collected": random.choice([350, 450, 500]) if is_completed else None,
-                "volume_ml": random.choice([350, 450, 500]) if is_completed else None,
+                "collection_end_time": (don_date + timedelta(minutes=12)).isoformat(),
+                "volume_collected": random.choice([350, 450, 500]),
+                "volume_ml": random.choice([350, 450, 500]),
                 "bag_type": random.choice(['Single', 'Double', 'Triple', 'Quadruple']),
                 "bag_lot_number": f"BG-{random.randint(10000, 99999)}",
                 "phlebotomist_id": random.choice(staff_ids),
@@ -259,19 +274,58 @@ async def seed_comprehensive_demo_data(db, logger):
                 "arm_used": random.choice(['left', 'right']),
                 "needle_gauge": random.choice(['16G', '17G']),
                 "venipuncture_attempts": 1,
-                "status": "completed" if is_completed else "in_progress",
+                "status": "completed",
                 "adverse_reaction": False,
                 "adverse_reaction_details": None,
-                "post_donation_care": "Refreshments provided" if is_completed else None,
-                "notes": "Successful donation" if is_completed else "Collection in progress",
+                "post_donation_care": "Refreshments provided, rested 15 minutes",
+                "notes": "Successful donation - donor tolerated well",
                 "org_id": org_id,
                 "created_at": don_date.isoformat(),
                 "created_by": random.choice(staff_ids),
             }
             donations.append(donation)
         
+        # Screenings 17-19 (indices 17, 18, 19) -> in_progress donations
+        for i, screening in enumerate(completed_screenings[17:20]):
+            donor = next(d for d in donors if d['id'] == screening['donor_id'])
+            don_date = datetime.now(timezone.utc) - timedelta(hours=random.randint(1, 3))
+            
+            donation = {
+                "id": str(uuid.uuid4()),
+                "donation_id": f"PDN-DON-{2024020 + i}",
+                "donor_id": donor['id'],
+                "donor_name": donor['full_name'],
+                "screening_id": screening['id'],
+                "blood_group": donor['blood_group'],
+                "donation_type": "whole_blood",
+                "donation_date": don_date.strftime("%Y-%m-%d"),
+                "donation_time": don_date.strftime("%H:%M"),
+                "collection_start_time": don_date.isoformat(),
+                "collection_end_time": None,
+                "volume_collected": None,
+                "volume_ml": None,
+                "bag_type": random.choice(['Double', 'Triple']),
+                "bag_lot_number": f"BG-{random.randint(10000, 99999)}",
+                "phlebotomist_id": random.choice(staff_ids),
+                "phlebotomist_name": "Nurse Fatimah",
+                "arm_used": random.choice(['left', 'right']),
+                "needle_gauge": "16G",
+                "venipuncture_attempts": 1,
+                "status": "in_progress",
+                "adverse_reaction": False,
+                "notes": "Collection in progress - awaiting completion",
+                "org_id": org_id,
+                "created_at": don_date.isoformat(),
+                "created_by": random.choice(staff_ids),
+            }
+            donations.append(donation)
+        
+        # NOTE: Screenings 12-16 (indices 12, 13, 14, 15, 16) have completed screenings
+        # but NO donations - these are READY FOR COLLECTION in the demo!
+        
         await db.donations.insert_many(donations)
         logger.info(f"✓ Created {len(donations)} donations (12 completed, 3 in_progress)")
+        logger.info(f"  → 5 donors with completed screenings ready for collection (no donation yet)")
         
         # ============================================
         # 5. LAB TESTS (12 - mix of completed & pending)
