@@ -577,17 +577,35 @@ async def check_donor_eligibility(
         eligible = False
     elif donor.get("status") == "deferred_temporary":
         if donor.get("deferral_end_date"):
-            end_date = datetime.fromisoformat(donor["deferral_end_date"])
-            if end_date > datetime.now(timezone.utc):
-                issues.append(f"Donor is deferred until {donor['deferral_end_date']}")
-                eligible = False
+            try:
+                end_date = datetime.fromisoformat(donor["deferral_end_date"].replace('Z', '+00:00'))
+                if end_date.tzinfo is None:
+                    end_date = end_date.replace(tzinfo=timezone.utc)
+                if end_date > datetime.now(timezone.utc):
+                    issues.append(f"Donor is deferred until {donor['deferral_end_date']}")
+                    eligible = False
+            except (ValueError, AttributeError):
+                pass
     
     if donor.get("last_donation_date"):
-        last_donation = datetime.fromisoformat(donor["last_donation_date"])
-        days_since = (datetime.now(timezone.utc) - last_donation).days
-        if days_since < 56:
-            issues.append(f"Only {days_since} days since last donation. Minimum 56 days required.")
-            eligible = False
+        try:
+            last_donation_str = donor["last_donation_date"]
+            # Handle both date strings (YYYY-MM-DD) and ISO datetime strings
+            if 'T' in last_donation_str:
+                last_donation = datetime.fromisoformat(last_donation_str.replace('Z', '+00:00'))
+            else:
+                last_donation = datetime.strptime(last_donation_str, "%Y-%m-%d")
+            
+            # Make timezone aware if needed
+            if last_donation.tzinfo is None:
+                last_donation = last_donation.replace(tzinfo=timezone.utc)
+            
+            days_since = (datetime.now(timezone.utc) - last_donation).days
+            if days_since < 56:
+                issues.append(f"Only {days_since} days since last donation. Minimum 56 days required.")
+                eligible = False
+        except (ValueError, AttributeError):
+            pass
     
     return {
         "eligible": eligible,
