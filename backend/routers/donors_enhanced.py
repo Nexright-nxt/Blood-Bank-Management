@@ -905,23 +905,36 @@ async def check_donor_full_eligibility(donor: dict) -> dict:
     elif donor.get("status") == "deferred_temporary":
         deferral_end = donor.get("deferral_end_date")
         if deferral_end:
-            end_date = datetime.fromisoformat(deferral_end).date()
-            if end_date > today:
-                status = "deferred"
-                reasons.append(f"Deferred until {deferral_end}: {donor.get('deferral_reason', 'Temporary deferral')}")
-                eligible_date = deferral_end
-                can_start_screening = False
+            try:
+                if 'T' in deferral_end:
+                    end_date = datetime.fromisoformat(deferral_end.replace('Z', '+00:00')).date()
+                else:
+                    end_date = datetime.strptime(deferral_end, "%Y-%m-%d").date()
+                if end_date > today:
+                    status = "deferred"
+                    reasons.append(f"Deferred until {deferral_end}: {donor.get('deferral_reason', 'Temporary deferral')}")
+                    eligible_date = deferral_end
+                    can_start_screening = False
+            except (ValueError, AttributeError):
+                pass
     
     # Check donation interval
     if can_start_screening and donor.get("last_donation_date"):
-        last_donation = datetime.fromisoformat(donor["last_donation_date"]).date()
-        days_since = (today - last_donation).days
-        if days_since < 56:
-            status = "not_eligible"
-            next_eligible = last_donation + timedelta(days=56)
-            reasons.append(f"Only {days_since} days since last donation. Eligible again on {next_eligible.isoformat()}")
-            eligible_date = next_eligible.isoformat()
-            can_start_screening = False
+        try:
+            last_donation_str = donor["last_donation_date"]
+            if 'T' in last_donation_str:
+                last_donation = datetime.fromisoformat(last_donation_str.replace('Z', '+00:00')).date()
+            else:
+                last_donation = datetime.strptime(last_donation_str, "%Y-%m-%d").date()
+            days_since = (today - last_donation).days
+            if days_since < 56:
+                status = "not_eligible"
+                next_eligible = last_donation + timedelta(days=56)
+                reasons.append(f"Only {days_since} days since last donation. Eligible again on {next_eligible.isoformat()}")
+                eligible_date = next_eligible.isoformat()
+                can_start_screening = False
+        except (ValueError, AttributeError):
+            pass
     
     # Check for active session
     active_session = await db.donation_sessions.find_one({
