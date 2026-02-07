@@ -132,7 +132,7 @@ export function MapPicker({
   const onLocationChangeRef = useRef(onLocationChange);
 
   // Default center (can be customized)
-  const defaultCenter = [20.5937, 78.9629]; // India center
+  const defaultCenter = [4.2105, 101.9758]; // Malaysia center
 
   // Keep the callback ref updated
   useEffect(() => {

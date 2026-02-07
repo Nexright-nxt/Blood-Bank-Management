@@ -112,7 +112,7 @@ export default function BloodBankMap({
   const [selectedBank, setSelectedBank] = useState(null);
   const mapRef = useRef(null);
 
-  const defaultCenter = [20.5937, 78.9629]; // India center
+  const defaultCenter = [4.2105, 101.9758]; // Malaysia center
 
   // Fetch blood banks when user location changes
   useEffect(() => {
