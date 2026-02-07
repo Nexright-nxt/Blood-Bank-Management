@@ -797,9 +797,12 @@ async def seed_comprehensive_demo_data(db, logger):
         # ============================================
         components = []
         
-        # Components from processed blood units
-        for i, unit in enumerate(blood_units):
-            donation = next(d for d in donations if d['id'] == unit['donation_id'])
+        # Components from processed blood units (only ones with donation_id)
+        processed_units = [u for u in blood_units if u.get('donation_id') and u['status'] == 'processed']
+        for i, unit in enumerate(processed_units):
+            donation = next((d for d in donations if d['id'] == unit['donation_id']), None)
+            if not donation:
+                continue
             collection_date = datetime.fromisoformat(unit['created_at'].replace('Z', '+00:00'))
             
             # Create 3-4 components per unit
