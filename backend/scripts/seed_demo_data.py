@@ -146,7 +146,7 @@ async def seed_demo_data():
     admin_user = {
         "id": admin_id,
         "email": "admin@pdn.gov.my",
-        "password_hash": pwd_context.hash("Admin@123"),
+        "password_hash": hash_password("Admin@123"),
         "full_name": "Dr. Ahmad bin Hassan",
         "phone": "+60-3-26132688",
         "role": "admin",
@@ -172,7 +172,7 @@ async def seed_demo_data():
         await db.users.insert_one({
             "id": staff_id,
             "email": email,
-            "password_hash": pwd_context.hash("Staff@123"),
+            "password_hash": hash_password("Staff@123"),
             "full_name": name,
             "phone": generate_phone(),
             "role": role,
@@ -633,7 +633,7 @@ async def seed_demo_data():
             "latitude": city['lat'] + random.uniform(-0.01, 0.01),
             "longitude": city['lng'] + random.uniform(-0.01, 0.01),
             "status": status,
-            "password_hash": pwd_context.hash("Hospital@123"),
+            "password_hash": hash_password("Hospital@123"),
             "mou_signed": status == 'approved',
             "mou_date": random_date_str(30, 365) if status == 'approved' else None,
             "approved_by": admin_id if status == 'approved' else None,
