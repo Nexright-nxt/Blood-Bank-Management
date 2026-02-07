@@ -523,59 +523,169 @@ async def seed_comprehensive_demo_data(db, logger):
         logger.info(f"  → 5 donors (20-24) with completed screenings READY FOR COLLECTION")
         
         # ============================================
-        # 5. LAB TESTS (12 - mix of completed & pending)
+        # 5. LAB TESTS (20 - mix of completed, pending & in_progress)
+        # Structure:
+        # - 10 completed (all tests passed)
+        # - 5 in_progress (some tests done, some pending)
+        # - 5 pending (awaiting testing)
         # ============================================
         lab_tests = []
         completed_donations = [d for d in donations if d['status'] == 'completed']
         
-        for i, donation in enumerate(completed_donations[:12]):
+        # 10 Completed lab tests
+        for i, donation in enumerate(completed_donations[:10]):
             test_date = datetime.fromisoformat(donation['created_at'].replace('Z', '+00:00')) + timedelta(hours=2)
-            is_completed = i < 10  # 10 completed, 2 pending
             
             lab_test = {
                 "id": str(uuid.uuid4()),
                 "test_id": f"PDN-LAB-{2024001 + i}",
                 "donation_id": donation['id'],
                 "donor_id": donation['donor_id'],
+                "donor_name": donation['donor_name'],
                 "blood_unit_id": None,
                 # Blood typing
                 "blood_group_abo": donation['blood_group'][:-1] if donation['blood_group'][-1] in ['+', '-'] else donation['blood_group'],
                 "blood_group_rh": '+' if '+' in donation['blood_group'] else '-',
-                "blood_group_confirmed": donation['blood_group'] if is_completed else None,
-                # Serology - all negative for demo
-                "hiv_elisa": "negative" if is_completed else "pending",
-                "hiv_nat": "negative" if is_completed else "pending",
-                "hbsag": "negative" if is_completed else "pending",
-                "hbv_nat": "negative" if is_completed else "pending",
-                "anti_hcv": "negative" if is_completed else "pending",
-                "hcv_nat": "negative" if is_completed else "pending",
-                "syphilis_rpr": "negative" if is_completed else "pending",
-                "syphilis_tpha": "negative" if is_completed else "pending",
-                "malaria_antigen": "negative" if is_completed else "pending",
-                "htlv": "negative" if is_completed else "pending",
+                "blood_group_confirmed": donation['blood_group'],
+                # Serology - all negative (passed)
+                "hiv_elisa": "negative",
+                "hiv_nat": "negative",
+                "hbsag": "negative",
+                "hbv_nat": "negative",
+                "anti_hcv": "negative",
+                "hcv_nat": "negative",
+                "syphilis_rpr": "negative",
+                "syphilis_tpha": "negative",
+                "malaria_antigen": "negative",
+                "htlv": "negative",
                 # Antibody
-                "antibody_screen": "negative" if is_completed else "pending",
-                "crossmatch_compatible": True if is_completed else None,
-                "dat_result": "negative" if is_completed else "pending",
+                "antibody_screen": "negative",
+                "crossmatch_compatible": True,
+                "dat_result": "negative",
                 # Results
-                "overall_result": "pass" if is_completed else "pending",
+                "overall_result": "pass",
                 "test_date": test_date.strftime("%Y-%m-%d"),
                 "test_time": test_date.strftime("%H:%M"),
                 "tested_by": random.choice(staff_ids),
                 "tested_by_name": "Lab Tech Siti",
-                "verified_by": admin_id if is_completed else None,
-                "verified_by_name": "Dr. Ahmad" if is_completed else None,
-                "status": "completed" if is_completed else "pending",
+                "verified_by": admin_id,
+                "verified_by_name": "Dr. Ahmad",
+                "status": "completed",
                 "equipment_id": f"ANALYZER-{random.randint(1, 3)}",
                 "reagent_lot": f"RG-{random.randint(1000, 9999)}",
-                "notes": "All tests passed" if is_completed else "Awaiting test completion",
+                "notes": "All tests passed - cleared for processing",
+                "org_id": org_id,
+                "created_at": test_date.isoformat(),
+            }
+            lab_tests.append(lab_test)
+        
+        # 5 In-Progress lab tests (some tests done, awaiting remaining)
+        for i in range(5):
+            if i + 10 < len(completed_donations):
+                donation = completed_donations[i + 10]
+            else:
+                donation = completed_donations[i % len(completed_donations)]
+            test_date = datetime.now(timezone.utc) - timedelta(hours=random.randint(2, 8))
+            
+            lab_test = {
+                "id": str(uuid.uuid4()),
+                "test_id": f"PDN-LAB-{2024011 + i}",
+                "donation_id": donation['id'],
+                "donor_id": donation['donor_id'],
+                "donor_name": donation['donor_name'],
+                "blood_unit_id": None,
+                # Blood typing - done
+                "blood_group_abo": donation['blood_group'][:-1] if donation['blood_group'][-1] in ['+', '-'] else donation['blood_group'],
+                "blood_group_rh": '+' if '+' in donation['blood_group'] else '-',
+                "blood_group_confirmed": donation['blood_group'],
+                # Serology - some done, some pending
+                "hiv_elisa": "negative",
+                "hiv_nat": random.choice(["negative", "pending"]),
+                "hbsag": "negative",
+                "hbv_nat": "pending",
+                "anti_hcv": random.choice(["negative", "pending"]),
+                "hcv_nat": "pending",
+                "syphilis_rpr": "negative",
+                "syphilis_tpha": "pending",
+                "malaria_antigen": "pending",
+                "htlv": "pending",
+                # Antibody - pending
+                "antibody_screen": "pending",
+                "crossmatch_compatible": None,
+                "dat_result": "pending",
+                # Results
+                "overall_result": "pending",
+                "test_date": test_date.strftime("%Y-%m-%d"),
+                "test_time": test_date.strftime("%H:%M"),
+                "tested_by": random.choice(staff_ids),
+                "tested_by_name": "Lab Tech Siti",
+                "verified_by": None,
+                "verified_by_name": None,
+                "status": "in_progress",
+                "equipment_id": f"ANALYZER-{random.randint(1, 3)}",
+                "reagent_lot": f"RG-{random.randint(1000, 9999)}",
+                "notes": "Initial tests completed, awaiting NAT and antibody screening",
+                "org_id": org_id,
+                "created_at": test_date.isoformat(),
+            }
+            lab_tests.append(lab_test)
+        
+        # 5 Pending lab tests (awaiting all testing)
+        in_progress_donations = [d for d in donations if d['status'] == 'in_progress']
+        for i in range(5):
+            # Create dummy donation references for pending tests
+            test_date = datetime.now(timezone.utc) - timedelta(hours=random.randint(1, 4))
+            blood_group = random.choice(BLOOD_GROUPS)
+            donor = random.choice(donors[:20])
+            
+            lab_test = {
+                "id": str(uuid.uuid4()),
+                "test_id": f"PDN-LAB-{2024016 + i}",
+                "donation_id": in_progress_donations[i % len(in_progress_donations)]['id'] if in_progress_donations else str(uuid.uuid4()),
+                "donor_id": donor['id'],
+                "donor_name": donor['full_name'],
+                "blood_unit_id": None,
+                # Blood typing - not done yet
+                "blood_group_abo": None,
+                "blood_group_rh": None,
+                "blood_group_confirmed": None,
+                # Serology - all pending
+                "hiv_elisa": "pending",
+                "hiv_nat": "pending",
+                "hbsag": "pending",
+                "hbv_nat": "pending",
+                "anti_hcv": "pending",
+                "hcv_nat": "pending",
+                "syphilis_rpr": "pending",
+                "syphilis_tpha": "pending",
+                "malaria_antigen": "pending",
+                "htlv": "pending",
+                # Antibody - pending
+                "antibody_screen": "pending",
+                "crossmatch_compatible": None,
+                "dat_result": "pending",
+                # Results
+                "overall_result": "pending",
+                "test_date": test_date.strftime("%Y-%m-%d"),
+                "test_time": test_date.strftime("%H:%M"),
+                "tested_by": None,
+                "tested_by_name": None,
+                "verified_by": None,
+                "verified_by_name": None,
+                "status": "pending",
+                "equipment_id": None,
+                "reagent_lot": None,
+                "notes": "Sample received - awaiting testing queue",
                 "org_id": org_id,
                 "created_at": test_date.isoformat(),
             }
             lab_tests.append(lab_test)
         
         await db.lab_tests.insert_many(lab_tests)
-        logger.info(f"✓ Created {len(lab_tests)} lab tests (10 completed, 2 pending)")
+        logger.info(f"✓ Created {len(lab_tests)} lab tests:")
+        logger.info(f"  → 10 completed (all tests passed)")
+        logger.info(f"  → 5 in_progress (partial testing done)")
+        logger.info(f"  → 5 pending (awaiting testing)")
         
         # ============================================
         # 6. BLOOD UNITS (10 - processed from completed tests)
