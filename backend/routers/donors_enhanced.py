@@ -265,20 +265,35 @@ async def get_donors_with_eligibility_status(
         elif donor.get("status") == "deferred_temporary":
             deferral_end = donor.get("deferral_end_date")
             if deferral_end:
-                end_date = datetime.fromisoformat(deferral_end).date()
-                if end_date > today:
-                    eligibility_status = "deferred"
-                    eligibility_reason = donor.get("deferral_reason", "Temporarily deferred")
-                    eligible_date = deferral_end
+                try:
+                    # Handle both YYYY-MM-DD and ISO datetime strings
+                    if 'T' in deferral_end:
+                        end_date = datetime.fromisoformat(deferral_end.replace('Z', '+00:00')).date()
+                    else:
+                        end_date = datetime.strptime(deferral_end, "%Y-%m-%d").date()
+                    if end_date > today:
+                        eligibility_status = "deferred"
+                        eligibility_reason = donor.get("deferral_reason", "Temporarily deferred")
+                        eligible_date = deferral_end
+                except (ValueError, AttributeError):
+                    pass
         
         # Check last donation interval
-        elif donor.get("last_donation_date"):
-            last_donation = datetime.fromisoformat(donor["last_donation_date"]).date()
-            days_since = (today - last_donation).days
-            if days_since < 56:
-                eligibility_status = "not_eligible"
-                eligible_date = (last_donation + timedelta(days=56)).isoformat()
-                eligibility_reason = f"Must wait {56 - days_since} more days (minimum 56 days between donations)"
+        if eligibility_status == "eligible" and donor.get("last_donation_date"):
+            try:
+                last_donation_str = donor["last_donation_date"]
+                # Handle both YYYY-MM-DD and ISO datetime strings
+                if 'T' in last_donation_str:
+                    last_donation = datetime.fromisoformat(last_donation_str.replace('Z', '+00:00')).date()
+                else:
+                    last_donation = datetime.strptime(last_donation_str, "%Y-%m-%d").date()
+                days_since = (today - last_donation).days
+                if days_since < 56:
+                    eligibility_status = "not_eligible"
+                    eligible_date = (last_donation + timedelta(days=56)).isoformat()
+                    eligibility_reason = f"Must wait {56 - days_since} more days (minimum 56 days between donations)"
+            except (ValueError, AttributeError):
+                pass
         
         # Check for active donation session
         active_session = await db.donation_sessions.find_one({
