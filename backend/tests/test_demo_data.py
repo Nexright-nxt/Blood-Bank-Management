@@ -20,7 +20,7 @@ class TestDemoDataVerification:
             "password": "Test@123"
         })
         assert response.status_code == 200, f"Login failed: {response.text}"
-        self.token = response.json().get("access_token")
+        self.token = response.json().get("token")
         self.headers = {
             "Authorization": f"Bearer {self.token}",
             "Content-Type": "application/json"
