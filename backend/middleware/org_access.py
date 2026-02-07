@@ -186,8 +186,8 @@ class OrgAccessHelper:
     
     def filter(self, additional_query: dict = None) -> dict:
         """Build query filter with org restriction."""
-        # System admin can access all - don't filter by org
-        if self.user_type == "system_admin":
+        # System admin and super admin can access all - don't filter by org
+        if self.user_type in ["system_admin", "super_admin"]:
             return additional_query or {}
         
         query = {"org_id": {"$in": self.org_ids}}
