@@ -564,6 +564,29 @@ Build a comprehensive Blood Bank Management System with multi-tenancy support, f
 - [x] **Navigation Updates** (`/app/frontend/src/components/Layout.js`):
   - [x] "Find Blood" link added to sidebar for appropriate roles
   - [x] blood_request_staff role added to all relevant menu items
+
+### Phase Q: Demo Data & Portal Enhancement (COMPLETE - Feb 7, 2026)
+- [x] **Requestor Registration on Donor Portal** (`/app/frontend/src/pages/DonorLanding.js`):
+  - [x] Added "Are you a Hospital or Clinic?" section
+  - [x] "Register as Requestor" button navigates to `/requestor/register`
+  - [x] Professional card design with Building2 icon
+- [x] **Comprehensive Demo Data Seeding** (`/app/backend/scripts/seed_demo_data.py`):
+  - [x] Creates Test Organization with admin if not exists
+  - [x] 15 Donors (11 eligible, 3 pending, 1 deferred)
+  - [x] 10 Donations with complete workflow data
+  - [x] 10 Screenings (blood pressure, hemoglobin, etc.)
+  - [x] 10 Lab Tests (HIV, HBV, HCV, blood typing)
+  - [x] 10 Blood Units processed from donations
+  - [x] 27 Components (ready_to_use, reserved, issued)
+  - [x] 5 Blood Requests in various statuses
+  - [x] 3 Requestors (hospitals/clinics)
+  - [x] 3 Network Broadcasts (urgent needs, surplus alerts)
+  - [x] 3 Inter-Org Requests
+  - [x] 3 Storage Locations
+  - [x] 20 Audit Log entries
+- [x] **Demo Credentials**:
+  - Staff: admin@testorg.com / Test@123
+  - Requestor: admin@citygeneralhospital.com / Hospital@123
 ---
 
 ## Deployment
