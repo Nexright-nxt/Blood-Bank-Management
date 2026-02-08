@@ -1245,7 +1245,7 @@ async def seed_comprehensive_demo_data(db, logger):
             }
             qc_validations.append(qc)
         
-        await db.qc_validations.insert_many(qc_validations)
+        await db.qc_validation.insert_many(qc_validations)
         logger.info(f"✓ Created {len(qc_validations)} QC validations (8 completed, 2 pending)")
         
         # ============================================
