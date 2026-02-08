@@ -82,6 +82,7 @@ async def create_lab_test(
 async def get_lab_tests(
     unit_id: Optional[str] = None,
     overall_status: Optional[str] = None,
+    status: Optional[str] = None,
     current_user: dict = Depends(require_permission("laboratory", "view")),
     access: OrgAccessHelper = Depends(ReadAccess)
 ):
@@ -90,6 +91,8 @@ async def get_lab_tests(
         query["unit_id"] = unit_id
     if overall_status:
         query["overall_status"] = overall_status
+    if status:
+        query["status"] = status
     
     tests = await db.lab_tests.find(access.filter(query), {"_id": 0}).to_list(1000)
     return tests
