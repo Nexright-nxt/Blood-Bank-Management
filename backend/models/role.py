@@ -56,6 +56,7 @@ SYSTEM_ROLES = {
             "laboratory": ["view", "create", "edit"],
             "donors": ["view"],
             "donations": ["view"],
+            "inventory": ["view"],
         }
     },
     "processing": {
