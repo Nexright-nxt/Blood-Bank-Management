@@ -680,10 +680,33 @@ cd frontend && yarn install && yarn start
 - `/app/test_reports/iteration_8.json` - Map Integration for Requestors (100% pass rate, 10 frontend tests)
 - `/app/test_reports/iteration_9.json` - Requestor Portal Improvements (100% pass rate, 13 backend + all frontend tests)
 - `/app/test_reports/iteration_13.json` - Blood Collection Demo Data Fix (100% pass rate, all 5 frontend tests)
+- `/app/test_reports/iteration_14.json` - Lab & QC Data Display Fix (100% pass rate, 19 backend tests + all frontend features)
 
 ---
 
-## Demo Data Seeder (COMPLETE - Feb 7, 2026)
+### Bug Fixes (Feb 8, 2026)
+
+**Issue 1: Staff Dashboard Error - FIXED**
+- **Problem**: Lab Tech users saw "Failed to load dashboard data" error
+- **Root Cause**: Missing `inventory.view` permission for `lab_tech` role
+- **Fix**: Added `inventory: ["view"]` to lab_tech role permissions in `/app/backend/models/role.py`
+
+**Issue 2: Laboratory Completed Tests Empty - FIXED**
+- **Problem**: "Completed Tests" tab showed "-" for HIV, HBsAg, HCV, Syphilis results
+- **Root Cause**: Demo seeder used different field names (`hiv_elisa`, `hbsag`) than frontend expected (`hiv_result`, `hbsag_result`)
+- **Fix**: Updated `/app/backend/services/demo_seeder.py` to include frontend-expected fields
+
+**Issue 3: QC Validation Page Empty - FIXED**
+- **Problem**: Pending Validation and Validation History tabs showed no data
+- **Root Cause**: 
+  1. Components had `status: 'qc_pending'` but frontend expects `status: 'processing'`
+  2. QC validations were saved to `db.qc_validations` (plural) but API reads from `db.qc_validation` (singular)
+  3. Missing fields: `unit_component_id`, `unit_type`, `data_complete`, `screening_complete`, `custody_complete`
+- **Fix**: Updated demo seeder with correct status, collection name, and field names
+
+---
+
+## Demo Data Seeder (UPDATED - Feb 8, 2026)
 
 ### Automatic Demo Data Population
 - [x] **Auto-seeding on startup**: The `/app/backend/services/demo_seeder.py` script runs automatically when the application starts if the database is empty
