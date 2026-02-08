@@ -722,15 +722,16 @@ cd frontend && yarn install && yarn start
   - 5 pending/deferred donors for demo variety
 - **Screenings**: 30 total (25 completed with eligibility_status='eligible', 5 pending)
 - **Donations**: 15 total (12 completed, 3 in_progress)
-- **Lab Tests**: 12 (10 completed, 2 pending)
-- **Blood Units**: 10
-- **Components**: 36 (various statuses)
+- **Lab Tests**: 20 total (10 completed with serology results, 5 in_progress, 5 pending)
+  - Completed tests include: `hiv_result`, `hbsag_result`, `hcv_result`, `syphilis_result` fields (all 'non_reactive')
+- **Blood Units**: 26 (10 processed, 8 awaiting lab, 8 ready for processing)
+- **Components**: 76 (various statuses including 6 with `status: 'processing'` for QC validation)
+- **QC Validations**: 10 (8 approved, 2 on hold) - includes `data_complete`, `screening_complete`, `custody_complete` checkmarks
 - **Blood Requests**: 15 (pending/approved/fulfilled/cancelled)
 - **Issuances**: 5
 - **Returns**: 5
 - **Discards**: 6
 - **Logistics Orders**: 8
-- **QC Validations**: 10
 - **Quarantine Records**: 5
 - **Storage Locations**: 6
 - **Requestors (Hospitals)**: 5
