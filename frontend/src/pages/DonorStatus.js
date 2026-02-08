@@ -9,7 +9,7 @@ import { Label } from '../components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 
-const identityTypes = ['Aadhar', 'Passport', 'Driving License', 'Voter ID', 'PAN Card'];
+const identityTypes = ['MyKad', 'MyKas', 'MyKid', 'MyPR', 'Passport'];
 
 export default function DonorStatus() {
   const navigate = useNavigate();
