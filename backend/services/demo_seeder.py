@@ -923,7 +923,8 @@ async def seed_comprehensive_demo_data(db, logger):
                 }
                 components.append(component)
         
-        # Additional QC PENDING items (separated but awaiting quality check)
+        # Additional PROCESSING items (separated and ready for QC validation)
+        # Status 'processing' is what QCValidation.js page expects for pending validation
         for i in range(6):
             collection_date = datetime.now(timezone.utc) - timedelta(hours=random.randint(6, 12))
             blood_group = random.choice(BLOOD_GROUPS)
@@ -944,7 +945,7 @@ async def seed_comprehensive_demo_data(db, logger):
                 "processing_date": collection_date.strftime("%Y-%m-%d"),
                 "expiry_date": (collection_date + timedelta(days=exp_days)).strftime("%Y-%m-%d"),
                 "expiry_time": "23:59",
-                "status": "qc_pending",
+                "status": "processing",  # Changed from 'qc_pending' to match frontend expectation
                 "storage_location": f"QC-HOLD-{random.randint(1, 5)}",
                 "storage_temperature": 4.0,
                 "qc_status": "pending",
