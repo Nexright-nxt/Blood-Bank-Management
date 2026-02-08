@@ -966,7 +966,7 @@ async def seed_comprehensive_demo_data(db, logger):
         logger.info(f"  → ~37 from blood units (available/reserved/issued/quarantine)")
         logger.info(f"  → 24 pending_processing (awaiting separation)")
         logger.info(f"  → 10 in_processing (currently separating)")
-        logger.info(f"  → 6 qc_pending (awaiting QC verification)")
+        logger.info(f"  → 6 processing (awaiting QC verification)")
         
         # ============================================
         # 8. BLOOD REQUESTS (15 - various statuses)
