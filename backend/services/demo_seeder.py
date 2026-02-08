@@ -543,11 +543,18 @@ async def seed_comprehensive_demo_data(db, logger):
                 "donor_id": donation['donor_id'],
                 "donor_name": donation['donor_name'],
                 "blood_unit_id": None,
+                "unit_id": None,  # Frontend expects this field
                 # Blood typing
                 "blood_group_abo": donation['blood_group'][:-1] if donation['blood_group'][-1] in ['+', '-'] else donation['blood_group'],
                 "blood_group_rh": '+' if '+' in donation['blood_group'] else '-',
                 "blood_group_confirmed": donation['blood_group'],
-                # Serology - all negative (passed)
+                "confirmed_blood_group": donation['blood_group'],  # Frontend expects this field
+                # Serology - all negative (passed) - with FRONTEND-EXPECTED field names
+                "hiv_result": "non_reactive",
+                "hbsag_result": "non_reactive",
+                "hcv_result": "non_reactive",
+                "syphilis_result": "non_reactive",
+                # Extended serology fields
                 "hiv_elisa": "negative",
                 "hiv_nat": "negative",
                 "hbsag": "negative",
@@ -564,6 +571,7 @@ async def seed_comprehensive_demo_data(db, logger):
                 "dat_result": "negative",
                 # Results
                 "overall_result": "pass",
+                "overall_status": "non_reactive",  # Frontend expects this field
                 "test_date": test_date.strftime("%Y-%m-%d"),
                 "test_time": test_date.strftime("%H:%M"),
                 "tested_by": random.choice(staff_ids),
