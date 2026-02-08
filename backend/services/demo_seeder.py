@@ -1190,7 +1190,9 @@ async def seed_comprehensive_demo_data(db, logger):
         logger.info(f"✓ Created {len(logistics)} logistics orders (2 pending, 1 assigned, 2 in_transit, 3 delivered)")
         
         # ============================================
-        # 13. QC VALIDATIONS (10 - various statuses)
+        # 13. QC VALIDATIONS (10 - various statuses for Validation History)
+        # The frontend QCValidation.js expects fields: unit_component_id, unit_type, 
+        # data_complete, screening_complete, custody_complete, status (approved/hold)
         # ============================================
         qc_validations = []
         
@@ -1201,11 +1203,17 @@ async def seed_comprehensive_demo_data(db, logger):
             qc = {
                 "id": str(uuid.uuid4()),
                 "qc_id": f"PDN-QC-{2024001 + i}",
+                "unit_component_id": comp['id'],  # Frontend expects this field
+                "unit_type": "component",  # Frontend expects this field
                 "component_id": comp['id'],
                 "component_type": comp['component_type'],
                 "blood_group": comp['blood_group'],
                 "qc_date": qc_date.strftime("%Y-%m-%d"),
                 "qc_time": qc_date.strftime("%H:%M"),
+                # Frontend checklist fields
+                "data_complete": True if is_completed else False,
+                "screening_complete": True if is_completed else False,
+                "custody_complete": True if is_completed else False,
                 # Visual inspection
                 "visual_inspection": "pass" if is_completed else "pending",
                 "color": "normal" if is_completed else None,
@@ -1224,8 +1232,10 @@ async def seed_comprehensive_demo_data(db, logger):
                 "hematocrit": random.randint(55, 80) if comp['component_type'] == 'prc' and is_completed else None,
                 "ph_level": round(random.uniform(6.4, 7.4), 1) if comp['component_type'] == 'platelets' and is_completed else None,
                 # Results
+                "qc_status": "approved" if is_completed else "hold",  # Frontend reads this
                 "overall_result": "pass" if is_completed else "pending",
-                "status": "completed" if is_completed else "pending",
+                "status": "approved" if is_completed else "hold",  # Frontend expects approved/hold
+                "hold_reason": None if is_completed else "Missing validation checks",
                 "performed_by": random.choice(staff_ids),
                 "performed_by_name": "Lab Tech Siti",
                 "verified_by": admin_id if is_completed else None,
