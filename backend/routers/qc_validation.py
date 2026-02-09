@@ -12,6 +12,27 @@ from middleware.permissions import require_permission
 
 router = APIRouter(prefix="/qc-validation", tags=["QC Validation"])
 
+def enrich_qc_validation(item: dict) -> dict:
+    """Add missing fields to QC validation for frontend compatibility"""
+    if not item:
+        return item
+    
+    # Ensure unit_component_id and unit_type are set
+    if not item.get("unit_component_id") and item.get("component_id"):
+        item["unit_component_id"] = item["component_id"]
+    if not item.get("unit_type"):
+        item["unit_type"] = "component"
+    
+    # Ensure checklist fields have boolean values
+    if item.get("data_complete") is None:
+        item["data_complete"] = False
+    if item.get("screening_complete") is None:
+        item["screening_complete"] = False
+    if item.get("custody_complete") is None:
+        item["custody_complete"] = False
+    
+    return item
+
 @router.post("")
 async def create_qc_validation(
     validation_data: QCValidationCreate, 
