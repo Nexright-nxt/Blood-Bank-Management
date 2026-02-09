@@ -784,14 +784,16 @@ async def seed_comprehensive_demo_data(db, logger):
                 "donation_id": None,
                 "donor_id": donor['id'],
                 "blood_group": blood_group,  # Confirmed by lab
+                "confirmed_blood_group": blood_group,  # Add confirmed blood group
                 "preliminary_blood_group": blood_group,
                 "volume": random.choice([350, 450, 500]),
                 "collection_date": collection_date.strftime("%Y-%m-%d"),
                 "expiry_date": (collection_date + timedelta(days=42)).strftime("%Y-%m-%d"),
                 "status": "lab",  # Tested and ready for component separation
-                "bag_barcode": f"BC{random.randint(100000000, 999999999)}",
+                "bag_barcode": gen_barcode(f"PDN-BU-LAB-{i + 1}"),
                 "sample_labels": [f"PDN-BU-LAB-{i+1}-S1", f"PDN-BU-LAB-{i+1}-S2"],
                 "storage_location": f"PROCESSING-QUEUE-{random.randint(1, 3)}",
+                "current_location": "Processing Unit",
                 "temperature_log": [{"temp": round(random.uniform(2, 6), 1), "time": collection_date.isoformat()}],
                 "qc_status": "passed",
                 "lab_status": "passed",
