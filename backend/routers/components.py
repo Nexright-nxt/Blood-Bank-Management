@@ -14,6 +14,29 @@ from middleware.permissions import require_permission
 
 router = APIRouter(prefix="/components", tags=["Components"])
 
+def enrich_component(comp: dict) -> dict:
+    """Add missing fields to component for frontend compatibility"""
+    if not comp:
+        return comp
+    
+    # Ensure component_name is set based on component_type
+    if not comp.get("component_name") and comp.get("component_type"):
+        type_names = {
+            "prc": "PACKED RED CELLS",
+            "plasma": "PLASMA",
+            "ffp": "FRESH FROZEN PLASMA", 
+            "platelets": "PLATELETS",
+            "cryoprecipitate": "CRYOPRECIPITATE",
+            "whole_blood": "WHOLE BLOOD"
+        }
+        comp["component_name"] = type_names.get(comp["component_type"], comp["component_type"].upper())
+    
+    # Ensure volume_ml is set
+    if not comp.get("volume_ml") and comp.get("volume"):
+        comp["volume_ml"] = comp["volume"]
+    
+    return comp
+
 class MultiComponentCreate(BaseModel):
     parent_unit_id: str
     components: List[dict]  # [{component_type, volume, batch_id?, expiry_days?}]
