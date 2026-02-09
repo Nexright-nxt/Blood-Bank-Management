@@ -95,7 +95,7 @@ async def get_blood_requests(
         query["urgency"] = urgency
     
     requests = await db.blood_requests.find(access.filter(query), {"_id": 0}).to_list(1000)
-    return requests
+    return [enrich_blood_request(r) for r in requests]
 
 @router.get("/{request_id}")
 async def get_blood_request(
