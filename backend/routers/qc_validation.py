@@ -87,7 +87,7 @@ async def get_qc_validations(
         query["status"] = status
     
     validations = await db.qc_validation.find(query, {"_id": 0}).to_list(1000)
-    return validations
+    return [enrich_qc_validation(v) for v in validations]
 
 @router.put("/{validation_id}/approve")
 async def approve_qc_validation(
