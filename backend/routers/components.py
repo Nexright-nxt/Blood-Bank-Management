@@ -202,7 +202,7 @@ async def get_components(
         query["parent_unit_id"] = parent_unit_id
     
     components = await db.components.find(access.filter(query), {"_id": 0}).to_list(1000)
-    return components
+    return [enrich_component(c) for c in components]
 
 @router.get("/{component_id}")
 async def get_component(
