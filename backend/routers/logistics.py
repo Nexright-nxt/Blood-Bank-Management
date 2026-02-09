@@ -109,7 +109,7 @@ async def get_shipments(
         query["status"] = status
     
     shipments = await db.shipments.find(access.filter(query), {"_id": 0}).sort("created_at", -1).to_list(1000)
-    return shipments
+    return [enrich_shipment(s) for s in shipments]
 
 @router.get("/shipments/{shipment_id}")
 async def get_shipment(
