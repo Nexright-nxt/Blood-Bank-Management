@@ -14,6 +14,34 @@ from middleware import ReadAccess, WriteAccess, OrgAccessHelper
 return_router = APIRouter(prefix="/returns", tags=["Returns"])
 discard_router = APIRouter(prefix="/discards", tags=["Discards"])
 
+def enrich_return(item: dict) -> dict:
+    """Add missing fields to return item for frontend compatibility"""
+    if not item:
+        return item
+    
+    # Ensure reason is set
+    if not item.get("reason") and item.get("return_reason"):
+        item["reason"] = item["return_reason"]
+    
+    # Ensure source/hospital_name
+    if not item.get("source"):
+        item["source"] = "hospital"
+    if not item.get("hospital_name") and item.get("returned_from"):
+        item["hospital_name"] = item["returned_from"]
+    
+    return item
+
+def enrich_discard(item: dict) -> dict:
+    """Add missing fields to discard item for frontend compatibility"""
+    if not item:
+        return item
+    
+    # Ensure reason is set
+    if not item.get("reason") and item.get("discard_reason"):
+        item["reason"] = item["discard_reason"]
+    
+    return item
+
 # Enhanced Return Models
 class ReturnCreate(BaseModel):
     component_id: str
