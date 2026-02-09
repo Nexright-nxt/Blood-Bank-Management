@@ -126,7 +126,7 @@ async def get_returns(
         query["decision"] = "reject"
     
     returns = await db.returns.find(access.filter(query), {"_id": 0}).to_list(1000)
-    return returns
+    return [enrich_return(r) for r in returns]
 
 @return_router.put("/{return_id}/process")
 async def process_return(
