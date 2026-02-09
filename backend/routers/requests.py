@@ -13,6 +13,25 @@ from middleware.permissions import require_permission
 
 router = APIRouter(prefix="/requests", tags=["Blood Requests"])
 
+def enrich_blood_request(req: dict) -> dict:
+    """Add missing fields to blood request for frontend compatibility"""
+    if not req:
+        return req
+    
+    # Ensure patient info is populated
+    if not req.get("patient_name"):
+        req["patient_name"] = req.get("recipient_name", "Unknown Patient")
+    
+    # Ensure requestor info is populated
+    if not req.get("requestor_name") and req.get("requested_by_name"):
+        req["requestor_name"] = req["requested_by_name"]
+    
+    # Ensure hospital_name is populated
+    if not req.get("hospital_name") and req.get("requestor_org_name"):
+        req["hospital_name"] = req["requestor_org_name"]
+    
+    return req
+
 def calculate_priority_score(urgency: str, required_by_date: str = None, required_by_time: str = None) -> int:
     """Calculate priority score based on urgency and timing"""
     base_scores = {"emergency": 100, "urgent": 70, "normal": 30}
