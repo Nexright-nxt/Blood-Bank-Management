@@ -1275,15 +1275,19 @@ async def seed_comprehensive_demo_data(db, logger):
             quarantine = {
                 "id": str(uuid.uuid4()),
                 "quarantine_id": f"PDN-QUA-{2024001 + i}",
+                # Frontend expects these field names
+                "unit_component_id": comp['id'],
                 "component_id": comp['id'],
                 "component_type": comp['component_type'],
                 "blood_group": comp['blood_group'],
-                "quarantine_reason": random.choice(quarantine_reasons),
+                "reason": random.choice(quarantine_reasons),  # Frontend expects 'reason'
+                "quarantine_reason": random.choice(quarantine_reasons),  # Keep for backwards compat
                 "quarantine_date": q_date.strftime("%Y-%m-%d"),
                 "quarantine_location": "Quarantine Storage",
                 "status": "released" if is_released else "quarantined",
                 "investigation_status": "completed" if is_released else "in_progress",
                 "investigation_notes": "Investigation complete, cleared" if is_released else "Under investigation",
+                "retest_result": "non_reactive" if is_released else None,  # Frontend expects this
                 "quarantined_by": random.choice(staff_ids),
                 "quarantined_by_name": "Lab Tech Siti",
                 "released_by": admin_id if is_released else None,
