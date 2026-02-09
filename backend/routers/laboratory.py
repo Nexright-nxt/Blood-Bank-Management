@@ -121,7 +121,7 @@ async def get_lab_tests(
         query["status"] = status
     
     tests = await db.lab_tests.find(access.filter(query), {"_id": 0}).to_list(1000)
-    return tests
+    return [enrich_lab_test(t) for t in tests]
 
 @router.get("/{test_id}")
 async def get_lab_test(
@@ -132,4 +132,4 @@ async def get_lab_test(
     test = await db.lab_tests.find_one(access.filter({"id": test_id}), {"_id": 0})
     if not test:
         raise HTTPException(status_code=404, detail="Lab test not found")
-    return test
+    return enrich_lab_test(test)
