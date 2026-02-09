@@ -133,6 +133,11 @@ async def get_pending_pre_lab_qc(current_user: dict = Depends(get_current_user))
     for unit in units:
         qc = await db.pre_lab_qc.find_one({"unit_id": unit["id"]})
         if not qc:
+            # Ensure blood_group is populated for frontend
+            if not unit.get("blood_group") and unit.get("preliminary_blood_group"):
+                unit["blood_group"] = unit["preliminary_blood_group"]
+            if not unit.get("confirmed_blood_group") and unit.get("blood_group"):
+                unit["confirmed_blood_group"] = unit["blood_group"]
             pending.append(unit)
     
     return pending
