@@ -23,6 +23,26 @@ from middleware.permissions import require_permission
 
 router = APIRouter(tags=["Donors"])
 
+def enrich_donor(donor: dict) -> dict:
+    """Add missing fields to donor for frontend compatibility"""
+    if not donor:
+        return donor
+    
+    # Ensure eligibility status is set
+    if not donor.get("eligibility_status"):
+        if donor.get("status") == "active":
+            donor["eligibility_status"] = "eligible"
+        elif donor.get("status") == "deferred":
+            donor["eligibility_status"] = "temporarily_deferred"
+        else:
+            donor["eligibility_status"] = donor.get("status", "pending")
+    
+    # Ensure donation count
+    if not donor.get("donation_count"):
+        donor["donation_count"] = donor.get("total_donations", 0)
+    
+    return donor
+
 # File upload directory
 UPLOAD_DIR = "/app/uploads/donors"
 os.makedirs(UPLOAD_DIR, exist_ok=True)
