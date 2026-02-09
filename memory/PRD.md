@@ -682,6 +682,7 @@ cd frontend && yarn install && yarn start
 - `/app/test_reports/iteration_13.json` - Blood Collection Demo Data Fix (100% pass rate, all 5 frontend tests)
 - `/app/test_reports/iteration_14.json` - Lab & QC Data Display Fix (100% pass rate, 19 backend tests + all frontend features)
 - `/app/test_reports/iteration_15.json` - Traceability, Processing, Find Blood, Lab/QC Data Fix (100% pass rate)
+- `/app/test_reports/iteration_16.json` - Find Blood Inventory, Pre-Lab QC, Quarantine, Returns, Discards Fix (100% pass rate)
 
 ---
 
