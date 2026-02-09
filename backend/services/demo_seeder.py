@@ -1086,6 +1086,8 @@ async def seed_comprehensive_demo_data(db, logger):
             ret_date = rand_date(0, 15)
             is_completed = i < 3
             comp = random.choice(components)
+            hospital = random.choice(HOSPITALS)
+            reason = random.choice(return_reasons)
             
             return_record = {
                 "id": str(uuid.uuid4()),
@@ -1094,8 +1096,11 @@ async def seed_comprehensive_demo_data(db, logger):
                 "component_type": comp['component_type'],
                 "blood_group": comp['blood_group'],
                 "volume_ml": comp['volume_ml'],
-                "return_reason": random.choice(return_reasons),
-                "returned_from": random.choice(HOSPITALS),
+                "reason": reason,  # Frontend expects 'reason'
+                "return_reason": reason,  # Keep for backwards compatibility
+                "source": "hospital",  # Frontend expects 'source'
+                "hospital_name": hospital,  # Frontend expects 'hospital_name'
+                "returned_from": hospital,  # Keep for backwards compatibility
                 "returned_by": f"Nurse {random.choice(FIRST_NAMES)}",
                 "return_date": ret_date.strftime("%Y-%m-%d"),
                 "return_time": ret_date.strftime("%H:%M"),
@@ -1104,6 +1109,9 @@ async def seed_comprehensive_demo_data(db, logger):
                 "condition_on_return": random.choice(['good', 'acceptable', 'damaged']),
                 "temperature_on_return": round(random.uniform(2, 8), 1),
                 "seal_intact": random.choice([True, True, True, False]),
+                "qc_pass": True if is_completed else None,  # Frontend expects 'qc_pass'
+                "decision": "accept" if is_completed else None,  # Frontend expects 'decision'
+                "storage_location": f"REF-{random.choice(['A', 'B'])}-{random.randint(1, 5)}" if is_completed else None,
                 "reusable": is_completed and random.choice([True, True, False]),
                 "status": "processed" if is_completed else "pending",
                 "inspection_notes": "Unit inspected and cleared for reuse" if is_completed else "Awaiting inspection",
