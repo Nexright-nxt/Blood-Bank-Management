@@ -147,6 +147,17 @@ async def reject_request(
 # Issuance Router
 issuance_router = APIRouter(prefix="/issuances", tags=["Issuances"])
 
+def enrich_issuance(iss: dict) -> dict:
+    """Add missing fields to issuance for frontend compatibility"""
+    if not iss:
+        return iss
+    
+    # Ensure timestamps are properly formatted
+    if not iss.get("issue_date") and iss.get("created_at"):
+        iss["issue_date"] = iss["created_at"].split("T")[0] if isinstance(iss["created_at"], str) else iss["created_at"]
+    
+    return iss
+
 @issuance_router.post("")
 async def create_issuance(
     request_id: str = Query(..., description="Request ID"),
