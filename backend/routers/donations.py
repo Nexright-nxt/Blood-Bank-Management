@@ -143,7 +143,7 @@ async def get_donations(
         query["status"] = status
     
     donations = await db.donations.find(access.filter(query), {"_id": 0}).to_list(1000)
-    return donations
+    return [enrich_donation(d) for d in donations]
 
 
 @router.get("/eligible-donors")
