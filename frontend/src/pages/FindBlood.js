@@ -534,6 +534,28 @@ export default function FindBlood() {
               </div>
             )}
 
+            {/* External org manual entry when no blood bank selected */}
+            {requestForm.request_type === 'external' && !selectedBloodBank && (
+              <div className="space-y-3">
+                <div>
+                  <Label>External Organization Name *</Label>
+                  <Input
+                    placeholder="Enter blood bank or hospital name"
+                    value={requestForm.target_org_name}
+                    onChange={(e) => setRequestForm({ ...requestForm, target_org_name: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label>Address</Label>
+                  <Input
+                    placeholder="Enter address"
+                    value={requestForm.delivery_address}
+                    onChange={(e) => setRequestForm({ ...requestForm, delivery_address: e.target.value })}
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Blood Details */}
             <div className="grid grid-cols-2 gap-4">
               <div>
