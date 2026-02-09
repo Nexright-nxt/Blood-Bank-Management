@@ -18,24 +18,59 @@ def enrich_lab_test(test: dict) -> dict:
     if not test:
         return test
     
+    # Ensure unit_id is set for display - use test_id as fallback
+    if not test.get("unit_id"):
+        if test.get("blood_unit_id"):
+            test["unit_id"] = test["blood_unit_id"]
+        elif test.get("test_id"):
+            # Create unit_id from test_id (e.g., PDN-LAB-2024001 -> PDN-BU-2024001)
+            test["unit_id"] = test["test_id"].replace("LAB", "BU")
+        elif test.get("donation_id"):
+            test["unit_id"] = f"DON-{test['donation_id'][:8]}"
+        else:
+            test["unit_id"] = test.get("id", "Unknown")[:20]
+    
     # Frontend expects these specific field names for results
     # Map from API names to frontend-expected names
-    if not test.get("hiv_result") and test.get("hiv_elisa"):
-        test["hiv_result"] = "non_reactive" if test["hiv_elisa"] == "negative" else test["hiv_elisa"]
-    if not test.get("hbsag_result") and test.get("hbsag"):
-        test["hbsag_result"] = "non_reactive" if test["hbsag"] == "negative" else test["hbsag"]
-    if not test.get("hcv_result") and test.get("anti_hcv"):
-        test["hcv_result"] = "non_reactive" if test["anti_hcv"] == "negative" else test["anti_hcv"]
-    if not test.get("syphilis_result") and test.get("syphilis_rpr"):
-        test["syphilis_result"] = "non_reactive" if test["syphilis_rpr"] == "negative" else test["syphilis_rpr"]
-    
-    # Ensure unit_id is set for display
-    if not test.get("unit_id") and test.get("blood_unit_id"):
-        test["unit_id"] = test["blood_unit_id"]
+    if not test.get("hiv_result"):
+        if test.get("hiv_elisa"):
+            test["hiv_result"] = "non_reactive" if test["hiv_elisa"] == "negative" else test["hiv_elisa"]
+        else:
+            test["hiv_result"] = "pending"
+            
+    if not test.get("hbsag_result"):
+        if test.get("hbsag"):
+            test["hbsag_result"] = "non_reactive" if test["hbsag"] == "negative" else test["hbsag"]
+        else:
+            test["hbsag_result"] = "pending"
+            
+    if not test.get("hcv_result"):
+        if test.get("anti_hcv"):
+            test["hcv_result"] = "non_reactive" if test["anti_hcv"] == "negative" else test["anti_hcv"]
+        else:
+            test["hcv_result"] = "pending"
+            
+    if not test.get("syphilis_result"):
+        if test.get("syphilis_rpr"):
+            test["syphilis_result"] = "non_reactive" if test["syphilis_rpr"] == "negative" else test["syphilis_rpr"]
+        else:
+            test["syphilis_result"] = "pending"
     
     # Ensure confirmed_blood_group is set
-    if not test.get("confirmed_blood_group") and test.get("blood_group_confirmed"):
-        test["confirmed_blood_group"] = test["blood_group_confirmed"]
+    if not test.get("confirmed_blood_group"):
+        if test.get("blood_group_confirmed"):
+            test["confirmed_blood_group"] = test["blood_group_confirmed"]
+        elif test.get("blood_group"):
+            test["confirmed_blood_group"] = test["blood_group"]
+    
+    # Ensure overall_status is set
+    if not test.get("overall_status"):
+        if test.get("overall_result") == "pass":
+            test["overall_status"] = "non_reactive"
+        elif test.get("overall_result") == "fail":
+            test["overall_status"] = "reactive"
+        else:
+            test["overall_status"] = "pending"
     
     return test
 
