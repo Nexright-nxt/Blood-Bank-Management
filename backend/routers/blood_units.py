@@ -8,10 +8,36 @@ sys.path.append('..')
 from database import db
 from models import ChainOfCustody, ChainOfCustodyCreate
 from services import get_current_user
+from services.helpers import generate_barcode_base64
 from middleware import ReadAccess, WriteAccess, OrgAccessHelper
 from middleware.permissions import require_permission
 
 router = APIRouter(prefix="/blood-units", tags=["Blood Units"])
+
+def enrich_blood_unit(unit: dict) -> dict:
+    """Add missing fields to blood unit for frontend compatibility"""
+    if not unit:
+        return unit
+    
+    # Generate barcode if missing or not base64
+    if not unit.get("bag_barcode") or not unit["bag_barcode"].startswith("iVBOR"):
+        unit_id = unit.get("unit_id", unit.get("id", "UNIT"))
+        try:
+            unit["bag_barcode"] = generate_barcode_base64(unit_id)
+        except:
+            pass
+    
+    # Ensure blood_group fields are populated
+    if not unit.get("blood_group") and unit.get("preliminary_blood_group"):
+        unit["blood_group"] = unit["preliminary_blood_group"]
+    if not unit.get("confirmed_blood_group") and unit.get("blood_group"):
+        unit["confirmed_blood_group"] = unit["blood_group"]
+    
+    # Add current_location if missing
+    if not unit.get("current_location"):
+        unit["current_location"] = unit.get("storage_location", "Unknown")
+    
+    return unit
 
 @router.get("")
 async def get_blood_units(
@@ -33,7 +59,7 @@ async def get_blood_units(
         query["current_location"] = location
     
     units = await db.blood_units.find(access.filter(query), {"_id": 0}).to_list(1000)
-    return units
+    return [enrich_blood_unit(u) for u in units]
 
 @router.get("/{unit_id}")
 async def get_blood_unit(
@@ -47,7 +73,7 @@ async def get_blood_unit(
     )
     if not unit:
         raise HTTPException(status_code=404, detail="Blood unit not found")
-    return unit
+    return enrich_blood_unit(unit)
 
 @router.put("/{unit_id}")
 async def update_blood_unit(
