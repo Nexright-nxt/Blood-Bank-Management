@@ -44,6 +44,13 @@ def rand_date_str(days_min, days_max):
 def rand_datetime_str(days_min, days_max):
     return rand_date(days_min, days_max).isoformat()
 
+def gen_barcode(unit_id):
+    """Generate base64 barcode image from unit ID"""
+    try:
+        return generate_barcode_base64(unit_id)
+    except:
+        return f"BC{random.randint(100000000, 999999999)}"  # Fallback to text
+
 
 async def seed_comprehensive_demo_data(db, logger):
     """Seed complete demo data for all modules"""
