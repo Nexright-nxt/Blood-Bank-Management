@@ -551,7 +551,7 @@ async def seed_comprehensive_demo_data(db, logger):
                 "donor_id": donation['donor_id'],
                 "donor_name": donation['donor_name'],
                 "blood_unit_id": None,
-                "unit_id": None,  # Frontend expects this field
+                "unit_id": f"PDN-BU-{2024001 + i}",  # Reference matching blood unit
                 # Blood typing
                 "blood_group_abo": donation['blood_group'][:-1] if donation['blood_group'][-1] in ['+', '-'] else donation['blood_group'],
                 "blood_group_rh": '+' if '+' in donation['blood_group'] else '-',
