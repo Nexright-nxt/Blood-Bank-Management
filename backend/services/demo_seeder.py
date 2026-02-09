@@ -753,7 +753,7 @@ async def seed_comprehensive_demo_data(db, logger):
                 "unit_id": f"PDN-BU-PEND-{i + 1}",
                 "donation_id": None,
                 "donor_id": donor['id'],
-                "blood_group": None,
+                "blood_group": blood_group,  # Show preliminary blood group for Pre-Lab QC display
                 "preliminary_blood_group": blood_group,
                 "volume": random.choice([350, 450, 500]),
                 "collection_date": collection_date.strftime("%Y-%m-%d"),
