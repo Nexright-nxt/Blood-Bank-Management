@@ -208,7 +208,7 @@ async def get_issuances(
         query["status"] = status
     
     issuances = await db.issuances.find(query, {"_id": 0}).to_list(1000)
-    return issuances
+    return [enrich_issuance(i) for i in issuances]
 
 @issuance_router.put("/{issue_id}/pack")
 async def pack_issuance(issue_id: str, current_user: dict = Depends(get_current_user)):
