@@ -1120,12 +1120,13 @@ async def seed_comprehensive_demo_data(db, logger):
         # 11. DISCARDS (6 - mix of pending & completed)
         # ============================================
         discards = []
-        discard_reasons = ['expired', 'contaminated', 'damaged', 'qc_failed', 'reactive_test', 'hemolyzed']
+        discard_reasons = ['expired', 'failed_qc', 'rejected_return', 'reactive', 'damaged', 'other']  # Match frontend options
         
         for i in range(6):
             disc_date = rand_date(0, 20)
             is_completed = i < 4
             comp = random.choice(components)
+            disc_reason = random.choice(discard_reasons)
             
             discard = {
                 "id": str(uuid.uuid4()),
@@ -1134,9 +1135,12 @@ async def seed_comprehensive_demo_data(db, logger):
                 "component_type": comp['component_type'],
                 "blood_group": comp['blood_group'],
                 "volume_ml": comp['volume_ml'],
-                "discard_reason": random.choice(discard_reasons),
+                "reason": disc_reason,  # Frontend expects 'reason'
+                "discard_reason": disc_reason,  # Keep for backwards compatibility
+                "reason_details": f"Disposed due to {disc_reason}",
                 "discard_method": random.choice(['incineration', 'autoclave', 'chemical_treatment']),
                 "discard_date": disc_date.strftime("%Y-%m-%d"),
+                "destruction_date": (disc_date + timedelta(days=1)).strftime("%Y-%m-%d") if is_completed else None,
                 "discard_time": disc_date.strftime("%H:%M"),
                 "discarded_by": random.choice(staff_ids) if is_completed else None,
                 "discarded_by_name": "Ali bin Rahman" if is_completed else None,
@@ -1145,7 +1149,7 @@ async def seed_comprehensive_demo_data(db, logger):
                 "certificate_number": f"DISP-CERT-{random.randint(10000, 99999)}" if is_completed else None,
                 "status": "completed" if is_completed else "pending",
                 "approval_status": "approved" if is_completed else "pending_approval",
-                "notes": f"Disposed due to {random.choice(discard_reasons)}",
+                "notes": f"Disposed due to {disc_reason}",
                 "org_id": org_id,
                 "created_at": disc_date.isoformat(),
             }
