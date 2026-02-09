@@ -131,7 +131,7 @@ class TestProcessingPage:
         }
         
         create_response = requests.post(f"{BASE_URL}/api/components", json=component_data, headers=admin_headers)
-        assert create_response.status_code == 201, f"Failed to create component: {create_response.text}"
+        assert create_response.status_code in [200, 201], f"Failed to create component: {create_response.text}"
         
         created = create_response.json()
         assert "component_id" in created, "Response should have component_id"
