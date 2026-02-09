@@ -6,6 +6,7 @@ import random
 import uuid
 import bcrypt
 from datetime import datetime, timedelta, timezone
+from services.helpers import generate_barcode_base64
 
 # Malaysian data constants
 BLOOD_GROUPS = ['A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-']
