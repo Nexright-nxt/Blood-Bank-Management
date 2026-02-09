@@ -14,6 +14,24 @@ from middleware.permissions import require_permission
 
 router = APIRouter(prefix="/logistics", tags=["Logistics"])
 
+def enrich_shipment(shipment: dict) -> dict:
+    """Add missing fields to shipment for frontend compatibility"""
+    if not shipment:
+        return shipment
+    
+    # Ensure status display name
+    if shipment.get("status") and not shipment.get("status_display"):
+        status_map = {
+            "pending": "Pending",
+            "assigned": "Assigned",
+            "in_transit": "In Transit",
+            "delivered": "Delivered",
+            "cancelled": "Cancelled"
+        }
+        shipment["status_display"] = status_map.get(shipment["status"], shipment["status"].replace("_", " ").title())
+    
+    return shipment
+
 # Models
 class ShipmentCreate(BaseModel):
     issuance_id: str
