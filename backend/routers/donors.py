@@ -522,7 +522,7 @@ async def get_donors(
         ]
     
     donors = await db.donors.find(query, {"_id": 0}).to_list(1000)
-    return donors
+    return [enrich_donor(d) for d in donors]
 
 @router.get("/donors/{donor_id}")
 async def get_donor(
