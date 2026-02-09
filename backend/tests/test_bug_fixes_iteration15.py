@@ -170,8 +170,14 @@ class TestFindBloodRequests:
         
     def test_create_internal_request(self, admin_headers):
         """Should be able to create an internal blood request"""
+        # First get the organization ID
+        org_response = requests.get(f"{BASE_URL}/api/organizations/current", headers=admin_headers)
+        assert org_response.status_code == 200
+        org_id = org_response.json().get("id")
+        
         request_data = {
             "request_type": "internal",
+            "fulfilling_org_id": org_id,
             "component_type": "whole_blood",
             "blood_group": "O+",
             "quantity": 2,
