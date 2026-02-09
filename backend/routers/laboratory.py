@@ -13,6 +13,32 @@ from middleware.permissions import require_permission
 
 router = APIRouter(prefix="/lab-tests", tags=["Laboratory"])
 
+def enrich_lab_test(test: dict) -> dict:
+    """Add missing fields to lab test for frontend compatibility"""
+    if not test:
+        return test
+    
+    # Frontend expects these specific field names for results
+    # Map from API names to frontend-expected names
+    if not test.get("hiv_result") and test.get("hiv_elisa"):
+        test["hiv_result"] = "non_reactive" if test["hiv_elisa"] == "negative" else test["hiv_elisa"]
+    if not test.get("hbsag_result") and test.get("hbsag"):
+        test["hbsag_result"] = "non_reactive" if test["hbsag"] == "negative" else test["hbsag"]
+    if not test.get("hcv_result") and test.get("anti_hcv"):
+        test["hcv_result"] = "non_reactive" if test["anti_hcv"] == "negative" else test["anti_hcv"]
+    if not test.get("syphilis_result") and test.get("syphilis_rpr"):
+        test["syphilis_result"] = "non_reactive" if test["syphilis_rpr"] == "negative" else test["syphilis_rpr"]
+    
+    # Ensure unit_id is set for display
+    if not test.get("unit_id") and test.get("blood_unit_id"):
+        test["unit_id"] = test["blood_unit_id"]
+    
+    # Ensure confirmed_blood_group is set
+    if not test.get("confirmed_blood_group") and test.get("blood_group_confirmed"):
+        test["confirmed_blood_group"] = test["blood_group_confirmed"]
+    
+    return test
+
 @router.post("")
 async def create_lab_test(
     test_data: LabTestCreate, 
