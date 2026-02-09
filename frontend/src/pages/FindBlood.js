@@ -149,6 +149,12 @@ export default function FindBlood() {
       return;
     }
 
+    // For external requests, require org name if no blood bank selected
+    if (requestForm.request_type === 'external' && !selectedBloodBank && !requestForm.target_org_name) {
+      toast.error('Please enter the external organization name');
+      return;
+    }
+
     setSubmitting(true);
     try {
       // Map urgency from Find Blood to inter-org request format
@@ -165,13 +171,17 @@ export default function FindBlood() {
         fulfilling_org_id: requestForm.request_type === 'internal' 
           ? (requestForm.target_org_id || user?.org_id) 
           : null,
-        // For external requests
+        // For external requests - use selected blood bank or manual entry
         external_org_id: requestForm.request_type === 'external' ? requestForm.target_org_id : null,
-        external_org_name: requestForm.request_type === 'external' ? requestForm.target_org_name : null,
-        external_org_address: requestForm.delivery_address || null,
+        external_org_name: requestForm.request_type === 'external' 
+          ? (requestForm.target_org_name || selectedBloodBank?.org_name) 
+          : null,
+        external_org_address: requestForm.request_type === 'external'
+          ? (requestForm.delivery_address || selectedBloodBank?.address)
+          : null,
         external_contact_person: null,
-        external_contact_phone: null,
-        external_contact_email: null,
+        external_contact_phone: selectedBloodBank?.contact_phone || null,
+        external_contact_email: selectedBloodBank?.contact_email || null,
         // Blood details
         component_type: requestForm.component_type || 'whole_blood',
         blood_group: requestForm.blood_group,
