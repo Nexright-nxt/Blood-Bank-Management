@@ -1283,20 +1283,23 @@ async def seed_comprehensive_demo_data(db, logger):
             q_date = rand_date(0, 20)
             is_released = i < 2
             comp = random.choice(components)
+            reason = random.choice(quarantine_reasons)
             
             quarantine = {
                 "id": str(uuid.uuid4()),
                 "quarantine_id": f"PDN-QUA-{2024001 + i}",
                 # Frontend expects these field names
                 "unit_component_id": comp['id'],
+                "unit_type": "component",  # Frontend/API expects this
                 "component_id": comp['id'],
                 "component_type": comp['component_type'],
                 "blood_group": comp['blood_group'],
-                "reason": random.choice(quarantine_reasons),  # Frontend expects 'reason'
-                "quarantine_reason": random.choice(quarantine_reasons),  # Keep for backwards compat
+                "reason": reason,  # Frontend expects 'reason'
+                "quarantine_reason": reason,  # Keep for backwards compat
                 "quarantine_date": q_date.strftime("%Y-%m-%d"),
                 "quarantine_location": "Quarantine Storage",
                 "status": "released" if is_released else "quarantined",
+                "disposition": "release" if is_released else None,  # API filters by disposition: None
                 "investigation_status": "completed" if is_released else "in_progress",
                 "investigation_notes": "Investigation complete, cleared" if is_released else "Under investigation",
                 "retest_result": "non_reactive" if is_released else None,  # Frontend expects this
@@ -1305,6 +1308,8 @@ async def seed_comprehensive_demo_data(db, logger):
                 "released_by": admin_id if is_released else None,
                 "released_date": (q_date + timedelta(days=3)).isoformat() if is_released else None,
                 "release_notes": "Cleared for use" if is_released else None,
+                "resolved_date": (q_date + timedelta(days=3)).strftime("%Y-%m-%d") if is_released else None,
+                "resolved_by": admin_id if is_released else None,
                 "org_id": org_id,
                 "created_at": q_date.isoformat(),
             }
