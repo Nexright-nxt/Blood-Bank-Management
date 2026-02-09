@@ -161,8 +161,10 @@ export default function FindBlood() {
       // Build payload for inter-org-requests API (unified with Blood Requests management)
       const payload = {
         request_type: requestForm.request_type,
-        // For internal requests, target_org_id becomes fulfilling_org_id
-        fulfilling_org_id: requestForm.request_type === 'internal' ? requestForm.target_org_id : null,
+        // For internal requests, use the user's own org as fulfilling org (requesting from own inventory)
+        fulfilling_org_id: requestForm.request_type === 'internal' 
+          ? (requestForm.target_org_id || user?.org_id) 
+          : null,
         // For external requests
         external_org_id: requestForm.request_type === 'external' ? requestForm.target_org_id : null,
         external_org_name: requestForm.request_type === 'external' ? requestForm.target_org_name : null,
