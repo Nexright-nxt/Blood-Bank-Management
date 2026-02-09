@@ -15,6 +15,21 @@ from middleware.permissions import require_permission
 
 router = APIRouter(prefix="/donations", tags=["Donations"])
 
+def enrich_donation(donation: dict) -> dict:
+    """Add missing fields to donation for frontend compatibility"""
+    if not donation:
+        return donation
+    
+    # Ensure donor_name is set
+    if not donation.get("donor_name"):
+        donation["donor_name"] = "Unknown Donor"
+    
+    # Ensure volume is set
+    if not donation.get("volume_collected") and donation.get("volume_ml"):
+        donation["volume_collected"] = donation["volume_ml"]
+    
+    return donation
+
 @router.post("")
 async def create_donation(
     donation_data: DonationCreate, 
