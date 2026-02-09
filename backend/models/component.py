@@ -21,6 +21,7 @@ class Component(BaseModel):
     qc_values: Optional[Dict[str, Any]] = None
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     processed_by: Optional[str] = None
+    org_id: Optional[str] = None
 
 class ComponentCreate(BaseModel):
     parent_unit_id: str
