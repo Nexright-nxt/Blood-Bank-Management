@@ -285,7 +285,7 @@ async def get_discards(
         query["authorized"] = False
     
     discards = await db.discards.find(access.filter(query), {"_id": 0}).to_list(1000)
-    return discards
+    return [enrich_discard(d) for d in discards]
 
 @discard_router.get("/summary")
 async def get_discard_summary(
