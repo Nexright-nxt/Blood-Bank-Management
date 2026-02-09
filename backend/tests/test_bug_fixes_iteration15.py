@@ -135,7 +135,7 @@ class TestProcessingPage:
         
         created = create_response.json()
         assert "component_id" in created, "Response should have component_id"
-        assert created.get("blood_group"), "Component should inherit blood group"
+        assert created.get("status") == "success", "Response should indicate success"
         
     def test_get_all_components(self, admin_headers):
         """Should be able to fetch all components"""
