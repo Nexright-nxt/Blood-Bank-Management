@@ -61,27 +61,34 @@ async def get_inventory_by_blood_group(
     result = {}
     
     for bg in BloodGroup:
+        # Count whole blood units (status: ready_to_use, available, or processed)
         units = await db.blood_units.count_documents({
-            "status": "ready_to_use",
+            "status": {"$in": ["ready_to_use", "available", "processed"]},
             "$or": [{"blood_group": bg.value}, {"confirmed_blood_group": bg.value}],
             **org_filter
         })
         
+        # Count components (status: ready_to_use or available)
         components_pipeline = [
             {
                 "$match": {
-                    "status": "ready_to_use",
+                    "status": {"$in": ["ready_to_use", "available"]},
                     "blood_group": bg.value,
                     **org_filter
                 }
             },
             {"$group": {"_id": "$component_type", "count": {"$sum": 1}}}
         ]
-        components = await db.components.aggregate(components_pipeline).to_list(10)
+        components_data = await db.components.aggregate(components_pipeline).to_list(10)
+        components_count = sum(c["count"] for c in components_data)
         
+        # Return format that frontend expects
         result[bg.value] = {
-            "whole_blood_units": units,
-            "components": {c["_id"]: c["count"] for c in components}
+            "whole_blood": units,
+            "whole_blood_units": units,  # Keep for backwards compatibility
+            "components": components_count,
+            "components_by_type": {c["_id"]: c["count"] for c in components_data},
+            "total": units + components_count
         }
     
     return result
